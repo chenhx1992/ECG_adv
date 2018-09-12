@@ -19,12 +19,8 @@ import warnings
 
 import cleverhans.utils as utils
 import cleverhans.utils_tf as utils_tf
-from cleverhans.compat import reduce_max, reduce_min
-from cleverhans.compat import reduce_mean, reduce_sum
-from cleverhans.compat import reduce_any
-from cleverhans import loss as loss_module
 
-from mysoftdtw_c import py_func, mysoftdtw, softdtw, softdtwGrad
+#from mysoftdtw_c import py_func, mysoftdtw, softdtw, softdtwGrad
 
 _logger = utils.create_logger("myattacks.tf")
 
@@ -134,13 +130,13 @@ class CarliniWagnerL2(object):
 #            2 * (clip_max - clip_min) + clip_min
 #        self.l2dist = reduce_sum(tf.square(self.newimg - self.other),
 #                                 list(range(1, len(shape))))
-        self.l2dist = reduce_sum(tf.square(self.newimg - self.timg),list(range(1, len(shape))))
-        self.sdtw = reduce_sum(mysoftdtw(self.timg, modifier, 1))
+        self.l2dist = tf.reduce_sum(tf.square(self.newimg - self.timg),list(range(1, len(shape))))
+        #self.sdtw = tf.reduce_sum(mysoftdtw(self.timg, modifier, 1))
 #        self.sdtw = reduce_sum(mysquare_new(self.timg, modifier, 1),list(range(1, len(shape))))
         
         # compute the probability of the label class versus the maximum other
-        real = reduce_sum((self.tlab) * self.output, 1)
-        other = reduce_max(
+        real = tf.reduce_sum((self.tlab) * self.output, 1)
+        other = tf.reduce_max(
             (1 - self.tlab) * self.output - self.tlab * 10000,
             1)
 
@@ -152,9 +148,9 @@ class CarliniWagnerL2(object):
             loss1 = tf.maximum(ZERO(), real - other + self.CONFIDENCE)
 
         # sum up the losses
-#        self.loss2 = reduce_sum(self.l2dist)
-        self.loss2 = reduce_sum(self.sdtw)
-        self.loss1 = reduce_sum(self.const * loss1)
+        self.loss2 = tf.reduce_sum(self.l2dist)
+        #self.loss2 = tf.reduce_sum(self.sdtw)
+        self.loss1 = tf.reduce_sum(self.const * loss1)
         self.loss = self.loss1 + self.loss2
 
         # Setup the adam optimizer and keep track of variables we're creating
@@ -260,7 +256,7 @@ class CarliniWagnerL2(object):
                 print('Iteration:{}'.format(iteration))
                 _, l, l2s, scores, nimg = self.sess.run([self.train,
                                                          self.loss,
-                                                         self.sdtw,
+                                                         self.l2dist,
                                                          self.output,
                                                          self.newimg])
 
