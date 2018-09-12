@@ -12,3 +12,4 @@ build/
 *.html
 *.png
 /.idea
+weights-best_k0_r0.hdf5
