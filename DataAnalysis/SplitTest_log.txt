@@ -1,0 +1,21 @@
+Correct:6081, total:8528, percent:0.713062851782364
+Consist:4802, total:8528, percent:0.5630863039399625
+Correct_consist:3473, total:8528, percent:0.4072467166979362
+
+among correct_consist(3473)
+A: 346 0.0996
+N: 2540 0.7313
+O: 339 0.0976
+~: 248 0.0714
+
+shift test
+a1 1499
+a2 1866
+a3 772
+a4 2002
+a5 2999
+a6 2999
+a7 2996
+a8 2396
+a9 2319
+a10 2999

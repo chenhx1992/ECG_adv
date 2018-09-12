@@ -1,0 +1,14 @@
+training_raw/
+training_spec/
+mnist/
+log/
+cinc-challenge2017-oxford/
+__pycache__/
+build/
+*.csv
+*.mat
+*.so
+*.pkl
+*.html
+*.png
+/.idea
