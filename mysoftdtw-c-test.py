@@ -131,7 +131,7 @@ print(Z.eval(session=sess))
 print(tf.gradients(Z, delta)[0].eval(session=sess))
 
 # Test code 2
-len = 9000
+len = 1000
 tmp = np.linspace(1.0, 10.0, num=len, dtype=np.float32).reshape((1, len, 1))
 #print(tmp)
 X = tf.constant(tmp)
