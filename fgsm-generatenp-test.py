@@ -43,10 +43,10 @@ K.set_session(sess)
 
 print("Loading model")    
 model = load_model('ResNet_30s_34lay_16conv.hdf5')
-model = load_model('weights-best_k0_r0.hdf5')
+#model = load_model('weights-best_k0_r0.hdf5')
 
 # From cleverhans
-wrap = KerasModelWrapper(model, nb_classes = 4)
+wrap = KerasModelWrapper(model)
 #sess = tf.Session()
 #keras.backend.set_session(sess)
 #sess = keras.backend.get_session()
@@ -121,15 +121,19 @@ fgsm = FastGradientMethod(wrap, sess=sess)
 fgsm_params = {'eps': 10, 'ord': 2, 'y_target': target_a}
 #fgsm_params = {'ord': 2, 'y_target': target_a}
 # generate
-adv_x = fgsm.generate(x, **fgsm_params)
-adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
-preds_adv = model(adv_x)
-feed_dict = {x: X_test}
-adv_sample = sess.run(adv_x, feed_dict)
+# adv_x = fgsm.generate(x, **fgsm_params)
+# adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
+# preds_adv = model(adv_x)
+# feed_dict = {x: X_test}
+# adv_sample = sess.run(adv_x, feed_dict)
 # generate np
 adv_sample = fgsm.generate_np(X_test, **fgsm_params)
 
-
+prob = model.predict(adv_sample)
+ann = np.argmax(prob)
+ann_label = classes[ann]
+print(ann)
+'''
 # BIM
 from cleverhans.attacks import BasicIterativeMethod
 bim = BasicIterativeMethod(wrap, sess=sess)
@@ -147,10 +151,8 @@ adv_sample = bim.generate_np(X_test, **bim_params)
 sess = tf.Session()
 sess.run(adv_sample, feed_dict)
 
-prob = model.predict(adv_sample)
-ann = np.argmax(prob)
-ann_label = classes[ann]
-print(ann)
+
+
 
 plt.plot(adv_sample[0,:])
 plt.plot(adv_sample[0,:]-X_test[0,:])
@@ -183,3 +185,4 @@ axs[2].set_ylabel('signal value')
 
 
 
+'''
