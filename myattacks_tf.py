@@ -124,7 +124,6 @@ class CarliniWagnerL2(object):
         
         # prediction BEFORE-SOFTMAX of the model
         self.output = model.get_logits(self.newimg)
-
         # distance to the input data
 #        self.other = (tf.tanh(self.timg) + 1) / \
 #            2 * (clip_max - clip_min) + clip_min
@@ -267,7 +266,7 @@ class CarliniWagnerL2(object):
                                           l, np.mean(l2s), np.mean(scores)))
     
                 print('Iteration {} of {}: loss={:.3g} " + "l2={:.3g} f={:.3g}'.format(iteration, self.MAX_ITERATIONS, l, np.mean(l2s), np.mean(scores)))
-
+                print('logits:', scores)
                 # check if we should abort search if we're getting nowhere.
                 if self.ABORT_EARLY and \
                    iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
