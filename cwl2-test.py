@@ -47,7 +47,7 @@ print("Loading model")
 model = load_model('ResNet_30s_34lay_16conv.hdf5')
 #model = load_model('weights-best_k0_r0.hdf5')
 
-wrap = KerasModelWrapper(model)
+wrap = KerasModelWrapper(model, nb_classes=4)
 
 x = tf.placeholder(tf.float32, shape=(None, 9000, 1))
 y = tf.placeholder(tf.float32, shape=(None, 4))
@@ -105,7 +105,7 @@ target_a = np.float32(target_a)
 ## myattacks CWL2
 from myattacks import CarliniWagnerL2  
 cwl2 = CarliniWagnerL2(wrap, sess=sess)
-cwl2_params = {'y_target': target_a}
+cwl2_params = {'y_target': target_a, 'max_iterations': 100}
 adv_x = cwl2.generate(x, **cwl2_params)
 adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
 #preds_adv = model(adv_x)
@@ -120,26 +120,28 @@ ann = np.argmax(prob)
 ann_label = classes[ann]
 print(ann)
 
-#
-#ymax = np.max(adv_sample)+0.5
-#ymin = np.min(adv_sample)-0.5
-#
-#fig, axs = plt.subplots(1, 3, figsize=(20,5))
-#
-#axs[0].plot(X_test[0,:])
-#axs[0].set_title('Original signal {}'.format(ground_truth_label))
-#axs[0].set_ylim([ymin, ymax])
-#axs[0].set_xlabel('index')
-#axs[0].set_ylabel('signal value')
-#
-#axs[1].plot(adv_sample[0,:])
-#axs[1].set_title('Adversarial signal {}'.format(ann_label))
-#axs[1].set_ylim([ymin, ymax])
-#axs[1].set_xlabel('index')
-#axs[1].set_ylabel('signal value')
-#
-#axs[2].plot(adv_sample[0,:]-X_test[0,:])
-#axs[2].set_title('perturbations')
-#axs[2].set_ylim([ymin, ymax])
-#axs[2].set_xlabel('index')
-#axs[2].set_ylabel('signal value')
+
+ymax = np.max(adv_sample)+0.5
+ymin = np.min(adv_sample)-0.5
+
+fig, axs = plt.subplots(2, 1, figsize=(50,40))
+
+axs[0].plot(X_test[0,0:4000,:])
+axs[0].set_title('Original signal {}'.format(ground_truth_label))
+axs[0].set_ylim([ymin, ymax])
+axs[0].set_xlabel('index')
+axs[0].set_ylabel('signal value')
+
+axs[1].plot(adv_sample[0,0:4000,:])
+axs[1].set_title('Adversarial signal {}'.format(ann_label))
+axs[1].set_ylim([ymin, ymax])
+axs[1].set_xlabel('index')
+axs[1].set_ylabel('signal value')
+'''
+axs[2].plot(adv_sample[0,:]-X_test[0,:])
+axs[2].set_title('perturbations')
+axs[2].set_ylim([ymin, ymax])
+axs[2].set_xlabel('index')
+axs[2].set_ylabel('signal value')
+'''
+fig.savefig('temp2.png',dpi=fig.dpi)

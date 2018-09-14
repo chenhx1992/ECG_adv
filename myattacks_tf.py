@@ -19,8 +19,9 @@ import warnings
 
 import cleverhans.utils as utils
 import cleverhans.utils_tf as utils_tf
-
+import itertools
 #from mysoftdtw_c import py_func, mysoftdtw, softdtw, softdtwGrad
+from mysoftdtw_c_wd import mysoftdtw
 
 _logger = utils.create_logger("myattacks.tf")
 
@@ -130,8 +131,8 @@ class CarliniWagnerL2(object):
 #            2 * (clip_max - clip_min) + clip_min
 #        self.l2dist = reduce_sum(tf.square(self.newimg - self.other),
 #                                 list(range(1, len(shape))))
-        self.l2dist = tf.reduce_sum(tf.square(self.newimg - self.timg),list(range(1, len(shape))))
-        #self.sdtw = tf.reduce_sum(mysoftdtw(self.timg, modifier, 1))
+#        self.l2dist = tf.reduce_sum(tf.square(self.newimg - self.timg),list(range(1, len(shape))))
+        self.l2dist = mysoftdtw(self.timg, modifier, 1)
 #        self.sdtw = reduce_sum(mysquare_new(self.timg, modifier, 1),list(range(1, len(shape))))
         
         # compute the probability of the label class versus the maximum other
@@ -149,7 +150,7 @@ class CarliniWagnerL2(object):
 
         # sum up the losses
         self.loss2 = tf.reduce_sum(self.l2dist)
-        #self.loss2 = tf.reduce_sum(self.sdtw)
+#        self.loss2 = tf.reduce_sum(self.sdtw)
         self.loss1 = tf.reduce_sum(self.const * loss1)
         self.loss = self.loss1 + self.loss2
 
@@ -258,7 +259,8 @@ class CarliniWagnerL2(object):
                                                          self.loss,
                                                          self.l2dist,
                                                          self.output,
-                                                         self.newimg])
+                                                         self.newimg,
+                                                         ])
 
                 if iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
                     _logger.debug(("    Iteration {} of {}: loss={:.3g} " +
@@ -266,7 +268,7 @@ class CarliniWagnerL2(object):
                                   .format(iteration, self.MAX_ITERATIONS,
                                           l, np.mean(l2s), np.mean(scores)))
     
-                print('Iteration {} of {}: loss={:.3g} " + "l2={:.3g} f={:.3g}'.format(iteration, self.MAX_ITERATIONS, l, np.mean(l2s), np.mean(scores)))
+#                print('Iteration {} of {}: loss={:.3g} " + "l2={:.3g} f={:.3g} shape={}'.format(iteration, self.MAX_ITERATIONS, l, np.mean(l2s), np.mean(scores), self.shape))
 
                 # check if we should abort search if we're getting nowhere.
                 if self.ABORT_EARLY and \
@@ -278,7 +280,7 @@ class CarliniWagnerL2(object):
                     prev = l
 
                 # adjust the best result found so far
-                for e, (l2, sc, ii) in enumerate(zip(l2s, scores, nimg)):
+                for e, (l2, sc, ii) in enumerate(zip(itertools.repeat(l2s, len(scores)), scores, nimg)):
                     lab = np.argmax(batchlab[e])
                     if l2 < bestl2[e] and compare(sc, lab):
                         bestl2[e] = l2
