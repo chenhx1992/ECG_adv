@@ -2,5 +2,6 @@
 anaconda
 tensorflow
 h5py
-pip msgpack
-pip cleverhans
+pip install msgpack
+pip install cleverhans
+pip install keras
