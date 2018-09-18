@@ -27,7 +27,7 @@ import csv
 import scipy.io
 import glob
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 # parameters
 dataDir = './training_raw/'
@@ -182,7 +182,6 @@ axs[2].set_xlabel('index')
 axs[2].set_ylabel('signal value')
 
 
-
-
-
 '''
+
+
