@@ -16,7 +16,7 @@ import numpy as np
 from six.moves import xrange
 import tensorflow as tf
 import warnings
-
+import time
 import cleverhans.utils as utils
 import cleverhans.utils_tf as utils_tf
 
@@ -30,7 +30,16 @@ tf_dtype = tf.as_dtype('float32')
 
 def ZERO():
     return np.asarray(0., dtype=np_dtype)
-    
+
+def EOT_time(x, ensemble_size=100):
+    def randomizing_EOT(x, i):
+        data_len = 9000
+        p = np.random.randint(data_len)
+        x1, x2 = tf.split(x, [tf.convert_to_tensor(p), tf.convert_to_tensor(data_len - p)], axis=1)
+        return tf.concat([x2, x1], 1)
+    return tf.concat([randomizing_EOT(x, i) for i in range(ensemble_size)], axis=0)
+
+
 class EOT_tf_L2(object):
 
     def __init__(self, sess, model, batch_size, confidence,
@@ -109,6 +118,7 @@ class EOT_tf_L2(object):
         self.const = tf.Variable(np.zeros(batch_size), dtype=tf_dtype,
                                  name='const')
 
+
         # and here's what we use to assign them
         self.assign_timg = tf.placeholder(tf_dtype, shape,
                                           name='assign_timg')
@@ -122,9 +132,31 @@ class EOT_tf_L2(object):
 #        self.newimg = (tf.tanh(modifier + self.timg) + 1) / 2
 #        self.newimg = self.newimg * (clip_max - clip_min) + clip_min
         self.newimg = modifier + self.timg
-        
+
+
         # prediction BEFORE-SOFTMAX of the model
-        self.output = model.get_logits(self.newimg)
+
+        '''
+        for i in range(4):
+            data_len = 9000
+            p = i*100#np.random.randint(data_len)
+            x1, x2 = tf.split(self.newimg, [tf.convert_to_tensor(p),tf.convert_to_tensor(data_len-p)], axis=1)
+            self.batch_newimg = tf.concat([x2, x1], 1)
+            current_loss = tf.reshape(model.get_logits(self.batch_newimg),[1,4])
+            if i == 0:
+                self.loss_batch = current_loss
+            else:
+                self.loss_batch = tf.concat([self.loss_batch, current_loss], 0)
+        '''
+
+
+
+        start_time = time.time()
+        self.batch_newimg = EOT_time(self.newimg)
+        self.loss_batch = model.get_logits(self.batch_newimg)
+        #self.output = model.get_logits(self.newimg)
+        self.output = tf.expand_dims(tf.reduce_mean(self.loss_batch, axis=0), 0)
+        print(time.time()-start_time)
         # distance to the input data
 #        self.other = (tf.tanh(self.timg) + 1) / \
 #            2 * (clip_max - clip_min) + clip_min
@@ -172,6 +204,9 @@ class EOT_tf_L2(object):
         self.setup.append(self.const.assign(self.assign_const))
 
         self.init = tf.variables_initializer(var_list=[modifier] + new_vars)
+
+
+
 
     def attack(self, imgs, targets):
         """
@@ -254,12 +289,14 @@ class EOT_tf_L2(object):
             for iteration in range(self.MAX_ITERATIONS):
                 # perform the attack
                 print('Iteration:{}'.format(iteration))
-                _, l, l2s, scores, nimg = self.sess.run([self.train,
+                _, l, l2s, scores, nimg, loss_batch = self.sess.run([self.train,
                                                          self.loss,
                                                          self.l2dist,
                                                          self.output,
-                                                         self.newimg])
-
+                                                         self.newimg,
+                                                         self.loss_batch])
+                print(scores.shape)
+                print(scores)
                 if iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
                     _logger.debug(("    Iteration {} of {}: loss={:.3g} " +
                                    "l2={:.3g} f={:.3g}")
