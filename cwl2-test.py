@@ -30,7 +30,7 @@ import csv
 import scipy.io
 import glob
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 # parameters
 dataDir = './training_raw/'
@@ -121,24 +121,24 @@ ann_label = classes[ann]
 print(ann)
 
 
-ymax = np.max(adv_sample)+0.5
-ymin = np.min(adv_sample)-0.5
-
-fig, axs = plt.subplots(2, 1, figsize=(50,40))
-
-axs[0].plot(X_test[0,0:4000,:])
-#axs[0].plot(X_test[0,:])
-axs[0].set_title('Original signal {}'.format(ground_truth_label))
-axs[0].set_ylim([ymin, ymax])
-#axs[0].set_xlabel('index')
-axs[0].set_ylabel('signal value')
-
-axs[1].plot(adv_sample[0,0:4000,:])
-#axs[1].plot(adv_sample[0,:])
-axs[1].set_title('Adversarial signal {}'.format(ann_label))
-axs[1].set_ylim([ymin, ymax])
-axs[1].set_xlabel('index')
-axs[1].set_ylabel('signal value')
+#ymax = np.max(adv_sample)+0.5
+#ymin = np.min(adv_sample)-0.5
+#
+#fig, axs = plt.subplots(2, 1, figsize=(50,40))
+#
+#axs[0].plot(X_test[0,0:4000,:])
+##axs[0].plot(X_test[0,:])
+#axs[0].set_title('Original signal {}'.format(ground_truth_label))
+#axs[0].set_ylim([ymin, ymax])
+##axs[0].set_xlabel('index')
+#axs[0].set_ylabel('signal value')
+#
+#axs[1].plot(adv_sample[0,0:4000,:])
+##axs[1].plot(adv_sample[0,:])
+#axs[1].set_title('Adversarial signal {}'.format(ann_label))
+#axs[1].set_ylim([ymin, ymax])
+#axs[1].set_xlabel('index')
+#axs[1].set_ylabel('signal value')
 '''
 axs[2].plot(adv_sample[0,:]-X_test[0,:])
 axs[2].set_title('perturbations')
@@ -146,4 +146,4 @@ axs[2].set_ylim([ymin, ymax])
 axs[2].set_xlabel('index')
 axs[2].set_ylabel('signal value')
 '''
-fig.savefig('p9.png',dpi=fig.dpi)
+#fig.savefig('p9.png',dpi=fig.dpi)
