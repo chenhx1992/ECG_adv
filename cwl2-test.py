@@ -105,7 +105,7 @@ target_a = np.float32(target_a)
 ## myattacks CWL2
 from myattacks import CarliniWagnerL2  
 cwl2 = CarliniWagnerL2(wrap, sess=sess)
-cwl2_params = {'y_target': target_a, 'max_iterations': 100}
+cwl2_params = {'y_target': target_a}
 adv_x = cwl2.generate(x, **cwl2_params)
 adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
 #preds_adv = model(adv_x)
@@ -127,12 +127,14 @@ ymin = np.min(adv_sample)-0.5
 fig, axs = plt.subplots(2, 1, figsize=(50,40))
 
 axs[0].plot(X_test[0,0:4000,:])
+#axs[0].plot(X_test[0,:])
 axs[0].set_title('Original signal {}'.format(ground_truth_label))
 axs[0].set_ylim([ymin, ymax])
-axs[0].set_xlabel('index')
+#axs[0].set_xlabel('index')
 axs[0].set_ylabel('signal value')
 
 axs[1].plot(adv_sample[0,0:4000,:])
+#axs[1].plot(adv_sample[0,:])
 axs[1].set_title('Adversarial signal {}'.format(ann_label))
 axs[1].set_ylim([ymin, ymax])
 axs[1].set_xlabel('index')
@@ -144,4 +146,4 @@ axs[2].set_ylim([ymin, ymax])
 axs[2].set_xlabel('index')
 axs[2].set_ylabel('signal value')
 '''
-fig.savefig('temp2.png',dpi=fig.dpi)
+fig.savefig('p9.png',dpi=fig.dpi)

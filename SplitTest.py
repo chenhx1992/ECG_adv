@@ -41,7 +41,7 @@ def split_data(x):
     print("Data length:",data_len)
     x1 = [x[0,0:data_len // 2]]
     x2 = [x[0,data_len // 2:]]
-     
+    
     return x1, x2
 
 def predict_data(model, x):
