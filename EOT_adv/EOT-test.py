@@ -9,7 +9,7 @@ from keras import metrics
 import tensorflow as tf
 import pydot
 import h5py
-
+import time
 from cleverhans.utils_keras import KerasModelWrapper
 from cleverhans.attacks import FastGradientMethod, SaliencyMapMethod
 from cleverhans.utils_tf import model_eval, model_argmax
@@ -103,6 +103,7 @@ Y_test = utils.to_categorical(Y_test, num_classes=4)
 target_a = np.array([0, 1, 0, 0]).reshape(1,4)
 target_a = np.float32(target_a)
 
+start_time = time.time()
 from EOT_adv.EOT import EOT_L2
 eotl2 = EOT_L2(wrap, sess=sess)
 eotl2_params = {'y_target': target_a}
@@ -114,11 +115,13 @@ feed_dict = {x: X_test}
 adv_sample = adv_x.eval(feed_dict=feed_dict, session = sess)
 
 #adv_sample = cwl2.generate_np(X_test, **cwl2_params)
-
+print("time used:", time.time()-start_time)
 prob = model.predict(adv_sample)
 ann = np.argmax(prob)
 ann_label = classes[ann]
 print(ann)
+
+
 
 #
 #ymax = np.max(adv_sample)+0.5

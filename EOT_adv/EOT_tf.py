@@ -151,12 +151,12 @@ class EOT_tf_L2(object):
 
 
 
-        start_time = time.time()
+
         self.batch_newimg = EOT_time(self.newimg)
         self.loss_batch = model.get_logits(self.batch_newimg)
         #self.output = model.get_logits(self.newimg)
         self.output = tf.expand_dims(tf.reduce_mean(self.loss_batch, axis=0), 0)
-        print(time.time()-start_time)
+
         # distance to the input data
 #        self.other = (tf.tanh(self.timg) + 1) / \
 #            2 * (clip_max - clip_min) + clip_min
@@ -289,14 +289,11 @@ class EOT_tf_L2(object):
             for iteration in range(self.MAX_ITERATIONS):
                 # perform the attack
                 print('Iteration:{}'.format(iteration))
-                _, l, l2s, scores, nimg, loss_batch = self.sess.run([self.train,
+                _, l, l2s, scores, nimg = self.sess.run([self.train,
                                                          self.loss,
                                                          self.l2dist,
                                                          self.output,
-                                                         self.newimg,
-                                                         self.loss_batch])
-                print(scores.shape)
-                print(scores)
+                                                         self.newimg])
                 if iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
                     _logger.debug(("    Iteration {} of {}: loss={:.3g} " +
                                    "l2={:.3g} f={:.3g}")
