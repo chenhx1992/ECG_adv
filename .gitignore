@@ -11,4 +11,5 @@ build/
 *.html
 *.png
 /.idea
+*.zip
 weights-best_k0_r0.hdf5
