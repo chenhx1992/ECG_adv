@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Sep  5 21:07:06 2018
-
-@author: chenhx1992
-"""
 
 from keras.utils import plot_model
 import keras.backend as K
@@ -16,7 +9,7 @@ from keras import metrics
 import tensorflow as tf
 import pydot
 import h5py
-
+import time
 from cleverhans.utils_keras import KerasModelWrapper
 from cleverhans.attacks import FastGradientMethod, SaliencyMapMethod
 from cleverhans.utils_tf import model_eval, model_argmax
@@ -95,17 +88,26 @@ ground_truth = classes.index(ground_truth_label)
 print('Ground truth:{}'.format(ground_truth))
 
 X_test=np.float32(data)
+new_X_test = np.repeat(data, 5, axis=0)
+
+
 Y_test = np.zeros((1, 1))
 Y_test[0,0] = ground_truth
-Y_tes0t = utils.to_categorical(Y_test, num_classes=4)
+new_Y_test = np.zeros((5, 1))
+new_Y_test = np.repeat(ground_truth, 5, axis=0)
+print(Y_test)
+print(new_Y_test)
+Y_test = utils.to_categorical(Y_test, num_classes=4)
+
 
 target_a = np.array([0, 1, 0, 0]).reshape(1,4)
 target_a = np.float32(target_a)
 
+start_time = time.time()
 from EOT_adv.EOT import EOT_L2
-cwl2 = EOT_L2(wrap, sess=sess)
-cwl2_params = {'y_target': target_a}
-adv_x = cwl2.generate(x, **cwl2_params)
+eotl2 = EOT_L2(wrap, sess=sess)
+eotl2_params = {'y_target': target_a}
+adv_x = eotl2.generate(x, **eotl2_params)
 adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
 #preds_adv = model(adv_x)
 feed_dict = {x: X_test}
@@ -113,11 +115,13 @@ feed_dict = {x: X_test}
 adv_sample = adv_x.eval(feed_dict=feed_dict, session = sess)
 
 #adv_sample = cwl2.generate_np(X_test, **cwl2_params)
-
+print("time used:", time.time()-start_time)
 prob = model.predict(adv_sample)
 ann = np.argmax(prob)
 ann_label = classes[ann]
 print(ann)
+
+
 
 #
 #ymax = np.max(adv_sample)+0.5
