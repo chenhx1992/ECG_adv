@@ -1,32 +1,20 @@
-
-from keras.utils import plot_model
 import keras.backend as K
 import keras
-from keras import backend
 from keras.models import load_model
-from keras.utils.np_utils import to_categorical
-from keras import metrics
 import tensorflow as tf
-import pydot
-import h5py
 import time
 from cleverhans.utils_keras import KerasModelWrapper
-from cleverhans.attacks import FastGradientMethod, SaliencyMapMethod
-from cleverhans.utils_tf import model_eval, model_argmax
 from cleverhans import utils
-from distutils.version import LooseVersion
 
-
-#from cleverhans.attacks import CarliniWagnerL2  
+#from cleverhans.attacks import CarliniWagnerL2
 
 import csv
 import scipy.io
 import glob
 import numpy as np
-import matplotlib.pyplot as plt
 
 # parameters
-dataDir = '../training_raw/'
+dataDir = './training_raw/'
 FS = 300
 WINDOW_SIZE = 30*FS     # padding window for CNN
 classes = ['A', 'N', 'O','~']
@@ -37,7 +25,7 @@ sess = tf.Session()
 K.set_session(sess)
 
 print("Loading model")    
-model = load_model('../ResNet_30s_34lay_16conv.hdf5')
+model = load_model('ResNet_30s_34lay_16conv.hdf5')
 #model = load_model('weights-best_k0_r0.hdf5')
 
 wrap = KerasModelWrapper(model)
@@ -67,6 +55,13 @@ def preprocess(x, maxlen):
     del tmp
     
     return x
+def op_concate(x):
+    data_len = 9000
+    p = np.random.randint(data_len)
+    x1 = [x[0, 0:p]]
+    x2 = [x[0, p:]]
+    return np.append(x2, x1, axis=1)
+
 
 preds = model(x)
 
@@ -74,13 +69,12 @@ preds = model(x)
 id = 9
 count = id-1
 record = "A{:05d}".format(id)
-local_filename = "../training_raw/"+record
+local_filename = dataDir+record
 # Loading
 mat_data = scipy.io.loadmat(local_filename)
 print('Loading record {}'.format(record))    
 #    data = mat_data['val'].squeeze()
 data = mat_data['val']
-print(data.shape)
 data = preprocess(data, WINDOW_SIZE)
 
 ground_truth_label = csvfile[count][1]
@@ -104,7 +98,7 @@ target_a = np.array([0, 1, 0, 0]).reshape(1,4)
 target_a = np.float32(target_a)
 
 start_time = time.time()
-from EOT_adv.EOT import EOT_L2
+from EOT import EOT_L2
 eotl2 = EOT_L2(wrap, sess=sess)
 eotl2_params = {'y_target': target_a}
 adv_x = eotl2.generate(x, **eotl2_params)
@@ -114,8 +108,17 @@ feed_dict = {x: X_test}
 #adv_sample = sess.run(adv_x, feed_dict=feed_dict)
 adv_sample = adv_x.eval(feed_dict=feed_dict, session = sess)
 
-#adv_sample = cwl2.generate_np(X_test, **cwl2_params)
 print("time used:", time.time()-start_time)
+perturb = adv_sample-X_test
+attack_success = 0
+for _ in range(1000):
+    prob = model.predict(op_concate(perturb + X_test))
+    ann_label = classes[np.argmax(prob)]
+    if ann_label != ground_truth:
+        attack_success = attack_success + 1
+print("attack success times:", attack_success)
+
+
 prob = model.predict(adv_sample)
 ann = np.argmax(prob)
 ann_label = classes[ann]

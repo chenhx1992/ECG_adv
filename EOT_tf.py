@@ -31,7 +31,7 @@ tf_dtype = tf.as_dtype('float32')
 def ZERO():
     return np.asarray(0., dtype=np_dtype)
 
-def EOT_time(x, ensemble_size=100):
+def EOT_time(x, ensemble_size=30):
     def randomizing_EOT(x, i):
         data_len = 9000
         p = np.random.randint(data_len)
@@ -132,23 +132,6 @@ class EOT_tf_L2(object):
 #        self.newimg = (tf.tanh(modifier + self.timg) + 1) / 2
 #        self.newimg = self.newimg * (clip_max - clip_min) + clip_min
         self.newimg = modifier + self.timg
-
-
-        # prediction BEFORE-SOFTMAX of the model
-
-        '''
-        for i in range(4):
-            data_len = 9000
-            p = i*100#np.random.randint(data_len)
-            x1, x2 = tf.split(self.newimg, [tf.convert_to_tensor(p),tf.convert_to_tensor(data_len-p)], axis=1)
-            self.batch_newimg = tf.concat([x2, x1], 1)
-            current_loss = tf.reshape(model.get_logits(self.batch_newimg),[1,4])
-            if i == 0:
-                self.loss_batch = current_loss
-            else:
-                self.loss_batch = tf.concat([self.loss_batch, current_loss], 0)
-        '''
-
 
 
 
