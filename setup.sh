@@ -18,3 +18,6 @@ wget https://www.dropbox.com/s/ywwh1hxdbcbm0nb/training_raw.zip
 unzip training_raw.zip
 python setup_wd.py build_ext --inplace
 mkdir output
+rm -rf training_raw.zip
+cd ..
+rm -rf Anaconda3-5.2.0-Linux-x86_64.sh
