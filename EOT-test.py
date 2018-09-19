@@ -35,7 +35,7 @@ y = tf.placeholder(tf.float32, shape=(None, 4))
 
 # load groundTruth
 print("Loading ground truth file")   
-csvfile = list(csv.reader(open(dataDir+'REFERENCE-v3.csv')))
+csvfile = list(csv.reader(open('REFERENCE-v3.csv')))
 files = sorted(glob.glob(dataDir+"*.mat"))
 
 def preprocess(x, maxlen):
@@ -110,7 +110,7 @@ adv_sample = adv_x.eval(feed_dict=feed_dict, session = sess)
 
 print("time used:", time.time()-start_time)
 perturb = adv_sample-X_test
-np.savetxt('./output/EOT_t=30.out', perturb,delimiter=",")
+
 attack_success = 0
 for _ in range(1000):
     prob = model.predict(op_concate(perturb)+X_test)
@@ -119,7 +119,7 @@ for _ in range(1000):
         attack_success = attack_success + 1
 print("attack success times:", attack_success)
 
-
+np.savetxt('./output/EOT_t=30.out', perturb,delimiter=",")
 prob = model.predict(adv_sample)
 ann = np.argmax(prob)
 ann_label = classes[ann]
