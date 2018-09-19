@@ -117,14 +117,14 @@ print("adv shape:", adv_sample.shape)
 
 print("perturb shape:",np.shape(perturb))
 print("perturb shape:", perturb.shape)
-'''
+
 for _ in range(1000):
     prob = model.predict(op_concate(perturb)+X_test)
     ann_label = classes[np.argmax(prob)]
     if np.argmax(prob) != ground_truth:
         attack_success = attack_success + 1
 print("attack success times:", attack_success)
-'''
+
 perturb_squeeze = np.squeeze(perturb, axis=2)
 np.savetxt('./output/EOT_t=30.out', perturb_squeeze,delimiter=",")
 prob = model.predict(adv_sample)
