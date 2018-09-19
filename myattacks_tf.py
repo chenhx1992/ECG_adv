@@ -131,8 +131,8 @@ class CarliniWagnerL2(object):
 #            2 * (clip_max - clip_min) + clip_min
 #        self.l2dist = reduce_sum(tf.square(self.newimg - self.other),
 #                                 list(range(1, len(shape))))
-#        self.l2dist = tf.reduce_sum(tf.square(self.newimg - self.timg),list(range(1, len(shape))))
-        self.l2dist = mysoftdtw(self.timg, modifier, 1)
+        self.l2dist = tf.reduce_sum(tf.square(self.newimg - self.timg),list(range(1, len(shape))))
+        #self.l2dist = mysoftdtw(self.timg, modifier, 1)
 #        self.sdtw = reduce_sum(mysquare_new(self.timg, modifier, 1),list(range(1, len(shape))))
         
         # compute the probability of the label class versus the maximum other
@@ -268,7 +268,7 @@ class CarliniWagnerL2(object):
                                   .format(iteration, self.MAX_ITERATIONS,
                                           l, np.mean(l2s), np.mean(scores)))
     
-#                print('Iteration {} of {}: loss={:.3g} " + "l2={:.3g} f={:.3g} shape={}'.format(iteration, self.MAX_ITERATIONS, l, np.mean(l2s), np.mean(scores), self.shape))
+                print('Iteration {} of {}: loss={:.3g} " + "l2={:.3g} f={:.3g} shape={}'.format(iteration, self.MAX_ITERATIONS, l, np.mean(l2s), np.mean(scores), self.shape))
 
                 # check if we should abort search if we're getting nowhere.
                 if self.ABORT_EARLY and \
