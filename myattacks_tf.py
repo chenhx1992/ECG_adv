@@ -254,7 +254,7 @@ class CarliniWagnerL2(object):
             prev = 1e6
             for iteration in range(self.MAX_ITERATIONS):
                 # perform the attack
-                print('Iteration:{}'.format(iteration))
+                #print('Iteration:{}'.format(iteration))
                 _, l, l2s, scores, nimg = self.sess.run([self.train,
                                                          self.loss,
                                                          self.l2dist,
@@ -269,7 +269,7 @@ class CarliniWagnerL2(object):
                                           l, np.mean(l2s), np.mean(scores)))
     
                 print('Iteration {} of {}: loss={:.3g} " + "l2={:.3g} f={:.3g} shape={}'.format(iteration, self.MAX_ITERATIONS, l, np.mean(l2s), np.mean(scores), self.shape))
-
+                print(scores)
                 # check if we should abort search if we're getting nowhere.
                 if self.ABORT_EARLY and \
                    iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
