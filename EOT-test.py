@@ -25,7 +25,7 @@ sess = tf.Session()
 K.set_session(sess)
 
 print("Loading model")    
-model = load_model('ResNet_30s_34lay_16conv.hdf5')
+model = load_model('./ResNet_30s_34lay_16conv.hdf5')
 #model = load_model('weights-best_k0_r0.hdf5')
 
 wrap = KerasModelWrapper(model)
@@ -112,14 +112,21 @@ print("time used:", time.time()-start_time)
 perturb = adv_sample-X_test
 
 attack_success = 0
+print("adv shape:",np.shape(adv_sample))
+print("adv shape:", adv_sample.shape)
+
+print("perturb shape:",np.shape(perturb))
+print("perturb shape:", perturb.shape)
+'''
 for _ in range(1000):
     prob = model.predict(op_concate(perturb)+X_test)
     ann_label = classes[np.argmax(prob)]
     if np.argmax(prob) != ground_truth:
         attack_success = attack_success + 1
 print("attack success times:", attack_success)
-
-np.savetxt('./output/EOT_t=30.out', perturb,delimiter=",")
+'''
+perturb_squeeze = np.squeeze(perturb, axis=2)
+np.savetxt('./output/EOT_t=30.out', perturb_squeeze,delimiter=",")
 prob = model.predict(adv_sample)
 ann = np.argmax(prob)
 ann_label = classes[ann]
