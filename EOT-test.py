@@ -110,7 +110,7 @@ adv_sample = adv_x.eval(feed_dict=feed_dict, session = sess)
 
 print("time used:", time.time()-start_time)
 perturb = adv_sample-X_test
-np.savetxt('EOT_t=30.out', perturb)
+np.savetxt('./output/EOT_t=30.out', perturb,delimiter=",")
 attack_success = 0
 for _ in range(1000):
     prob = model.predict(op_concate(perturb)+X_test)
