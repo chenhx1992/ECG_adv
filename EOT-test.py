@@ -114,7 +114,7 @@ attack_success = 0
 for _ in range(1000):
     prob = model.predict(op_concate(perturb + X_test))
     ann_label = classes[np.argmax(prob)]
-    if ann_label != ground_truth:
+    if np.argmax(prob) != ground_truth:
         attack_success = attack_success + 1
 print("attack success times:", attack_success)
 
