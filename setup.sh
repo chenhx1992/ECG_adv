@@ -14,7 +14,7 @@ pip install keras
 pip install cleverhans
 git clone https://github.com/chenhx1992/ECG_adv.git
 cd ECG_adv/
-wget https://www.dropbox.com/s/2kwgtab3ksb7nd0/training_raw.zip
+wget https://www.dropbox.com/s/ywwh1hxdbcbm0nb/training_raw.zip
 unzip training_raw.zip
 python setup_wd.py build_ext --inplace
 mkdir output
