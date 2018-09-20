@@ -77,7 +77,8 @@ print("Loading model")
 model = load_model('ResNet_30s_34lay_16conv.hdf5')
 #model = load_model('weights-best_k0_r0.hdf5')
 
-wrap = KerasModelWrapper(model, nb_classes=4)
+#wrap = KerasModelWrapper(model, nb_classes=4)
+wrap = KerasModelWrapper(model)
 
 x = tf.placeholder(tf.float32, shape=(None, 9000, 1))
 y = tf.placeholder(tf.float32, shape=(None, 4))
