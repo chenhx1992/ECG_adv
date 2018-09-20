@@ -99,25 +99,17 @@ Y_test = np.zeros((1, 1))
 Y_test[0,0] = ground_truth
 Y_test = utils.to_categorical(Y_test, num_classes=4)
 
-# zero signal test
-X_test_0 = np.zeros((1, 9000, 1), dtype=np.float32)
-prob = model.predict(X_test_0)
-ann = np.argmax(prob)
-ann_label = classes[ann]
-print(ann)
-
 target_a = np.array([1, 0, 0, 0]).reshape(1,4)
 target_a = np.float32(target_a)
 
 ## myattacks CWL2
-from myattacks import CarliniWagnerL2  
+from myattacks_sdtw import CarliniWagnerL2  
 cwl2 = CarliniWagnerL2(wrap, sess=sess)
 cwl2_params = {'y_target': target_a}
 adv_x = cwl2.generate(x, **cwl2_params)
 adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
 #preds_adv = model(adv_x)
 feed_dict = {x: X_test}
-feed_dict = {x: X_test_0}
 #adv_sample = sess.run(adv_x, feed_dict=feed_dict)
 adv_sample = adv_x.eval(feed_dict=feed_dict, session = sess)
 
@@ -132,12 +124,7 @@ np.savetxt('./result_zero/zero_tarA_l2.out', adv_sample[0,:], delimiter=",")
 from numpy import genfromtxt
 perturb = genfromtxt('./result_zero/zero_tarA.out', delimiter=',')
 
-plt.plot(X_test_0[0,:])
-import matplotlib.pyplot as plt
-plt.plot(adv_sample[0,:])
-plt.xlabel('index')
-plt.ylabel('signal value')
-plt.ylim([-6, 6])
+
 #ymax = np.max(adv_sample)+0.5
 #ymin = np.min(adv_sample)-0.5
 #

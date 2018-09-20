@@ -12,8 +12,8 @@ from tensorflow.python.framework import ops
 import numpy as np
 import time
 #from softdtwc import softdtwc
-#from softdtwc_wd import softdtwc_wd
-#import softdtwc
+from softdtwc_wd import softdtwc_wd
+
 
 # Define custom py_func which takes also a grad op as argument 
 def py_func(func, inp, Tout, stateful=True, name=None, grad=None):
