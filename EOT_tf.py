@@ -16,12 +16,11 @@ import numpy as np
 from six.moves import xrange
 import tensorflow as tf
 import warnings
-
+import time
 import cleverhans.utils as utils
 import cleverhans.utils_tf as utils_tf
-import itertools
+
 #from mysoftdtw_c import py_func, mysoftdtw, softdtw, softdtwGrad
-from mysoftdtw_c_wd import mysoftdtw
 
 _logger = utils.create_logger("myattacks.tf")
 
@@ -31,8 +30,18 @@ tf_dtype = tf.as_dtype('float32')
 
 def ZERO():
     return np.asarray(0., dtype=np_dtype)
-    
-class CarliniWagnerL2(object):
+
+def EOT_time(x, ensemble_size=30):
+    def randomizing_EOT(x, i):
+        rand_i = tf.expand_dims(tf.random_uniform((), 0, 9000, dtype=tf.int32), axis=0)
+        p = tf.concat([rand_i, 9000-rand_i], axis=0)
+        x1, x2 = tf.split(x, p, axis=1)
+        res = tf.reshape(tf.concat([x2, x1], axis=1), [1, 9000, 1])
+        return res
+    return tf.concat([randomizing_EOT(x, i) for i in range(ensemble_size)], axis=0)
+
+
+class EOT_tf_L2(object):
 
     def __init__(self, sess, model, batch_size, confidence,
                  targeted, learning_rate,
@@ -96,6 +105,7 @@ class CarliniWagnerL2(object):
         self.repeat = binary_search_steps >= 10
 
         self.shape = shape = tuple([batch_size] + list(shape))
+      #  self.transform_shape = transform_shape = tuple([transform_batch_size] + list(transform_shape))
 #        self.shape = shape = tuple(list(shape))
         
         # the variable we're going to optimize over
@@ -108,6 +118,7 @@ class CarliniWagnerL2(object):
                                 dtype=tf_dtype, name='tlab')
         self.const = tf.Variable(np.zeros(batch_size), dtype=tf_dtype,
                                  name='const')
+
 
         # and here's what we use to assign them
         self.assign_timg = tf.placeholder(tf_dtype, shape,
@@ -122,17 +133,20 @@ class CarliniWagnerL2(object):
 #        self.newimg = (tf.tanh(modifier + self.timg) + 1) / 2
 #        self.newimg = self.newimg * (clip_max - clip_min) + clip_min
         self.newimg = modifier + self.timg
-        
-        # prediction BEFORE-SOFTMAX of the model
-        self.output = model.get_logits(self.newimg)
+
+
+
+        self.batch_newimg = EOT_time(self.timg) + modifier
+        self.loss_batch = model.get_logits(self.batch_newimg)
+        self.output = tf.expand_dims(tf.reduce_mean(self.loss_batch, axis=0), 0)
 
         # distance to the input data
 #        self.other = (tf.tanh(self.timg) + 1) / \
 #            2 * (clip_max - clip_min) + clip_min
 #        self.l2dist = reduce_sum(tf.square(self.newimg - self.other),
 #                                 list(range(1, len(shape))))
-        self.l2dist = tf.reduce_sum(tf.square(self.newimg - self.timg),list(range(1, len(shape))))
-        #self.l2dist = mysoftdtw(self.timg, modifier, 1)
+        self.l2dist = tf.reduce_sum(tf.square(modifier),list(range(1, len(shape))))
+        #self.sdtw = tf.reduce_sum(mysoftdtw(self.timg, modifier, 1))
 #        self.sdtw = reduce_sum(mysquare_new(self.timg, modifier, 1),list(range(1, len(shape))))
         
         # compute the probability of the label class versus the maximum other
@@ -150,7 +164,7 @@ class CarliniWagnerL2(object):
 
         # sum up the losses
         self.loss2 = tf.reduce_sum(self.l2dist)
-#        self.loss2 = tf.reduce_sum(self.sdtw)
+        #self.loss2 = tf.reduce_sum(self.sdtw)
         self.loss1 = tf.reduce_sum(self.const * loss1)
         self.loss = self.loss1 + self.loss2
 
@@ -173,6 +187,9 @@ class CarliniWagnerL2(object):
         self.setup.append(self.const.assign(self.assign_const))
 
         self.init = tf.variables_initializer(var_list=[modifier] + new_vars)
+
+
+
 
     def attack(self, imgs, targets):
         """
@@ -254,22 +271,19 @@ class CarliniWagnerL2(object):
             prev = 1e6
             for iteration in range(self.MAX_ITERATIONS):
                 # perform the attack
-                #print('Iteration:{}'.format(iteration))
                 _, l, l2s, scores, nimg = self.sess.run([self.train,
                                                          self.loss,
                                                          self.l2dist,
                                                          self.output,
-                                                         self.newimg,
-                                                         ])
-
+                                                         self.newimg])
                 if iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
                     _logger.debug(("    Iteration {} of {}: loss={:.3g} " +
                                    "l2={:.3g} f={:.3g}")
                                   .format(iteration, self.MAX_ITERATIONS,
                                           l, np.mean(l2s), np.mean(scores)))
     
-                print('Iteration {} of {}: loss={:.3g} " + "l2={:.3g} f={:.3g} shape={}'.format(iteration, self.MAX_ITERATIONS, l, np.mean(l2s), np.mean(scores), self.shape))
-                print(scores)
+                print('Iteration {} of {}: loss={:.3g} " + "l2={:.3g} f={:.3g}'.format(iteration, self.MAX_ITERATIONS, l, np.mean(l2s), np.mean(scores)))
+                print('logits:', scores)
                 # check if we should abort search if we're getting nowhere.
                 if self.ABORT_EARLY and \
                    iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
@@ -280,7 +294,7 @@ class CarliniWagnerL2(object):
                     prev = l
 
                 # adjust the best result found so far
-                for e, (l2, sc, ii) in enumerate(zip(itertools.repeat(l2s, len(scores)), scores, nimg)):
+                for e, (l2, sc, ii) in enumerate(zip(l2s, scores, nimg)):
                     lab = np.argmax(batchlab[e])
                     if l2 < bestl2[e] and compare(sc, lab):
                         bestl2[e] = l2
