@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Sep  6 21:38:52 2018
-
-@author: chenhx1992
-"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -136,7 +131,7 @@ class EOT_tf_L2(object):
 
 
 
-        self.batch_newimg = EOT_time(self.timg) + modifier
+        self.batch_newimg = EOT_time(self.newimg)
         self.loss_batch = model.get_logits(self.batch_newimg)
         self.output = tf.expand_dims(tf.reduce_mean(self.loss_batch, axis=0), 0)
 
@@ -145,7 +140,7 @@ class EOT_tf_L2(object):
 #            2 * (clip_max - clip_min) + clip_min
 #        self.l2dist = reduce_sum(tf.square(self.newimg - self.other),
 #                                 list(range(1, len(shape))))
-        self.l2dist = tf.reduce_sum(tf.square(modifier),list(range(1, len(shape))))
+        self.l2dist = tf.reduce_sum(tf.square(self.newimg - self.timg),list(range(1, len(shape))))
         #self.sdtw = tf.reduce_sum(mysoftdtw(self.timg, modifier, 1))
 #        self.sdtw = reduce_sum(mysquare_new(self.timg, modifier, 1),list(range(1, len(shape))))
         
