@@ -136,9 +136,13 @@ class EOT_tf_L2(object):
         self.newimg = modifier + self.timg
 
         self.batch_newimg = EOT_time(self.timg) + modifier
-        self.probs_batch = model.get_probs(self.batch_newimg)
-        self.batch_tlab =
-        self.tf.log(self.probs_batch)
+        self.loss_batch = model.get_logits(self.batch_newimg)
+        self.batch_tlab = tf.tile(self.tlab, (self.batch_newimg.shape[0], 1))
+        print(self.batch_tlab.shape)
+        self.xent = tf.reduce_mean(
+            tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.loss_batch, labels=self.batch_tlab))
+        print(self.xent.shape)
+
         self.output = tf.expand_dims(tf.reduce_mean(self.loss_batch, axis=0), 0)
 
         # distance to the input data
@@ -151,10 +155,10 @@ class EOT_tf_L2(object):
         #        self.sdtw = reduce_sum(mysquare_new(self.timg, modifier, 1),list(range(1, len(shape))))
 
         # compute the probability of the label class versus the maximum other
-        real = tf.reduce_sum((self.tlab) * self.output, 1)
-        other = tf.reduce_max(
-            (1 - self.tlab) * self.output - self.tlab * 10000,
-            1)
+        #real = tf.reduce_sum((self.tlab) * self.output, 1)
+        #other = tf.reduce_max(
+        #    (1 - self.tlab) * self.output - self.tlab * 10000,
+        #    1)
 
         if self.TARGETED:
             # if targeted, optimize for making the other class most likely

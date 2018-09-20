@@ -99,7 +99,7 @@ start_time = time.time()
 from EOT import EOT_L2
 eotl2 = EOT_L2(wrap, sess=sess)
 #eotl2_params = {'y_target': target_a}
-eotl2_params = {'learning_rate': 5e-2}
+eotl2_params = {'learning_rate': 1e-1}
 adv_x = eotl2.generate(x, **eotl2_params)
 adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
 #preds_adv = model(adv_x)
@@ -113,7 +113,7 @@ perturb = adv_sample-X_test
 correct = 0
 attack_success = 0
 
-for _ in range(1000):
+for _ in range(100):
     new_X_test = op_concate(X_test)
     prob_ori = model.predict(new_X_test)
     prob_att = model.predict(perturb+new_X_test)
@@ -126,7 +126,7 @@ print("attack success times:", attack_success)
 print("attack success rate:", attack_success/correct)
 
 perturb_squeeze = np.squeeze(perturb, axis=2)
-np.savetxt('./output/EOT_t=30.out', perturb_squeeze,delimiter=",")
+np.savetxt('./output/EOT_t=50.out', perturb_squeeze,delimiter=",")
 prob = model.predict(adv_sample)
 ann = np.argmax(prob)
 ann_label = classes[ann]

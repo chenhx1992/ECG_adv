@@ -329,8 +329,8 @@ class EOT_tf_L2(object):
             _logger.debug("   Mean successful distortion: {:.4g}".format(mean))
 
         # return the best solution found
-        o_bestl2 = np.array(o_bestl2-imgs)
-        print(o_bestattack)
+        o_bestl2 = np.array(o_bestl2)
+        print(o_bestl2)
         return o_bestattack
 
 # ---------------------------------------------------------------------------------

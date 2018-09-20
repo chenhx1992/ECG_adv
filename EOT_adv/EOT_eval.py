@@ -83,3 +83,12 @@ print("attack success rate:", attack_success/correct)
 plt.figure()
 plt.plot(perturb[0,:,0])
 plt.show()
+
+adv_sample = perturb+X_test
+plt.figure()
+plt.plot(adv_sample[0,:,0])
+plt.show()
+
+plt.figure()
+plt.plot(X_test[0,:,0])
+plt.show()
