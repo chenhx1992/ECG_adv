@@ -63,12 +63,23 @@ def op_concate(x):
 print("Loading model")
 model = load_model('../ResNet_30s_34lay_16conv.hdf5')
 
+
+correct = 0
 attack_success = 0
-'''
-for _ in range(1000):
-    prob = model.predict(op_concate(perturb)+X_test)
-    print(np.argmax(prob))
-    if np.argmax(prob) != ground_truth:
-        attack_success = attack_success + 1
+
+for _ in range(100):
+    new_X_test = op_concate(X_test)
+    prob_ori = model.predict(new_X_test)
+    prob_att = model.predict(perturb+new_X_test)
+    if np.argmax(prob_ori) == ground_truth:
+        correct = correct + 1
+        if np.argmax(prob_att) != ground_truth:
+            attack_success = attack_success + 1
+print("correct:", correct)
 print("attack success times:", attack_success)
-'''
+print("attack success rate:", attack_success/correct)
+
+
+plt.figure()
+plt.plot(perturb[0,:,0])
+plt.show()

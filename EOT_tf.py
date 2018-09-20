@@ -284,6 +284,7 @@ class EOT_tf_L2(object):
     
                 print('Iteration {} of {}: loss={:.3g} " + "l2={:.3g} f={:.3g}'.format(iteration, self.MAX_ITERATIONS, l, np.mean(l2s), np.mean(scores)))
                 print('logits:', scores)
+
                 # check if we should abort search if we're getting nowhere.
                 if self.ABORT_EARLY and \
                    iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
@@ -329,6 +330,7 @@ class EOT_tf_L2(object):
 
         # return the best solution found
         o_bestl2 = np.array(o_bestl2)
+        print(o_bestattack)
         return o_bestattack
 
 # ---------------------------------------------------------------------------------

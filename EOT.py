@@ -97,7 +97,7 @@ class EOT_L2(Attack):
 
     def parse_params(self, y=None, y_target=None, nb_classes=None,
                      batch_size=1, confidence=0,
-                     learning_rate=5e-3,
+                     learning_rate=5e-2,
                      binary_search_steps=5, max_iterations=1000,
                      abort_early=True, initial_const=1e-2,
                      clip_min=0, clip_max=1):
