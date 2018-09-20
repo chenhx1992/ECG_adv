@@ -32,7 +32,7 @@ def ZERO():
     return np.asarray(0., dtype=np_dtype)
 
 
-def EOT_time(x, ensemble_size=50):
+def EOT_time(x, ensemble_size=30):
     def randomizing_EOT(x, i):
         rand_i = tf.expand_dims(tf.random_uniform((), 0, 9000, dtype=tf.int32), axis=0)
         p = tf.concat([rand_i, 9000 - rand_i], axis=0)
@@ -139,9 +139,8 @@ class EOT_tf_L2(object):
         self.loss_batch = model.get_logits(self.batch_newimg)
         self.batch_tlab = tf.tile(self.tlab, (self.batch_newimg.shape[0], 1))
         print(self.batch_tlab.shape)
-        self.xent = tf.reduce_mean(
+        xent = tf.reduce_mean(
             tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.loss_batch, labels=self.batch_tlab))
-        print(self.xent.shape)
 
         self.output = tf.expand_dims(tf.reduce_mean(self.loss_batch, axis=0), 0)
 
@@ -160,22 +159,23 @@ class EOT_tf_L2(object):
         #    (1 - self.tlab) * self.output - self.tlab * 10000,
         #    1)
 
-        if self.TARGETED:
+        #if self.TARGETED:
             # if targeted, optimize for making the other class most likely
-            loss1 = tf.maximum(ZERO(), other - real + self.CONFIDENCE)
-        else:
+            #loss1 = tf.maximum(ZERO(), other - real + self.CONFIDENCE)
+            #loss1 = self.xent
+        #else:
             # if untargeted, optimize for making this class least likely.
-            loss1 = tf.maximum(ZERO(), real - other + self.CONFIDENCE)
+            #loss1 = tf.maximum(ZERO(), real - other + self.CONFIDENCE)
 
         # sum up the losses
         self.loss2 = tf.reduce_sum(self.l2dist)
         # self.loss2 = tf.reduce_sum(self.sdtw)
-        self.loss1 = tf.reduce_sum(self.const * loss1)
+        self.loss1 = tf.reduce_sum(self.const * xent)
         self.loss = self.loss1 + self.loss2
 
         # Setup the adam optimizer and keep track of variables we're creating
         start_vars = set(x.name for x in tf.global_variables())
-        optimizer = tf.train.AdamOptimizer(self.LEARNING_RATE)
+        optimizer = tf.train.GradientDescentOptimizer(self.LEARNING_RATE)
         self.train = optimizer.minimize(self.loss, var_list=[modifier])
 
         #        tf.summary.scalar('loss', self.loss)

@@ -100,7 +100,8 @@ target_a = np.float32(target_a)
 start_time = time.time()
 from EOT_g import EOT_L2
 eotl2 = EOT_L2(wrap, sess=sess)
-eotl2_params = {'y_target': target_a}
+eotl2_params = {'y_target': target_a, 'learning_rate': 5, 'max_iterations': 100}
+
 adv_x = eotl2.generate(x, **eotl2_params)
 adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
 #preds_adv = model(adv_x)
@@ -111,22 +112,23 @@ adv_sample = adv_x.eval(feed_dict=feed_dict, session = sess)
 print("time used:", time.time()-start_time)
 perturb = adv_sample-X_test
 
+correct = 0
 attack_success = 0
-print("adv shape:",np.shape(adv_sample))
-print("adv shape:", adv_sample.shape)
 
-print("perturb shape:",np.shape(perturb))
-print("perturb shape:", perturb.shape)
-
-for _ in range(1000):
-    prob = model.predict(op_concate(perturb)+X_test)
-    ann_label = classes[np.argmax(prob)]
-    if np.argmax(prob) != ground_truth:
-        attack_success = attack_success + 1
+for _ in range(100):
+    new_X_test = op_concate(X_test)
+    prob_ori = model.predict(new_X_test)
+    prob_att = model.predict(perturb+new_X_test)
+    if np.argmax(prob_ori) == ground_truth:
+        correct = correct + 1
+        if np.argmax(prob_att) != ground_truth:
+            attack_success = attack_success + 1
+print("correct:", correct)
 print("attack success times:", attack_success)
+print("attack success rate:", attack_success/correct)
 
 perturb_squeeze = np.squeeze(perturb, axis=2)
-np.savetxt('./output/EOT_t=30.out', perturb_squeeze,delimiter=",")
+np.savetxt('./output/EOT_t=30_g.out', perturb_squeeze,delimiter=",")
 prob = model.predict(adv_sample)
 ann = np.argmax(prob)
 ann_label = classes[ann]
