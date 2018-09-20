@@ -31,7 +31,7 @@ tf_dtype = tf.as_dtype('float32')
 def ZERO():
     return np.asarray(0., dtype=np_dtype)
 
-def EOT_time(x, ensemble_size=30):
+def EOT_time(x, ensemble_size=50):
     def randomizing_EOT(x, i):
         rand_i = tf.expand_dims(tf.random_uniform((), 0, 9000, dtype=tf.int32), axis=0)
         p = tf.concat([rand_i, 9000-rand_i], axis=0)
@@ -284,6 +284,7 @@ class EOT_tf_L2(object):
     
                 print('Iteration {} of {}: loss={:.3g} " + "l2={:.3g} f={:.3g}'.format(iteration, self.MAX_ITERATIONS, l, np.mean(l2s), np.mean(scores)))
                 print('logits:', scores)
+
                 # check if we should abort search if we're getting nowhere.
                 if self.ABORT_EARLY and \
                    iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
@@ -329,6 +330,7 @@ class EOT_tf_L2(object):
 
         # return the best solution found
         o_bestl2 = np.array(o_bestl2)
+        print(o_bestl2)
         return o_bestattack
 
 # ---------------------------------------------------------------------------------
