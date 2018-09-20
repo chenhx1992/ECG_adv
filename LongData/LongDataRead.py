@@ -30,8 +30,10 @@ import wfdb
 # Example code:    
 # signals, fields = wfdb.rdsamp('sample-data/s0010_re', channels=[14, 0, 5, 10], sampfrom=100, sampto=15000)
 file_name='04048'
-signals, fields = wfdb.rdsamp('./LongData/'+file_name, channels=[0, 1])
-annotation = wfdb.rdann('./LongData/'+file_name, 'atr')
+#signals, fields = wfdb.rdsamp('./LongData/'+file_name, channels=[0, 1])
+signals, fields = wfdb.rdsamp(file_name, channels=[0, 1])
+#annotation = wfdb.rdann('./LongData/'+file_name, 'atr')
+annotation = wfdb.rdann(file_name, 'atr')
 annotation_np = np.zeros((len(annotation.sample), 2))
 annotation_np[:, 0] =  annotation.sample
 fig, axs = plt.subplots(3, 1, figsize=(50,40), sharex=True)
