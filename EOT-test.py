@@ -28,7 +28,7 @@ print("Loading model")
 model = load_model('./ResNet_30s_34lay_16conv.hdf5')
 #model = load_model('weights-best_k0_r0.hdf5')
 
-wrap = KerasModelWrapper(model)
+wrap = KerasModelWrapper(model,nb_classes=4)
 
 x = tf.placeholder(tf.float32, shape=(None, 9000, 1))
 y = tf.placeholder(tf.float32, shape=(None, 4))
@@ -99,7 +99,7 @@ start_time = time.time()
 from EOT import EOT_L2
 eotl2 = EOT_L2(wrap, sess=sess)
 #eotl2_params = {'y_target': target_a}
-eotl2_params = {'learning_rate': 1e-1}
+eotl2_params = {'learning_rate': 1, 'max_iterations':100}
 adv_x = eotl2.generate(x, **eotl2_params)
 adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
 #preds_adv = model(adv_x)
@@ -110,20 +110,20 @@ adv_sample = adv_x.eval(feed_dict=feed_dict, session = sess)
 print("time used:", time.time()-start_time)
 perturb = adv_sample-X_test
 
-correct = 0
+
 attack_success = 0
 
 for _ in range(100):
-    new_X_test = op_concate(X_test)
-    prob_ori = model.predict(new_X_test)
-    prob_att = model.predict(perturb+new_X_test)
-    if np.argmax(prob_ori) == ground_truth:
-        correct = correct + 1
-        if np.argmax(prob_att) != ground_truth:
-            attack_success = attack_success + 1
-print("correct:", correct)
+    #new_X_test = op_concate(X_test)
+    #prob_ori = model.predict(new_X_test)
+    prob_att = model.predict(op_concate(perturb)+X_test)
+    #if np.argmax(prob_ori) == ground_truth:
+        #correct = correct + 1
+    if np.argmax(prob_att) != ground_truth:
+        attack_success = attack_success + 1
+#print("correct:", correct)
 print("attack success times:", attack_success)
-print("attack success rate:", attack_success/correct)
+#print("attack success rate:", attack_success/correct)
 
 perturb_squeeze = np.squeeze(perturb, axis=2)
 np.savetxt('./output/EOT_t=50.out', perturb_squeeze,delimiter=",")

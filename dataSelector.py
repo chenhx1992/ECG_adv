@@ -35,3 +35,4 @@ type_i_select = type_i_conf[:,[0,2,8]]
 
 data_select = np.vstack((type_A_select, type_N_select, type_O_select, type_i_select))
 
+np.savetxt('data_select.csv', data_select, delimiter=",")

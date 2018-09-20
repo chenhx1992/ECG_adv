@@ -20,7 +20,7 @@ import time
 import cleverhans.utils as utils
 import cleverhans.utils_tf as utils_tf
 
-#from mysoftdtw_c import py_func, mysoftdtw, softdtw, softdtwGrad
+from mysoftdtw_c import py_func, mysoftdtw, softdtw, softdtwGrad
 
 _logger = utils.create_logger("myattacks.tf")
 
@@ -31,7 +31,7 @@ tf_dtype = tf.as_dtype('float32')
 def ZERO():
     return np.asarray(0., dtype=np_dtype)
 
-def EOT_time(x, ensemble_size=50):
+def EOT_time(x, ensemble_size=30):
     def randomizing_EOT(x, i):
         rand_i = tf.expand_dims(tf.random_uniform((), 0, 9000, dtype=tf.int32), axis=0)
         p = tf.concat([rand_i, 9000-rand_i], axis=0)
@@ -136,7 +136,7 @@ class EOT_tf_L2(object):
 
 
 
-        self.batch_newimg = EOT_time(self.timg) + modifier
+        self.batch_newimg = EOT_time(modifier) + self.timg
         self.loss_batch = model.get_logits(self.batch_newimg)
         self.output = tf.expand_dims(tf.reduce_mean(self.loss_batch, axis=0), 0)
 

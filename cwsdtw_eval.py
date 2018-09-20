@@ -146,10 +146,11 @@ while (num < fid_to):
 #        ann_label = classes[ann]
         print('Adv result:{}'.format(ann))
         
-        eval_result[4*num+i, 0] = fid
-        eval_result[4*num+i, 1] = ground_truth
-        eval_result[4*num+i, 2] = i
-        eval_result[4*num+i, 3] = ann
+        idx = num - fid_from
+        eval_result[4*idx+i, 0] = fid
+        eval_result[4*idx+i, 1] = ground_truth
+        eval_result[4*idx+i, 2] = i
+        eval_result[4*idx+i, 3] = ann
         
         #--- Save adv_sample to file
         file_sample = './cwsdtw_eval/R' + str(fid)+ '_' + str(ground_truth) + '_' + str(i) + '_' + str(ann) + '.csv'

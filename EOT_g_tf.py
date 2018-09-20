@@ -19,8 +19,8 @@ import warnings
 import time
 import cleverhans.utils as utils
 import cleverhans.utils_tf as utils_tf
-
-# from mysoftdtw_c import py_func, mysoftdtw, softdtw, softdtwGrad
+import itertools
+from mysoftdtw_c_wd import mysoftdtw
 
 _logger = utils.create_logger("myattacks.tf")
 
@@ -135,7 +135,7 @@ class EOT_tf_L2(object):
         #        self.newimg = self.newimg * (clip_max - clip_min) + clip_min
         self.newimg = modifier + self.timg
 
-        self.batch_newimg = EOT_time(self.timg) + modifier
+        self.batch_newimg = EOT_time(modifier) + self.timg
         self.loss_batch = model.get_logits(self.batch_newimg)
         self.batch_tlab = tf.tile(self.tlab, (self.batch_newimg.shape[0], 1))
         print(self.batch_tlab.shape)
@@ -149,8 +149,8 @@ class EOT_tf_L2(object):
         #            2 * (clip_max - clip_min) + clip_min
         #        self.l2dist = reduce_sum(tf.square(self.newimg - self.other),
         #                                 list(range(1, len(shape))))
-        self.l2dist = tf.reduce_sum(tf.square(modifier), list(range(1, len(shape))))
-        # self.sdtw = tf.reduce_sum(mysoftdtw(self.timg, modifier, 1))
+        #self.l2dist = tf.reduce_sum(tf.square(modifier), list(range(1, len(shape))))
+        self.l2dist= tf.reduce_sum(mysoftdtw(self.timg, modifier, 1))
         #        self.sdtw = reduce_sum(mysquare_new(self.timg, modifier, 1),list(range(1, len(shape))))
 
         # compute the probability of the label class versus the maximum other
@@ -175,7 +175,7 @@ class EOT_tf_L2(object):
 
         # Setup the adam optimizer and keep track of variables we're creating
         start_vars = set(x.name for x in tf.global_variables())
-        optimizer = tf.train.GradientDescentOptimizer(self.LEARNING_RATE)
+        optimizer = tf.train.AdamOptimizer(self.LEARNING_RATE)
         self.train = optimizer.minimize(self.loss, var_list=[modifier])
 
         #        tf.summary.scalar('loss', self.loss)
@@ -299,7 +299,7 @@ class EOT_tf_L2(object):
                     prev = l
 
                 # adjust the best result found so far
-                for e, (l2, sc, ii) in enumerate(zip(l2s, scores, nimg)):
+                for e, (l2, sc, ii) in enumerate(zip(itertools.repeat(l2s, len(scores)), scores, nimg)):
                     lab = np.argmax(batchlab[e])
                     if l2 < bestl2[e] and compare(sc, lab):
                         bestl2[e] = l2
@@ -334,7 +334,7 @@ class EOT_tf_L2(object):
 
         # return the best solution found
         o_bestl2 = np.array(o_bestl2)
-        print(o_bestattack)
+        print(o_bestl2)
         return o_bestattack
 
 # ---------------------------------------------------------------------------------
