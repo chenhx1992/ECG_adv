@@ -33,10 +33,11 @@ def ZERO():
 
 def EOT_time(x, ensemble_size=30):
     def randomizing_EOT(x, i):
-        data_len = 9000
-        p = np.random.randint(data_len)
-        x1, x2 = tf.split(x, [tf.convert_to_tensor(p), tf.convert_to_tensor(data_len - p)], axis=1)
-        return tf.concat([x2, x1], 1)
+        rand_i = tf.expand_dims(tf.random_uniform((), 0, 9000, dtype=tf.int32), axis=0)
+        p = tf.concat([rand_i, 9000-rand_i], axis=0)
+        x1, x2 = tf.split(x, p, axis=1)
+        res = tf.reshape(tf.concat([x2, x1], axis=1), [1, 9000, 1])
+        return res
     return tf.concat([randomizing_EOT(x, i) for i in range(ensemble_size)], axis=0)
 
 
@@ -137,7 +138,6 @@ class EOT_tf_L2(object):
 
         self.batch_newimg = EOT_time(self.newimg)
         self.loss_batch = model.get_logits(self.batch_newimg)
-        #self.output = model.get_logits(self.newimg)
         self.output = tf.expand_dims(tf.reduce_mean(self.loss_batch, axis=0), 0)
 
         # distance to the input data
@@ -271,7 +271,6 @@ class EOT_tf_L2(object):
             prev = 1e6
             for iteration in range(self.MAX_ITERATIONS):
                 # perform the attack
-                print('Iteration:{}'.format(iteration))
                 _, l, l2s, scores, nimg = self.sess.run([self.train,
                                                          self.loss,
                                                          self.l2dist,

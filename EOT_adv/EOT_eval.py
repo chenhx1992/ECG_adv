@@ -1,9 +1,13 @@
 import numpy as np
+import keras.backend as K
+import keras
+from keras.models import load_model
+import tensorflow as tf
 from numpy import genfromtxt
 import csv
 import glob
 import scipy.io
-
+import matplotlib.pyplot as plt
 
 def preprocess(x, maxlen):
     x = np.nan_to_num(x)
@@ -37,6 +41,7 @@ print('Loading record {}'.format(record))
 #    data = mat_data['val'].squeeze()
 data = mat_data['val']
 data = preprocess(data, WINDOW_SIZE)
+X_test=np.float32(data)
 
 ground_truth_label = csvfile[count][1]
 ground_truth = classes.index(ground_truth_label)
@@ -44,4 +49,26 @@ print('Ground truth:{}'.format(ground_truth))
 
 
 perturb = genfromtxt('../output/EOT_t=30.out', delimiter=',')
-print(perturb.shape)
+
+perturb = np.expand_dims(perturb, axis=0)
+perturb = np.expand_dims(perturb, axis=2)
+
+def op_concate(x):
+    data_len = 9000
+    p = np.random.randint(data_len)
+    x1 = [x[0, 0:p]]
+    x2 = [x[0, p:]]
+    return np.append(x2, x1, axis=1)
+
+print("Loading model")
+model = load_model('../ResNet_30s_34lay_16conv.hdf5')
+
+attack_success = 0
+'''
+for _ in range(1000):
+    prob = model.predict(op_concate(perturb)+X_test)
+    print(np.argmax(prob))
+    if np.argmax(prob) != ground_truth:
+        attack_success = attack_success + 1
+print("attack success times:", attack_success)
+'''
