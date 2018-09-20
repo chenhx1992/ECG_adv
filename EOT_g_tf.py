@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+Created on Thu Sep  6 21:38:52 2018
+
+@author: chenhx1992
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -15,7 +20,7 @@ import time
 import cleverhans.utils as utils
 import cleverhans.utils_tf as utils_tf
 
-#from mysoftdtw_c import py_func, mysoftdtw, softdtw, softdtwGrad
+# from mysoftdtw_c import py_func, mysoftdtw, softdtw, softdtwGrad
 
 _logger = utils.create_logger("myattacks.tf")
 
@@ -26,13 +31,15 @@ tf_dtype = tf.as_dtype('float32')
 def ZERO():
     return np.asarray(0., dtype=np_dtype)
 
-def EOT_time(x, ensemble_size=30):
+
+def EOT_time(x, ensemble_size=50):
     def randomizing_EOT(x, i):
         rand_i = tf.expand_dims(tf.random_uniform((), 0, 9000, dtype=tf.int32), axis=0)
-        p = tf.concat([rand_i, 9000-rand_i], axis=0)
+        p = tf.concat([rand_i, 9000 - rand_i], axis=0)
         x1, x2 = tf.split(x, p, axis=1)
         res = tf.reshape(tf.concat([x2, x1], axis=1), [1, 9000, 1])
         return res
+
     return tf.concat([randomizing_EOT(x, i) for i in range(ensemble_size)], axis=0)
 
 
@@ -100,9 +107,9 @@ class EOT_tf_L2(object):
         self.repeat = binary_search_steps >= 10
 
         self.shape = shape = tuple([batch_size] + list(shape))
-      #  self.transform_shape = transform_shape = tuple([transform_batch_size] + list(transform_shape))
-#        self.shape = shape = tuple(list(shape))
-        
+        #  self.transform_shape = transform_shape = tuple([transform_batch_size] + list(transform_shape))
+        #        self.shape = shape = tuple(list(shape))
+
         # the variable we're going to optimize over
         modifier = tf.Variable(np.zeros(shape, dtype=np_dtype))
 
@@ -114,7 +121,6 @@ class EOT_tf_L2(object):
         self.const = tf.Variable(np.zeros(batch_size), dtype=tf_dtype,
                                  name='const')
 
-
         # and here's what we use to assign them
         self.assign_timg = tf.placeholder(tf_dtype, shape,
                                           name='assign_timg')
@@ -125,25 +131,25 @@ class EOT_tf_L2(object):
 
         # the resulting instance, tanh'd to keep bounded from clip_min
         # to clip_max
-#        self.newimg = (tf.tanh(modifier + self.timg) + 1) / 2
-#        self.newimg = self.newimg * (clip_max - clip_min) + clip_min
+        #        self.newimg = (tf.tanh(modifier + self.timg) + 1) / 2
+        #        self.newimg = self.newimg * (clip_max - clip_min) + clip_min
         self.newimg = modifier + self.timg
 
-
-
-        self.batch_newimg = EOT_time(self.newimg)
-        self.loss_batch = model.get_logits(self.batch_newimg)
+        self.batch_newimg = EOT_time(self.timg) + modifier
+        self.probs_batch = model.get_probs(self.batch_newimg)
+        self.batch_tlab =
+        self.tf.log(self.probs_batch)
         self.output = tf.expand_dims(tf.reduce_mean(self.loss_batch, axis=0), 0)
 
         # distance to the input data
-#        self.other = (tf.tanh(self.timg) + 1) / \
-#            2 * (clip_max - clip_min) + clip_min
-#        self.l2dist = reduce_sum(tf.square(self.newimg - self.other),
-#                                 list(range(1, len(shape))))
-        self.l2dist = tf.reduce_sum(tf.square(self.newimg - self.timg),list(range(1, len(shape))))
-        #self.sdtw = tf.reduce_sum(mysoftdtw(self.timg, modifier, 1))
-#        self.sdtw = reduce_sum(mysquare_new(self.timg, modifier, 1),list(range(1, len(shape))))
-        
+        #        self.other = (tf.tanh(self.timg) + 1) / \
+        #            2 * (clip_max - clip_min) + clip_min
+        #        self.l2dist = reduce_sum(tf.square(self.newimg - self.other),
+        #                                 list(range(1, len(shape))))
+        self.l2dist = tf.reduce_sum(tf.square(modifier), list(range(1, len(shape))))
+        # self.sdtw = tf.reduce_sum(mysoftdtw(self.timg, modifier, 1))
+        #        self.sdtw = reduce_sum(mysquare_new(self.timg, modifier, 1),list(range(1, len(shape))))
+
         # compute the probability of the label class versus the maximum other
         real = tf.reduce_sum((self.tlab) * self.output, 1)
         other = tf.reduce_max(
@@ -159,7 +165,7 @@ class EOT_tf_L2(object):
 
         # sum up the losses
         self.loss2 = tf.reduce_sum(self.l2dist)
-        #self.loss2 = tf.reduce_sum(self.sdtw)
+        # self.loss2 = tf.reduce_sum(self.sdtw)
         self.loss1 = tf.reduce_sum(self.const * loss1)
         self.loss = self.loss1 + self.loss2
 
@@ -167,11 +173,11 @@ class EOT_tf_L2(object):
         start_vars = set(x.name for x in tf.global_variables())
         optimizer = tf.train.AdamOptimizer(self.LEARNING_RATE)
         self.train = optimizer.minimize(self.loss, var_list=[modifier])
-        
-#        tf.summary.scalar('loss', self.loss)
-#        self.train_writer = tf.summary.FileWriter('./log', self.sess.graph)
-#        self.merge = tf.summary.merge_all()
-        
+
+        #        tf.summary.scalar('loss', self.loss)
+        #        self.train_writer = tf.summary.FileWriter('./log', self.sess.graph)
+        #        self.merge = tf.summary.merge_all()
+
         end_vars = tf.global_variables()
         new_vars = [x for x in end_vars if x.name not in start_vars]
 
@@ -182,9 +188,6 @@ class EOT_tf_L2(object):
         self.setup.append(self.const.assign(self.assign_const))
 
         self.init = tf.variables_initializer(var_list=[modifier] + new_vars)
-
-
-
 
     def attack(self, imgs, targets):
         """
@@ -206,6 +209,7 @@ class EOT_tf_L2(object):
         """
         Run the attack on a batch of instance and labels.
         """
+
         def compare(x, y):
             if not isinstance(x, (float, int, np.int64)):
                 x = np.copy(x)
@@ -221,15 +225,15 @@ class EOT_tf_L2(object):
 
         batch_size = self.batch_size
 
-#        oimgs = np.clip(imgs, self.clip_min, self.clip_max)
+        #        oimgs = np.clip(imgs, self.clip_min, self.clip_max)
 
         # re-scale instances to be within range [0, 1]
-#        imgs = (imgs - self.clip_min) / (self.clip_max - self.clip_min)
-#        imgs = np.clip(imgs, 0, 1)
+        #        imgs = (imgs - self.clip_min) / (self.clip_max - self.clip_min)
+        #        imgs = np.clip(imgs, 0, 1)
         # now convert to [-1, 1]
-#        imgs = (imgs * 2) - 1
+        #        imgs = (imgs * 2) - 1
         # convert to tanh-space
-#        imgs = np.arctanh(imgs * .999999)
+        #        imgs = np.arctanh(imgs * .999999)
 
         # set the lower and upper bounds accordingly
         lower_bound = np.zeros(batch_size)
@@ -239,10 +243,9 @@ class EOT_tf_L2(object):
         # placeholders for the best l2, score, and instance attack found so far
         o_bestl2 = [1e10] * batch_size
         o_bestscore = [-1] * batch_size
-#        o_bestattack = np.copy(oimgs)
+        #        o_bestattack = np.copy(oimgs)
         o_bestattack = np.copy(imgs)
-        
-        
+
         for outer_step in range(self.BINARY_SEARCH_STEPS):
             # completely reset adam's internal state.
             self.sess.run(self.init)
@@ -276,12 +279,15 @@ class EOT_tf_L2(object):
                                    "l2={:.3g} f={:.3g}")
                                   .format(iteration, self.MAX_ITERATIONS,
                                           l, np.mean(l2s), np.mean(scores)))
-    
-                print('Iteration {} of {}: loss={:.3g} " + "l2={:.3g} f={:.3g}'.format(iteration, self.MAX_ITERATIONS, l, np.mean(l2s), np.mean(scores)))
+
+                print(
+                    'Iteration {} of {}: loss={:.3g} " + "l2={:.3g} f={:.3g}'.format(iteration, self.MAX_ITERATIONS, l,
+                                                                                     np.mean(l2s), np.mean(scores)))
                 print('logits:', scores)
+
                 # check if we should abort search if we're getting nowhere.
                 if self.ABORT_EARLY and \
-                   iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
+                        iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
                     if l > prev * .9999:
                         msg = "    Failed to make progress; stop early"
                         _logger.debug(msg)
@@ -302,7 +308,7 @@ class EOT_tf_L2(object):
             # adjust the constant as needed
             for e in range(batch_size):
                 if compare(bestscore[e], np.argmax(batchlab[e])) and \
-                   bestscore[e] != -1:
+                        bestscore[e] != -1:
                     # success, divide const by two
                     upper_bound[e] = min(upper_bound[e], CONST[e])
                     if upper_bound[e] < 1e9:
@@ -324,7 +330,8 @@ class EOT_tf_L2(object):
 
         # return the best solution found
         o_bestl2 = np.array(o_bestl2)
+        print(o_bestattack)
         return o_bestattack
 
 # ---------------------------------------------------------------------------------
-    
+

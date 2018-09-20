@@ -99,7 +99,7 @@ start_time = time.time()
 from EOT import EOT_L2
 eotl2 = EOT_L2(wrap, sess=sess)
 #eotl2_params = {'y_target': target_a}
-eotl2_params = {'learning_rate': 1e-2}
+eotl2_params = {'learning_rate': 5e-2}
 adv_x = eotl2.generate(x, **eotl2_params)
 adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
 #preds_adv = model(adv_x)
