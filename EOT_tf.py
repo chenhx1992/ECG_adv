@@ -31,7 +31,7 @@ tf_dtype = tf.as_dtype('float32')
 def ZERO():
     return np.asarray(0., dtype=np_dtype)
 
-def EOT_time(x, ensemble_size=30):
+def EOT_time(x, ensemble_size=50):
     def randomizing_EOT(x, i):
         rand_i = tf.expand_dims(tf.random_uniform((), 0, 9000, dtype=tf.int32), axis=0)
         p = tf.concat([rand_i, 9000-rand_i], axis=0)
