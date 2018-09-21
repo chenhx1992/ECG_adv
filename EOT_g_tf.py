@@ -138,9 +138,8 @@ class EOT_tf_L2(object):
         self.batch_newimg = EOT_time(modifier) + self.timg
         self.loss_batch = model.get_logits(self.batch_newimg)
         self.batch_tlab = tf.tile(self.tlab, (self.batch_newimg.shape[0], 1))
-        print(self.batch_tlab.shape)
-        xent = tf.reduce_mean(
-            tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.loss_batch, labels=self.batch_tlab))
+        xent = -tf.reduce_mean(
+            tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.loss_batch, labels=self.batch_tlab)) + 1
 
         self.output = tf.expand_dims(tf.reduce_mean(self.loss_batch, axis=0), 0)
 
@@ -162,7 +161,6 @@ class EOT_tf_L2(object):
         #if self.TARGETED:
             # if targeted, optimize for making the other class most likely
             #loss1 = tf.maximum(ZERO(), other - real + self.CONFIDENCE)
-            #loss1 = self.xent
         #else:
             # if untargeted, optimize for making this class least likely.
             #loss1 = tf.maximum(ZERO(), real - other + self.CONFIDENCE)
