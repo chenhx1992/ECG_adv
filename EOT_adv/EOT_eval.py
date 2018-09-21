@@ -7,7 +7,7 @@ from numpy import genfromtxt
 import csv
 import glob
 import scipy.io
-import matplotlib.pyplot as plt
+
 
 def preprocess(x, maxlen):
     x = np.nan_to_num(x)
@@ -79,7 +79,7 @@ print("correct:", correct)
 print("attack success times:", attack_success)
 print("attack success rate:", attack_success/correct)
 
-
+import matplotlib.pyplot as plt
 plt.figure()
 plt.plot(perturb[0,:,0])
 plt.show()

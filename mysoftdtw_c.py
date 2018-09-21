@@ -15,7 +15,7 @@ from tensorflow.python.framework import ops
 from sklearn.metrics.pairwise import euclidean_distances
 import numpy as np
 
-from softdtwc import softdtwc
+#from softdtwc import softdtwc
 
 # Define custom py_func which takes also a grad op as argument 
 def py_func(func, inp, Tout, stateful=True, name=None, grad=None):

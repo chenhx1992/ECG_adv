@@ -28,7 +28,7 @@ print("Loading model")
 model = load_model('./ResNet_30s_34lay_16conv.hdf5')
 #model = load_model('weights-best_k0_r0.hdf5')
 
-wrap = KerasModelWrapper(model,nb_classes=4)
+wrap = KerasModelWrapper(model)
 
 x = tf.placeholder(tf.float32, shape=(None, 9000, 1))
 y = tf.placeholder(tf.float32, shape=(None, 4))
@@ -94,13 +94,13 @@ print(new_Y_test)
 Y_test = utils.to_categorical(Y_test, num_classes=4)
 
 
-target_a = np.array([0, 1, 0, 0]).reshape(1,4)
+target_a = np.array([0, 0, 1, 0]).reshape(1,4)
 target_a = np.float32(target_a)
 
 start_time = time.time()
 from EOT_g import EOT_L2
 eotl2 = EOT_L2(wrap, sess=sess)
-eotl2_params = {'y_target': target_a, 'learning_rate': 1, 'max_iterations': 100}
+eotl2_params = {'y_target': target_a, 'learning_rate': 1, 'max_iterations': 500}
 
 adv_x = eotl2.generate(x, **eotl2_params)
 adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
@@ -127,20 +127,22 @@ for _ in range(100):
 print("attack success times:", attack_success)
 
 perturb_squeeze = np.squeeze(perturb, axis=2)
-np.savetxt('./output/EOT_t=30_g.out', perturb_squeeze,delimiter=",")
+#np.savetxt('./output/EOT_t=30_g.out', perturb_squeeze,delimiter=",")
 prob = model.predict(adv_sample)
 ann = np.argmax(prob)
 ann_label = classes[ann]
 print(ann)
 
+'''
 import matplotlib.pyplot as plt
 plt.figure()
-plt.plot(adv_sample)
+plt.plot(perturb[0,:,0])
 plt.show()
 
 plt.figure()
-plt.plot(perturb)
+plt.plot(perturb[0,:,0]+X_test[0,:,0])
 plt.show()
+'''
 
 
 #

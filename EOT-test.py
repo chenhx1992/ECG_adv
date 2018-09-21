@@ -28,7 +28,7 @@ print("Loading model")
 model = load_model('./ResNet_30s_34lay_16conv.hdf5')
 #model = load_model('weights-best_k0_r0.hdf5')
 
-wrap = KerasModelWrapper(model,nb_classes=4)
+wrap = KerasModelWrapper(model)
 
 x = tf.placeholder(tf.float32, shape=(None, 9000, 1))
 y = tf.placeholder(tf.float32, shape=(None, 4))
@@ -99,7 +99,7 @@ start_time = time.time()
 from EOT import EOT_L2
 eotl2 = EOT_L2(wrap, sess=sess)
 #eotl2_params = {'y_target': target_a}
-eotl2_params = {'learning_rate': 1, 'max_iterations':100}
+eotl2_params = {'learning_rate': 1, 'max_iterations':200}
 adv_x = eotl2.generate(x, **eotl2_params)
 adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
 #preds_adv = model(adv_x)
@@ -132,7 +132,16 @@ ann = np.argmax(prob)
 ann_label = classes[ann]
 print(ann)
 
+'''
+import matplotlib.pyplot as plt
+plt.figure()
+plt.plot(perturb[0,:,0])
+plt.show()
 
+plt.figure()
+plt.plot(perturb[0,:,0]+X_test[0,:,0])
+plt.show()
+'''
 
 #
 #ymax = np.max(adv_sample)+0.5

@@ -20,7 +20,7 @@ import time
 import cleverhans.utils as utils
 import cleverhans.utils_tf as utils_tf
 import itertools
-from mysoftdtw_c_wd import mysoftdtw
+#from mysoftdtw_c_wd import mysoftdtw
 
 _logger = utils.create_logger("myattacks.tf")
 
@@ -149,8 +149,8 @@ class EOT_tf_L2(object):
         #            2 * (clip_max - clip_min) + clip_min
         #        self.l2dist = reduce_sum(tf.square(self.newimg - self.other),
         #                                 list(range(1, len(shape))))
-        #self.l2dist = tf.reduce_sum(tf.square(modifier), list(range(1, len(shape))))
-        self.l2dist= tf.reduce_sum(mysoftdtw(self.timg, modifier, 1))
+        self.l2dist = tf.reduce_sum(tf.square(modifier), list(range(1, len(shape))))
+        #self.l2dist= tf.reduce_sum(mysoftdtw(self.timg, modifier, 1))
         #        self.sdtw = reduce_sum(mysquare_new(self.timg, modifier, 1),list(range(1, len(shape))))
 
         # compute the probability of the label class versus the maximum other
