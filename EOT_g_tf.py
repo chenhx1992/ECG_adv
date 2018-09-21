@@ -135,9 +135,10 @@ class EOT_tf_L2(object):
         self.batch_newimg = EOT_time(modifier) + self.timg
         self.loss_batch = model.get_logits(self.batch_newimg)
         self.batch_tlab = tf.tile(self.tlab, (self.batch_newimg.shape[0], 1))
-        xent = -tf.reduce_mean(
-            tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.loss_batch, labels=self.batch_tlab)) + 1
+        self.xent = tf.reduce_mean(
+            tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.loss_batch, labels=self.batch_tlab))
 
+        #self.output = self.xent
         self.output = tf.expand_dims(tf.reduce_mean(self.loss_batch, axis=0), 0)
 
         # distance to the input data
@@ -148,7 +149,7 @@ class EOT_tf_L2(object):
         if self.dis_metric == 1:
             self.dist = tf.reduce_sum(tf.square(modifier), list(range(1, len(shape))))
         else:
-            self.dist = tf.reduce_sum(mysoftdtw(self.timg, modifier, 1))
+            self.dist = tf.reduce_sum(mysoftdtw(self.timg, modifier, 1)/9000)
         #self.l2dist= tf.reduce_sum(mysoftdtw(self.timg, modifier, 1))
         #        self.sdtw = reduce_sum(mysquare_new(self.timg, modifier, 1),list(range(1, len(shape))))
 
@@ -168,7 +169,7 @@ class EOT_tf_L2(object):
         # sum up the losses
         self.loss2 = tf.reduce_sum(self.dist)
         # self.loss2 = tf.reduce_sum(self.sdtw)
-        self.loss1 = tf.reduce_sum(self.const * xent)
+        self.loss1 = tf.reduce_sum(self.const * self.xent)
         self.loss = self.loss1 + self.loss2
 
         # Setup the adam optimizer and keep track of variables we're creating
@@ -267,24 +268,25 @@ class EOT_tf_L2(object):
             self.sess.run(self.setup, {self.assign_timg: batch,
                                        self.assign_tlab: batchlab,
                                        self.assign_const: CONST})
-
+            print("current const:", CONST)
             prev = 1e6
             for iteration in range(self.MAX_ITERATIONS):
                 # perform the attack
-                _, l, l2s, scores, nimg = self.sess.run([self.train,
+                _, l, l2s, scores, nimg, xent = self.sess.run([self.train,
                                                          self.loss,
                                                          self.dist,
                                                          self.output,
-                                                         self.newimg])
+                                                         self.newimg,
+                                                         self.xent])
                 if iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
                     _logger.debug(("    Iteration {} of {}: loss={:.3g} " +
-                                   "l2={:.3g} f={:.3g}")
+                                   "dis={:.3g} f={:.3g}")
                                   .format(iteration, self.MAX_ITERATIONS,
                                           l, np.mean(l2s), np.mean(scores)))
 
                 print(
-                    'Iteration {} of {}: loss={:.3g} " + "l2={:.3g} f={:.3g}'.format(iteration, self.MAX_ITERATIONS, l,
-                                                                                     np.mean(l2s), np.mean(scores)))
+                    'Iteration {} of {}: loss={:.3g} " + "dis={:.3g} xent={:.3g}'.format(iteration, self.MAX_ITERATIONS, l,
+                                                                                     np.mean(l2s), xent))
                 print('logits:', scores)
 
                 # check if we should abort search if we're getting nowhere.
