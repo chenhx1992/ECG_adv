@@ -99,10 +99,12 @@ target_a = np.zeros((1, 1))
 target_a = np.array([int(sys.argv[2])])
 target_a = utils.to_categorical(target_a, num_classes=4)
 
+dis_metric = int(sys.argv[3])
+
 start_time = time.time()
 from EOT_g import EOT_L2
 eotl2 = EOT_L2(wrap, sess=sess)
-eotl2_params = {'y_target': target_a, 'learning_rate': 0.5, 'max_iterations': 500}
+eotl2_params = {'y_target': target_a, 'learning_rate': 1, 'max_iterations': 300, 'dis_metric': dis_metric}
 
 adv_x = eotl2.generate(x, **eotl2_params)
 adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
@@ -129,7 +131,10 @@ for _ in range(100):
 print("attack success times:", attack_success)
 
 perturb_squeeze = np.squeeze(perturb, axis=2)
-outputstr = './output/EOT_t30_f1_l2_A'+sys.argv[1]+'T'+sys.argv[2]+'.out'
+if dis_metric == 1:
+    outputstr = './output/EOT_t30_f1_l2_A'+sys.argv[1]+'T'+sys.argv[2]+'.out'
+else:
+    outputstr = './output/EOT_t30_f1_dtw_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
 np.savetxt(outputstr, perturb_squeeze,delimiter=",")
 prob = model.predict(adv_sample)
 ann = np.argmax(prob)

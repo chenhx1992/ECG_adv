@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Sep  6 21:38:52 2018
-
-@author: chenhx1992
-"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -20,7 +15,7 @@ import time
 import cleverhans.utils as utils
 import cleverhans.utils_tf as utils_tf
 import itertools
-#from mysoftdtw_c_wd import mysoftdtw
+from mysoftdtw_c_wd import mysoftdtw
 
 _logger = utils.create_logger("myattacks.tf")
 
@@ -47,7 +42,7 @@ class EOT_tf_L2(object):
 
     def __init__(self, sess, model, batch_size, confidence,
                  targeted, learning_rate,
-                 binary_search_steps, max_iterations,
+                 binary_search_steps, max_iterations, dis_metric,
                  abort_early, initial_const,
                  clip_min, clip_max, num_labels, shape):
         """
@@ -89,12 +84,14 @@ class EOT_tf_L2(object):
         :param clip_max: (optional float) Maximum input component value.
         :param num_labels: the number of classes in the model's output.
         :param shape: the shape of the model's input tensor.
+        :param dis_metric: the distance metirc, 1 for l2, 2 for soft-dtw
         """
 
         self.sess = sess
         self.TARGETED = targeted
         self.LEARNING_RATE = learning_rate
         self.MAX_ITERATIONS = max_iterations
+        self.dis_metric = dis_metric
         self.BINARY_SEARCH_STEPS = binary_search_steps
         self.ABORT_EARLY = abort_early
         self.CONFIDENCE = confidence
@@ -148,7 +145,10 @@ class EOT_tf_L2(object):
         #            2 * (clip_max - clip_min) + clip_min
         #        self.l2dist = reduce_sum(tf.square(self.newimg - self.other),
         #                                 list(range(1, len(shape))))
-        self.l2dist = tf.reduce_sum(tf.square(modifier), list(range(1, len(shape))))
+        if self.dis_metric == 1:
+            self.dist = tf.reduce_sum(tf.square(modifier), list(range(1, len(shape))))
+        else:
+            self.dist = tf.reduce_sum(mysoftdtw(self.timg, modifier, 1))
         #self.l2dist= tf.reduce_sum(mysoftdtw(self.timg, modifier, 1))
         #        self.sdtw = reduce_sum(mysquare_new(self.timg, modifier, 1),list(range(1, len(shape))))
 
@@ -166,7 +166,7 @@ class EOT_tf_L2(object):
             #loss1 = tf.maximum(ZERO(), real - other + self.CONFIDENCE)
 
         # sum up the losses
-        self.loss2 = tf.reduce_sum(self.l2dist)
+        self.loss2 = tf.reduce_sum(self.dist)
         # self.loss2 = tf.reduce_sum(self.sdtw)
         self.loss1 = tf.reduce_sum(self.const * xent)
         self.loss = self.loss1 + self.loss2
@@ -201,7 +201,7 @@ class EOT_tf_L2(object):
 
         r = []
         for i in range(0, len(imgs), self.batch_size):
-            _logger.debug(("Running CWL2 attack on instance " +
+            _logger.debug(("Running attack on instance " +
                            "{} of {}").format(i, len(imgs)))
             r.extend(self.attack_batch(imgs[i:i + self.batch_size],
                                        targets[i:i + self.batch_size]))
@@ -273,7 +273,7 @@ class EOT_tf_L2(object):
                 # perform the attack
                 _, l, l2s, scores, nimg = self.sess.run([self.train,
                                                          self.loss,
-                                                         self.l2dist,
+                                                         self.dist,
                                                          self.output,
                                                          self.newimg])
                 if iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
