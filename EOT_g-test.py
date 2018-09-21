@@ -129,7 +129,7 @@ for _ in range(100):
 print("attack success times:", attack_success)
 
 perturb_squeeze = np.squeeze(perturb, axis=2)
-np.savetxt('./output/EOT_t30_f1_l2.out', perturb_squeeze,delimiter=",")
+np.savetxt('./output/EOT_t30_f1_l2_A5T2.out', perturb_squeeze,delimiter=",")
 prob = model.predict(adv_sample)
 ann = np.argmax(prob)
 ann_label = classes[ann]
