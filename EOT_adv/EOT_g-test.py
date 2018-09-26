@@ -12,6 +12,9 @@ import csv
 import scipy.io
 import glob
 import numpy as np
+import sys
+
+
 
 # parameters
 dataDir = './training_raw/'
@@ -66,7 +69,7 @@ def op_concate(x):
 preds = model(x)
 
 ## Loading time serie signals
-id = 9
+id = int(sys.argv[1])
 count = id-1
 record = "A{:05d}".format(id)
 local_filename = dataDir+record
@@ -92,14 +95,16 @@ new_Y_test = np.repeat(ground_truth, 5, axis=0)
 Y_test = utils.to_categorical(Y_test, num_classes=4)
 
 
-target_a = np.array([0, 1, 0, 0]).reshape(1,4)
-target_a = np.float32(target_a)
+target_a = np.zeros((1, 1))
+target_a = np.array([int(sys.argv[2])])
+target_a = utils.to_categorical(target_a, num_classes=4)
+dis_metric = int(sys.argv[3])
 
 start_time = time.time()
-from EOT import EOT_L2
+from EOT_adv.EOT_g import EOT_L2
 eotl2 = EOT_L2(wrap, sess=sess)
-#eotl2_params = {'y_target': target_a}
-eotl2_params = {'learning_rate': 1, 'max_iterations':200}
+eotl2_params = {'y_target': target_a, 'learning_rate': 1, 'max_iterations': 200, 'initial_const':10, 'dis_metric': dis_metric}
+
 adv_x = eotl2.generate(x, **eotl2_params)
 adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
 #preds_adv = model(adv_x)
@@ -110,7 +115,7 @@ adv_sample = adv_x.eval(feed_dict=feed_dict, session = sess)
 print("time used:", time.time()-start_time)
 perturb = adv_sample-X_test
 
-
+correct = 0
 attack_success = 0
 
 for _ in range(100):
@@ -123,10 +128,13 @@ for _ in range(100):
         attack_success = attack_success + 1
 #print("correct:", correct)
 print("attack success times:", attack_success)
-#print("attack success rate:", attack_success/correct)
 
 perturb_squeeze = np.squeeze(perturb, axis=2)
-np.savetxt('./output/EOT_t=50.out', perturb_squeeze,delimiter=",")
+if dis_metric == 1:
+    outputstr = './output/EOT_t30_f1_l2_A'+sys.argv[1]+'T'+sys.argv[2]+'.out'
+else:
+    outputstr = './output/EOT_t30_f1_dtw_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
+np.savetxt(outputstr, perturb_squeeze,delimiter=",")
 prob = model.predict(adv_sample)
 ann = np.argmax(prob)
 ann_label = classes[ann]
@@ -135,13 +143,14 @@ print(ann)
 '''
 import matplotlib.pyplot as plt
 plt.figure()
-plt.plot(perturb[0,:,0])
+plt.plot(X_test[0,:,0])
 plt.show()
 
 plt.figure()
 plt.plot(perturb[0,:,0]+X_test[0,:,0])
 plt.show()
 '''
+
 
 #
 #ymax = np.max(adv_sample)+0.5

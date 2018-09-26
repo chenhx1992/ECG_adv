@@ -101,7 +101,7 @@ target_a = utils.to_categorical(target_a, num_classes=4)
 dis_metric = int(sys.argv[3])
 
 start_time = time.time()
-from EOT_g import EOT_L2
+from EOT_adv.EOT_g import EOT_L2
 eotl2 = EOT_L2(wrap, sess=sess)
 eotl2_params = {'y_target': target_a, 'learning_rate': 1, 'max_iterations': 200, 'initial_const':10, 'dis_metric': dis_metric}
 
