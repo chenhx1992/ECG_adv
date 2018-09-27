@@ -50,7 +50,8 @@ print('Ground truth:{}'.format(ground_truth))
 
 
 perturb = genfromtxt('../output/EOTtile_t30_f1_l2_A5T1.out', delimiter=',')
-
+dist = np.sum(perturb**2)/len(perturb) * 9000
+print("distance:", dist)
 perturb = np.expand_dims(perturb, axis=0)
 perturb = np.expand_dims(perturb, axis=2)
 

@@ -31,7 +31,7 @@ print("Loading ground truth file")
 csvfile = list(csv.reader(open('../REFERENCE-v3.csv')))
 files = sorted(glob.glob(dataDir+"*.mat"))
 
-id = 9
+id = 5
 count = id-1
 record = "A{:05d}".format(id)
 local_filename = dataDir+record
@@ -48,8 +48,9 @@ ground_truth = classes.index(ground_truth_label)
 print('Ground truth:{}'.format(ground_truth))
 
 
-perturb = genfromtxt('../output/EOT_t30_f1_l2_A5T1.out', delimiter=',')
-
+perturb = genfromtxt('../output/EOT_t30_f1_l2_A5T2.out', delimiter=',')
+dist = np.sum(perturb**2)/len(perturb) * 9000
+print("distance:", dist)
 perturb = np.expand_dims(perturb, axis=0)
 perturb = np.expand_dims(perturb, axis=2)
 
@@ -64,7 +65,8 @@ print("Loading model")
 model = load_model('../ResNet_30s_34lay_16conv.hdf5')
 
 
-attack_success = 0
+
+attack_success = np.zeros(4)
 
 for _ in range(100):
     #new_X_test = op_concate(X_test)
@@ -72,14 +74,15 @@ for _ in range(100):
     prob_att = model.predict(op_concate(perturb)+X_test)
     #if np.argmax(prob_ori) == ground_truth:
         #correct = correct + 1
-    if np.argmax(prob_att) != ground_truth:
-        attack_success = attack_success + 1
+    ind = np.argmax(prob_att)
+    attack_success[ind] = attack_success[ind] + 1
+
 #print("correct:", correct)
 print("attack success times:", attack_success)
 
 import matplotlib.pyplot as plt
 plt.figure()
-plt.plot(perturb[0,1000:2000,0])
+plt.plot(perturb[0,:,0])
 plt.show()
 
 adv_sample = perturb+X_test
@@ -88,5 +91,5 @@ plt.plot(adv_sample[0,1000:2000,0])
 plt.show()
 
 plt.figure()
-plt.plot(X_test[0,1000:2000,0])
+plt.plot(X_test[0,0:1000,0])
 plt.show()
