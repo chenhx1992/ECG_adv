@@ -32,6 +32,7 @@ csvfile = list(csv.reader(open('../REFERENCE-v3.csv')))
 files = sorted(glob.glob(dataDir+"*.mat"))
 
 id = 5
+target = 2
 count = id-1
 record = "A{:05d}".format(id)
 local_filename = dataDir+record
@@ -47,8 +48,9 @@ ground_truth_label = csvfile[count][1]
 ground_truth = classes.index(ground_truth_label)
 print('Ground truth:{}'.format(ground_truth))
 
-
-perturb = genfromtxt('../output/EOT_t30_f1_l2_A5T2.out', delimiter=',')
+inputstr = '../output/EOT_t30_f1_dtw_A'+str(id)+'T'+str(target)+'.out'
+print("input file: ", inputstr)
+perturb = genfromtxt(inputstr, delimiter=',')
 dist = np.sum(perturb**2)/len(perturb) * 9000
 print("distance:", dist)
 perturb = np.expand_dims(perturb, axis=0)
