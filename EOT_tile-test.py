@@ -106,7 +106,7 @@ target_a = utils.to_categorical(target_a, num_classes=4)
 dis_metric = int(sys.argv[3])
 
 start_time = time.time()
-perturb_window = [int(sys.argv[4])]
+perturb_window = int(sys.argv[4])
 eotl2 = EOT_ATTACK(wrap, sess=sess)
 eotl2_params = {'y_target': target_a, 'learning_rate': 0.1, 'max_iterations': 200, 'initial_const': 100, 'perturb_window':perturb_window, 'dis_metric': dis_metric}
 
