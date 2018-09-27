@@ -7,6 +7,7 @@ from numpy import genfromtxt
 import csv
 import glob
 import scipy.io
+import math
 
 
 def preprocess(x, maxlen):
@@ -31,7 +32,7 @@ print("Loading ground truth file")
 csvfile = list(csv.reader(open('../REFERENCE-v3.csv')))
 files = sorted(glob.glob(dataDir+"*.mat"))
 
-id = 9
+id = 5
 count = id-1
 record = "A{:05d}".format(id)
 local_filename = dataDir+record
@@ -48,45 +49,59 @@ ground_truth = classes.index(ground_truth_label)
 print('Ground truth:{}'.format(ground_truth))
 
 
-perturb = genfromtxt('../output/EOT_t30_f1_l2_A5T1.out', delimiter=',')
+perturb = genfromtxt('../output/EOTtile_t30_f1_l2_A5T1.out', delimiter=',')
 
 perturb = np.expand_dims(perturb, axis=0)
 perturb = np.expand_dims(perturb, axis=2)
 
-def op_concate(x):
+def op_concate(x, w, random_p=True):
     data_len = 9000
-    p = np.random.randint(data_len)
-    x1 = [x[0, 0:p]]
-    x2 = [x[0, p:]]
+    tile_times = math.ceil(data_len/w)
+    x_tile = np.tile(x, (1, tile_times, 1))
+    if random_p:
+        p = np.random.randint(data_len)
+    else:
+        p = data_len
+    x1 = x_tile[:, 0:p, :]
+    x2 = x_tile[:, p:data_len, :]
+
     return np.append(x2, x1, axis=1)
 
 print("Loading model")
 model = load_model('../ResNet_30s_34lay_16conv.hdf5')
 
-
-attack_success = 0
-
-for _ in range(100):
-    #new_X_test = op_concate(X_test)
-    #prob_ori = model.predict(new_X_test)
-    prob_att = model.predict(op_concate(perturb)+X_test)
+perturb_window = 1000
+attack_success = np.zeros(4)
+perturb_window = perturb.shape[1]
+prob_att = model.predict(op_concate(perturb, perturb_window, False)+X_test)
     #if np.argmax(prob_ori) == ground_truth:
         #correct = correct + 1
-    if np.argmax(prob_att) != ground_truth:
-        attack_success = attack_success + 1
+print(prob_att)
+ind = np.argmax(prob_att)
+attack_success[ind] = attack_success[ind] + 1
+
+for _ in range(99):
+    #new_X_test = op_concate(X_test)
+    #prob_ori = model.predict(new_X_test)
+    prob_att = model.predict(op_concate(perturb, perturb_window, True)+X_test)
+    #if np.argmax(prob_ori) == ground_truth:
+        #correct = correct + 1
+    ind = np.argmax(prob_att)
+    attack_success[ind] = attack_success[ind] + 1
+
 #print("correct:", correct)
 print("attack success times:", attack_success)
 
 import matplotlib.pyplot as plt
 plt.figure()
-plt.plot(perturb[0,1000:2000,0])
-plt.show()
+plt.plot(perturb[0,:,0])
+plt.show(block=False)
 
-adv_sample = perturb+X_test
+adv_sample = op_concate(perturb,perturb_window,False) + X_test
 plt.figure()
 plt.plot(adv_sample[0,1000:2000,0])
-plt.show()
+plt.show(block=False)
 
 plt.figure()
 plt.plot(X_test[0,1000:2000,0])
-plt.show()
+plt.show(block=False)

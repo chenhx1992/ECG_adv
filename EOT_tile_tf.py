@@ -1,16 +1,12 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import copy
+import math
 import numpy as np
 from six.moves import xrange
 import tensorflow as tf
-import warnings
 import time
 import cleverhans.utils as utils
 import cleverhans.utils_tf as utils_tf
@@ -21,7 +17,7 @@ _logger = utils.create_logger("myattacks.tf")
 
 np_dtype = np.dtype('float32')
 tf_dtype = tf.as_dtype('float32')
-
+data_len = 9000
 
 def ZERO():
     return np.asarray(0., dtype=np_dtype)
@@ -29,19 +25,20 @@ def ZERO():
 
 def EOT_time(x, ensemble_size=30):
     def randomizing_EOT(x, i):
-        rand_i = tf.expand_dims(tf.random_uniform((), 0, 9000, dtype=tf.int32), axis=0)
-        p = tf.concat([rand_i, 9000 - rand_i], axis=0)
+        rand_i = tf.expand_dims(tf.constant(10+i, dtype=tf.int32), axis=0)
+        #rand_i = tf.expand_dims(tf.random_uniform((), 0, data_len, dtype=tf.int32), axis=0)
+        p = tf.concat([rand_i, data_len - rand_i], axis=0)
         x1, x2 = tf.split(x, p, axis=1)
-        res = tf.reshape(tf.concat([x2, x1], axis=1), [1, 9000, 1])
+        res = tf.reshape(tf.concat([x2, x1], axis=1), [1, data_len, 1])
         return res
 
     return tf.concat([randomizing_EOT(x, i) for i in range(ensemble_size)], axis=0)
 
 
-class EOT_tf_L2(object):
+class EOT_tf_ATTACK(object):
 
     def __init__(self, sess, model, batch_size, confidence,
-                 targeted, learning_rate,
+                 targeted, learning_rate, perturb_window,
                  binary_search_steps, max_iterations, dis_metric,
                  abort_early, initial_const,
                  clip_min, clip_max, num_labels, shape):
@@ -90,6 +87,7 @@ class EOT_tf_L2(object):
         self.sess = sess
         self.TARGETED = targeted
         self.LEARNING_RATE = learning_rate
+        self.perturb_window = perturb_window
         self.MAX_ITERATIONS = max_iterations
         self.dis_metric = dis_metric
         self.BINARY_SEARCH_STEPS = binary_search_steps
@@ -100,15 +98,19 @@ class EOT_tf_L2(object):
         self.clip_min = clip_min
         self.clip_max = clip_max
         self.model = model
-
+        self.perturb_window = perturb_window
         self.repeat = binary_search_steps >= 10
 
         self.shape = shape = tuple([batch_size] + list(shape))
+        shape_perturb = tuple([batch_size, perturb_window, 1])
+
         #  self.transform_shape = transform_shape = tuple([transform_batch_size] + list(transform_shape))
         #        self.shape = shape = tuple(list(shape))
 
         # the variable we're going to optimize over
-        modifier = tf.Variable(np.zeros(shape, dtype=np_dtype))
+        modifier = tf.Variable(np.zeros(shape_perturb, dtype=np_dtype))
+        tile_times = math.ceil(data_len / perturb_window)
+
 
         # these are variables to be more efficient in sending data to tf
         self.timg = tf.Variable(np.zeros(shape), dtype=tf_dtype,
@@ -130,15 +132,23 @@ class EOT_tf_L2(object):
         # to clip_max
         #        self.newimg = (tf.tanh(modifier + self.timg) + 1) / 2
         #        self.newimg = self.newimg * (clip_max - clip_min) + clip_min
-        self.newimg = modifier + self.timg
+        #self.modifier_tile = tf.tile(modifier, )
 
-        self.batch_newimg = EOT_time(modifier) + self.timg
+
+        modifier_tile = tf.tile(modifier, tf.constant([1, tile_times, 1]))
+        self.newimg = tf.slice(modifier_tile, (0, 0, 0), shape) + self.timg
+
+        self.batch_newimg = EOT_time(modifier_tile) + self.timg
         self.loss_batch = model.get_logits(self.batch_newimg)
+        #self.output = self.loss = model.get_logits(self.newimg)
         self.batch_tlab = tf.tile(self.tlab, (self.batch_newimg.shape[0], 1))
         self.xent = tf.reduce_mean(
             tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.loss_batch, labels=self.batch_tlab))
+        #self.xent = tf.reduce_mean(
+        #    tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.loss, labels=self.tlab))
 
         #self.output = self.xent
+
         self.output = tf.expand_dims(tf.reduce_mean(self.loss_batch, axis=0), 0)
 
         # distance to the input data
@@ -147,9 +157,9 @@ class EOT_tf_L2(object):
         #        self.l2dist = reduce_sum(tf.square(self.newimg - self.other),
         #                                 list(range(1, len(shape))))
         if self.dis_metric == 1:
-            self.dist = tf.reduce_sum(tf.square(modifier), list(range(1, len(shape))))
+            self.dist = tf.reduce_sum(tf.square(modifier_tile), list(range(1, len(shape))))
         else:
-            self.dist = tf.reduce_sum(mysoftdtw(self.timg, modifier, 1)/9000)
+            self.dist = tf.reduce_sum(mysoftdtw(self.timg, modifier_tile, 1)/9000)
         #self.l2dist= tf.reduce_sum(mysoftdtw(self.timg, modifier, 1))
         #        self.sdtw = reduce_sum(mysquare_new(self.timg, modifier, 1),list(range(1, len(shape))))
 
@@ -278,11 +288,7 @@ class EOT_tf_L2(object):
                                                          self.output,
                                                          self.newimg,
                                                          self.xent])
-                if iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
-                    _logger.debug(("    Iteration {} of {}: loss={:.3g} " +
-                                   "dis={:.3g} f={:.3g}")
-                                  .format(iteration, self.MAX_ITERATIONS,
-                                          l, np.mean(l2s), np.mean(scores)))
+
 
                 print(
                     'Iteration {} of {}: loss={:.3g} " + "dis={:.3g} xent={:.3g}'.format(iteration, self.MAX_ITERATIONS, l,
@@ -334,6 +340,7 @@ class EOT_tf_L2(object):
 
         # return the best solution found
         o_bestl2 = np.array(o_bestl2)
+        print(o_bestscore)
         print(o_bestl2)
         return o_bestattack
 

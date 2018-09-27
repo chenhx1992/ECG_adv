@@ -77,7 +77,7 @@ class EOT_L2(Attack):
         :param clip_max: (optional float) Maximum input component value
         """
         import tensorflow as tf
-        from EOT_adv.EOT_g_tf import EOT_tf_L2
+        from EOT_g_tf import EOT_tf_L2
         self.parse_params(**kwargs)
 
         labels, nb_classes = self.get_or_guess_labels(x, kwargs)
