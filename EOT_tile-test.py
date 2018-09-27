@@ -143,7 +143,7 @@ for _ in range(99):
 
 #print("correct:", correct)
 print("attack success times:", attack_success)
-
+'''
 import matplotlib.pyplot as plt
 plt.figure()
 plt.plot(perturb[0,:,0])
@@ -157,7 +157,7 @@ plt.show(block=False)
 plt.figure()
 plt.plot(X_test[0,1000:2000,0])
 plt.show(block=False)
-
+'''
 perturb_squeeze = np.squeeze(perturb, axis=2)
 if dis_metric == 1:
     outputstr = './output/EOTtile_t30_f1_l2_A'+sys.argv[1]+'T'+sys.argv[2]+'.out'
