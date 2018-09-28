@@ -33,7 +33,7 @@ csvfile = list(csv.reader(open('../REFERENCE-v3.csv')))
 files = sorted(glob.glob(dataDir+"*.mat"))
 
 id = 5
-target = 1
+target = 2
 perturb_window = 50
 count = id-1
 record = "A{:05d}".format(id)
