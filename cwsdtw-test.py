@@ -75,10 +75,15 @@ def preprocess(x, maxlen):
     
     return x
 
+def zero_mean(x):
+    x = x - np.mean(x)
+    x = x / np.std(x)
+    return x
+
 preds = model(x)
 
 ## Loading time serie signals
-id = 9
+id = 5
 count = id-1
 record = "A{:05d}".format(id)
 local_filename = "./training_raw/"+record
@@ -99,11 +104,18 @@ Y_test = np.zeros((1, 1))
 Y_test[0,0] = ground_truth
 Y_test = utils.to_categorical(Y_test, num_classes=4)
 
-target_a = np.array([1, 0, 0, 0]).reshape(1,4)
+target_a = np.array([0, 1, 0, 0]).reshape(1,4)
 target_a = np.float32(target_a)
 
+X_test_1 = zero_mean(X_test)
+prob = model.predict(X_test_1)
+ann = np.argmax(prob)
+ann_label = classes[ann]
+print(ann)
+
 ## myattacks CWL2
-from myattacks_sdtw import CarliniWagnerL2  
+from myattacks_sdtw import CarliniWagnerL2
+import time
 cwl2 = CarliniWagnerL2(wrap, sess=sess)
 cwl2_params = {'y_target': target_a}
 adv_x = cwl2.generate(x, **cwl2_params)
@@ -111,43 +123,75 @@ adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
 #preds_adv = model(adv_x)
 feed_dict = {x: X_test}
 #adv_sample = sess.run(adv_x, feed_dict=feed_dict)
+start_time = time.time()  
 adv_sample = adv_x.eval(feed_dict=feed_dict, session = sess)
-
+print("--- %s seconds ---" % (time.time() - start_time))
 #adv_sample = cwl2.generate_np(X_test, **cwl2_params)
+
 
 prob = model.predict(adv_sample)
 ann = np.argmax(prob)
 ann_label = classes[ann]
 print(ann)
 
-np.savetxt('./result_zero/zero_tarA_l2.out', adv_sample[0,:], delimiter=",")
+adv_sample_1 = zero_mean(adv_sample)
+prob = model.predict(adv_sample_1)
+ann = np.argmax(prob)
+ann_label = classes[ann]
+print(ann)
+
+X_test_1 = zero_mean(X_test)
+
+np.savetxt('./result_6755/R6755_0_1_1_diff_1.csv', adv_sample[0,:], delimiter=",")
+
 from numpy import genfromtxt
-perturb = genfromtxt('./result_zero/zero_tarA.out', delimiter=',')
+adv_sample_g1_0 = genfromtxt('./result_6755/R' + str(id) + '_0_1_1_g1_0.csv', delimiter=',')
+adv_sample_g1_0 = np.float32(adv_sample_g1_0)
+adv_sample_g1_0 = np.reshape(adv_sample_g1_0, (9000,1))
 
+adv_sample_g0_0001 = genfromtxt('./result_6755/R' + str(id) + '_0_1_1_g0_0001.csv', delimiter=',')
+adv_sample_g0_0001 = np.float32(adv_sample_g0_0001)
+adv_sample_g0_0001 = np.reshape(adv_sample_g0_0001, (9000,1))
 
-#ymax = np.max(adv_sample)+0.5
-#ymin = np.min(adv_sample)-0.5
-#
-#fig, axs = plt.subplots(2, 1, figsize=(50,40))
-#
-#axs[0].plot(X_test[0,0:4000,:])
-##axs[0].plot(X_test[0,:])
-#axs[0].set_title('Original signal {}'.format(ground_truth_label))
-#axs[0].set_ylim([ymin, ymax])
-##axs[0].set_xlabel('index')
-#axs[0].set_ylabel('signal value')
-#
+import matplotlib.pyplot as plt
+
+ymax = np.max(adv_sample)+0.5
+ymin = np.min(adv_sample)-0.5
+
+dist = np.var(np.diff(adv_sample[0,:]-X_test[0,:], axis=0), axis=0)
+
+fig, axs = plt.subplots(2, 1, figsize=(80,40), sharex=True)
+
+axs[0].plot(X_test[0,0:4000,:], color='black')
+#axs[0].plot(X_test_1[0,0:4000,:], color='black')
+#axs[0].plot(adv_sample_g1_0[0:4000,:], color='lightblue', label='adv g1.0 data')
+#axs[0].plot(adv_sample_g0_0001[0:4000,:], color='lightblue', label='adv g0.001 data')
+#axs[0].plot(adv_sample[0,0:4000,:], color='blue', label='adv l2 data')
+#axs[0].plot(X_test[0,:])
+axs[0].set_title('Original signal {}'.format(ground_truth_label))
+axs[0].set_ylim([ymin, ymax])
+#axs[0].set_xlabel('index')
+axs[0].set_ylabel('signal value')
+axs[0].legend()
 #axs[1].plot(adv_sample[0,0:4000,:])
 ##axs[1].plot(adv_sample[0,:])
 #axs[1].set_title('Adversarial signal {}'.format(ann_label))
 #axs[1].set_ylim([ymin, ymax])
 #axs[1].set_xlabel('index')
 #axs[1].set_ylabel('signal value')
-'''
-axs[2].plot(adv_sample[0,:]-X_test[0,:])
-axs[2].set_title('perturbations')
-axs[2].set_ylim([ymin, ymax])
-axs[2].set_xlabel('index')
-axs[2].set_ylabel('signal value')
-'''
+
+
+#axs[1].plot(adv_sample_g1_0[0:4000,:]-X_test[0,0:4000,:], color='lightblue')
+axs[1].plot(adv_sample_1[0,0:4000,:], color='blue', label='adv l2 data')
+axs[1].plot(adv_sample_1[0,0:4000,:]-X_test[0,0:4000,:], color='green', label='adv l2 data')
+#axs[1].plot(adv_sample[0,0:4000,:]-X_test[0,0:4000,:], color='lightblue')
+#axs[1].plot(adv_sample_g0_0001[0:4000,:]-X_test[0,0:4000,:], color='lightgreen')
+axs[1].set_title('Adv signal N')
+axs[1].set_ylim([ymin, ymax])
+axs[1].set_xlabel('index')
+axs[1].set_ylabel('signal value')
+
+#plt.plot(adv_sample[0,:]-X_test[0,:])
+#plt.ylim([-0.1, 0.1])
+
 #fig.savefig('p9.png',dpi=fig.dpi)

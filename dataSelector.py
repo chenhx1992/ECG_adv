@@ -16,23 +16,23 @@ type_A = data_summary[(data_summary[:,0] == 0)]
 type_A_sorted = type_A[type_A[:,2].argsort()][::-1]
 #data_summary[(data_summary[:,0] == 0) & (data_summary[:,2] > 0.7)]
 type_A_conf = type_A_sorted[0:250, :]
-type_A_select = type_A_conf[:,[0,2,8]]
+type_A_select = type_A[:,[0,2,7,8]]
 
 type_N = data_summary[(data_summary[:,0] == 1)]
 type_N_sorted = type_N[type_N[:,2].argsort()][::-1]
 type_N_conf = type_N_sorted[0:255, :]
-type_N_select = type_N_conf[:,[0,2,8]]
+type_N_select = type_N[:,[0,2,7,8]]
 
 type_O = data_summary[(data_summary[:,0] == 2)]
 type_O_sorted = type_O[type_O[:,2].argsort()][::-1]
 type_O_conf = type_O_sorted[0:250, :]
-type_O_select = type_O_conf[:,[0,2,8]]
+type_O_select = type_O[:,[0,2,7,8]]
 
 type_i = data_summary[(data_summary[:,0] == 3)]
 type_i_sorted = type_i[type_i[:,2].argsort()][::-1]
 type_i_conf = type_i_sorted[0:245, :]
-type_i_select = type_i_conf[:,[0,2,8]]
+type_i_select = type_i[:,[0,2,7,8]]
 
 data_select = np.vstack((type_A_select, type_N_select, type_O_select, type_i_select))
 
-np.savetxt('data_select.csv', data_select, delimiter=",")
+np.savetxt('data_select_i.csv', type_i_select, delimiter=",")

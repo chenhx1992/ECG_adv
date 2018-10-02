@@ -28,6 +28,10 @@ _logger = utils.create_logger("myattacks.tf")
 np_dtype = np.dtype('float32')
 tf_dtype = tf.as_dtype('float32')
 
+def Seq1():
+    tmp = np.zeros((1, 9001, 1), dtype=np_dtype)
+    tmp[:,1:9001,:]=1.
+    return np.asarray(tmp, dtype=np_dtype)
 
 def ZERO():
     return np.asarray(0., dtype=np_dtype)
@@ -122,18 +126,25 @@ class CarliniWagnerL2(object):
 #        self.newimg = (tf.tanh(modifier + self.timg) + 1) / 2
 #        self.newimg = self.newimg * (clip_max - clip_min) + clip_min
         self.newimg = modifier + self.timg
+        data_mean, data_var = tf.nn.moments(self.newimg, axes=1)
+        self.newimg = (self.newimg - data_mean)/tf.sqrt(data_var)
         
-        # prediction BEFORE-SOFTMAX of the model
-        self.output = model.get_logits(self.newimg)
-
         # distance to the input data
 #        self.other = (tf.tanh(self.timg) + 1) / \
 #            2 * (clip_max - clip_min) + clip_min
 #        self.l2dist = reduce_sum(tf.square(self.newimg - self.other),
 #                                 list(range(1, len(shape))))
 #        self.l2dist = tf.reduce_sum(tf.square(self.newimg - self.timg),list(range(1, len(shape))))
-        self.l2dist = mysoftdtw(self.timg, modifier, 1)
+#        self.l2dist = mysoftdtw(self.timg, modifier, 0.0001) 
+        _, self.l2dist = tf.nn.moments(tf.multiply(tf.concat([modifier, [[[0.]]]], 1) - 
+                                 tf.concat([[[[0.]]], modifier], 1), Seq1()), axes=[1])
 #        self.sdtw = reduce_sum(mysquare_new(self.timg, modifier, 1),list(range(1, len(shape))))
+        
+#        data_mean, data_var = tf.nn.moments(self.newimg, axes=1)
+#        self.newimg = (self.newimg - data_mean)/tf.sqrt(data_var)
+#        self.newimg = tf.stop_gradient(self.newimg)
+        # prediction BEFORE-SOFTMAX of the model
+        self.output = model.get_logits(self.newimg)
         
         # compute the probability of the label class versus the maximum other
         real = tf.reduce_sum((self.tlab) * self.output, 1)
@@ -147,12 +158,15 @@ class CarliniWagnerL2(object):
         else:
             # if untargeted, optimize for making this class least likely.
             loss1 = tf.maximum(ZERO(), real - other + self.CONFIDENCE)
-
+        
+#        loss1 =  tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.output,labels=self.tlab))
+        
         # sum up the losses
-        self.loss2 = tf.reduce_sum(self.l2dist)
+#        self.loss3 = tf.reduce_sum(20000*self.loss3)
+        self.loss2 = tf.reduce_sum(self.l2dist*10000)
 #        self.loss2 = tf.reduce_sum(self.sdtw)
         self.loss1 = tf.reduce_sum(self.const * loss1)
-        self.loss = self.loss1 + self.loss2
+        self.loss = self.loss1 + self.loss2 
 
         # Setup the adam optimizer and keep track of variables we're creating
         start_vars = set(x.name for x in tf.global_variables())
@@ -232,6 +246,7 @@ class CarliniWagnerL2(object):
         
         
         for outer_step in range(self.BINARY_SEARCH_STEPS):
+            print("const", CONST)
             # completely reset adam's internal state.
             self.sess.run(self.init)
             batch = imgs[:batch_size]
@@ -241,7 +256,8 @@ class CarliniWagnerL2(object):
             bestscore = [-1] * batch_size
             _logger.debug("  Binary search step {} of {}".
                           format(outer_step, self.BINARY_SEARCH_STEPS))
-
+            print("  Binary search step {} of {}".
+                          format(outer_step, self.BINARY_SEARCH_STEPS))
             # The last iteration (if we run many steps) repeat the search once.
             if self.repeat and outer_step == self.BINARY_SEARCH_STEPS - 1:
                 CONST = upper_bound
@@ -254,9 +270,10 @@ class CarliniWagnerL2(object):
             prev = 1e6
             for iteration in range(self.MAX_ITERATIONS):
                 # perform the attack
-                print('Iteration:{}'.format(iteration))
-                _, l, l2s, scores, nimg = self.sess.run([self.train,
+#                print('Iteration:{}'.format(iteration))
+                _, l, l1, l2s, scores, nimg = self.sess.run([self.train,
                                                          self.loss,
+                                                         self.loss1,
                                                          self.l2dist,
                                                          self.output,
                                                          self.newimg,
@@ -267,9 +284,10 @@ class CarliniWagnerL2(object):
                                    "l2={:.3g} f={:.3g}")
                                   .format(iteration, self.MAX_ITERATIONS,
                                           l, np.mean(l2s), np.mean(scores)))
+                    print('Iteration {} of {}: loss={:.3g} " + "l1={:.3g}" + "l2={:.3g} f={:.3g} shape={}'.format(iteration, 
+                          self.MAX_ITERATIONS, l, l1, np.mean(l2s), np.mean(scores), self.shape))
+                    print('logits', scores)
     
-#                print('Iteration {} of {}: loss={:.3g} " + "l2={:.3g} f={:.3g} shape={}'.format(iteration, self.MAX_ITERATIONS, l, np.mean(l2s), np.mean(scores), self.shape))
-
                 # check if we should abort search if we're getting nowhere.
                 if self.ABORT_EARLY and \
                    iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:

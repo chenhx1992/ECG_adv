@@ -57,6 +57,11 @@ def preprocess(x, maxlen):
     
     return x
 
+def zero_mean(x):
+    x = x - np.mean(x)
+    x = x / np.std(x)
+    return x
+
 #### Main Program
 
 #--- parameters
@@ -65,9 +70,10 @@ FS = 300
 WINDOW_SIZE = 30*FS     # padding window for CNN
 classes = ['A', 'N', 'O','~']
 
-fid_from = int(sys.argv[1])
-fid_to = int(sys.argv[2])
-data_select = genfromtxt('data_select.csv', delimiter=',')
+file = sys.argv[1]
+fid_from = int(sys.argv[2])
+fid_to = int(sys.argv[3])
+data_select = genfromtxt(file, delimiter=',')
 
 #--- loading model and prepare wrapper
 keras.layers.core.K.set_learning_phase(0)
@@ -77,8 +83,8 @@ print("Loading model")
 model = load_model('ResNet_30s_34lay_16conv.hdf5')
 #model = load_model('weights-best_k0_r0.hdf5')
 
-#wrap = KerasModelWrapper(model, nb_classes=4)
-wrap = KerasModelWrapper(model)
+wrap = KerasModelWrapper(model, nb_classes=4)
+#wrap = KerasModelWrapper(model)
 
 x = tf.placeholder(tf.float32, shape=(None, 9000, 1))
 y = tf.placeholder(tf.float32, shape=(None, 4))
@@ -93,7 +99,7 @@ files = sorted(glob.glob(dataDir+"*.mat"))
 from myattacks_sdtw import CarliniWagnerL2  
 cwl2 = CarliniWagnerL2(wrap, sess=sess)
 
-#--- loop on file including data_select[:,2] from fid_from-th row to fid_to-th row
+#--- loop on file including data_select[:,3] from fid_from-th row to fid_to-th row
 
 eval_result = np.zeros((4*(fid_to-fid_from), 4)) # fid, ground_truth, target, adv_result
 
@@ -101,7 +107,7 @@ num = fid_from
 while (num < fid_to):
     
     #--- Loading
-    fid = int(data_select[num, 2]) 
+    fid = int(data_select[num, 3]) 
     record = "A{:05d}".format(fid)
     local_filename = "./training_raw/"+record
     print('Loading record {}'.format(record))    
@@ -141,6 +147,7 @@ while (num < fid_to):
         adv_sample = adv_x.eval(feed_dict=feed_dict, session=sess)
         
         #--- Attack result
+        adv_sample = zero_mean(adv_sample)
         prob = model.predict(adv_sample)
         ann = np.argmax(prob)
 #        ann_label = classes[ann]
@@ -153,12 +160,12 @@ while (num < fid_to):
         eval_result[4*idx+i, 3] = ann
         
         #--- Save adv_sample to file
-        file_sample = './cwsdtw_eval/R' + str(fid)+ '_' + str(ground_truth) + '_' + str(i) + '_' + str(ann) + '.csv'
+        file_sample = './cw_smooth_eval/R' + str(fid)+ '_' + str(ground_truth) + '_' + str(i) + '_' + str(ann) + '.csv'
         np.savetxt(file_sample, adv_sample[0,:], delimiter=",")
         
     num = num+1
         
-file_result = './cwsdtw_eval/res'+ '_' + str(fid_from) + '_' + str(fid_to) + '.csv'
+file_result = './cw_smooth_eval/res'+ '_' + str(fid_from) + '_' + str(fid_to) + '.csv'
 np.savetxt(file_result, eval_result, delimiter=",")  
         
     
