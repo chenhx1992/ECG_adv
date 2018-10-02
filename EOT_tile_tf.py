@@ -34,6 +34,11 @@ def EOT_time(x, ensemble_size=30):
 
     return tf.concat([randomizing_EOT(x, i) for i in range(ensemble_size)], axis=0)
 
+def Seq1():
+   tmp = np.zeros((1, 9001, 1), dtype=np_dtype)
+   tmp[:,1:9001,:]=1.
+   return np.asarray(tmp, dtype=np_dtype)
+
 
 class EOT_tf_ATTACK(object):
 
@@ -136,18 +141,21 @@ class EOT_tf_ATTACK(object):
 
 
         modifier_tile = tf.tile(modifier, tf.constant([1, tile_times, 1]))
+
         self.newimg = tf.slice(modifier_tile, (0, 0, 0), shape) + self.timg
 
-        self.batch_newimg = EOT_time(modifier_tile) + self.timg
+
+        batch_newdata = EOT_time(modifier_tile) + self.timg
+        data_mean, data_var = tf.nn.moments(batch_newdata, axes=1)
+        mean = tf.expand_dims(tf.tile(data_mean, [1, data_len]), 2)
+        var = tf.expand_dims(tf.tile(data_var, [1, data_len]), 2)
+        self.batch_newimg = (batch_newdata - mean) / tf.sqrt(var)
+
         self.loss_batch = model.get_logits(self.batch_newimg)
-        #self.output = self.loss = model.get_logits(self.newimg)
         self.batch_tlab = tf.tile(self.tlab, (self.batch_newimg.shape[0], 1))
         self.xent = tf.reduce_mean(
             tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.loss_batch, labels=self.batch_tlab))
-        #self.xent = tf.reduce_mean(
-        #    tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.loss, labels=self.tlab))
 
-        #self.output = self.xent
 
         self.output = tf.expand_dims(tf.reduce_mean(self.loss_batch, axis=0), 0)
 
@@ -156,10 +164,18 @@ class EOT_tf_ATTACK(object):
         #            2 * (clip_max - clip_min) + clip_min
         #        self.l2dist = reduce_sum(tf.square(self.newimg - self.other),
         #                                 list(range(1, len(shape))))
+
+
         if self.dis_metric == 1:
             self.dist = tf.reduce_sum(tf.square(modifier_tile), list(range(1, len(shape))))
         else:
-            self.dist = tf.reduce_sum(mysoftdtw(self.timg, modifier_tile, 1)/9000)
+            if self.dis_metric == 2:
+                self.dist = tf.reduce_sum(mysoftdtw(self.timg, modifier_tile, 1)/9000)
+            else:
+                _, distvar = tf.nn.moments(
+                    tf.multiply(tf.concat([modifier_tile, [[[0.]]]], 1) - tf.concat([[[[0.]]], modifier_tile], 1), Seq1()),
+                    axes=[1])
+                self.dist = 10000 * distvar
         #self.l2dist= tf.reduce_sum(mysoftdtw(self.timg, modifier, 1))
         #        self.sdtw = reduce_sum(mysquare_new(self.timg, modifier, 1),list(range(1, len(shape))))
 

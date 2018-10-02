@@ -43,21 +43,21 @@ files = sorted(glob.glob(dataDir+"*.mat"))
 
 def preprocess(x, maxlen):
     x =  np.nan_to_num(x)
-#    x =  x[0, 0:min(maxlen,len(x))]
     x =  x[0, 0:maxlen]
     x = x - np.mean(x)
     x = x / np.std(x)
-    
     tmp = np.zeros((1, maxlen))
-#    print(x.shape)
     tmp[0, :len(x)] = x.T  # padding sequence
     x = tmp
-#    print(x.shape)
     x = np.expand_dims(x, axis=2)  # required by Keras
-#    print(x.shape)
     del tmp
-    
     return x
+
+def zero_mean(x):
+    x = x - np.mean(x)
+    x = x / np.std(x)
+    return x
+
 def op_concate(x, w, random_p=True):
     data_len = 9000
     tile_times = math.ceil(data_len/w)
@@ -92,14 +92,6 @@ print('Ground truth:{}'.format(ground_truth))
 X_test=np.float32(data)
 new_X_test = np.repeat(data, 5, axis=0)
 
-
-Y_test = np.zeros((1, 1))
-Y_test[0,0] = ground_truth
-new_Y_test = np.zeros((5, 1))
-new_Y_test = np.repeat(ground_truth, 5, axis=0)
-Y_test = utils.to_categorical(Y_test, num_classes=4)
-
-
 target_a = np.zeros((1, 1))
 target_a = np.array([int(sys.argv[2])])
 target_a = utils.to_categorical(target_a, num_classes=4)
@@ -108,7 +100,7 @@ dis_metric = int(sys.argv[3])
 start_time = time.time()
 perturb_window = int(sys.argv[4])
 eotl2 = EOT_ATTACK(wrap, sess=sess)
-eotl2_params = {'y_target': target_a, 'learning_rate': 0.5, 'max_iterations': 200, 'initial_const': 100, 'perturb_window':perturb_window, 'dis_metric': dis_metric}
+eotl2_params = {'y_target': target_a, 'learning_rate': 0.5, 'max_iterations': 200, 'initial_const': 10, 'perturb_window':perturb_window, 'dis_metric': dis_metric}
 
 adv_x = eotl2.generate(x, **eotl2_params)
 adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
@@ -125,21 +117,13 @@ perturb = perturb[:, 0:perturb_window, :]
 correct = 0
 attack_success = np.zeros(4)
 
-prob_att = model.predict(op_concate(perturb, perturb_window, False)+X_test)
-    #if np.argmax(prob_ori) == ground_truth:
-        #correct = correct + 1
-#print(prob_att)
-ind = np.argmax(prob_att)
-attack_success[ind] = attack_success[ind] + 1
-
-for _ in range(99):
-    #new_X_test = op_concate(X_test)
-    #prob_ori = model.predict(new_X_test)
-    prob_att = model.predict(op_concate(perturb, perturb_window, True)+X_test)
-    #if np.argmax(prob_ori) == ground_truth:
-        #correct = correct + 1
+for _ in range(100):
+    prob_att = model.predict(zero_mean(op_concate(perturb, perturb_window, True)+X_test))
     ind = np.argmax(prob_att)
     attack_success[ind] = attack_success[ind] + 1
+
+
+
 
 #print("correct:", correct)
 print("attack success times:", attack_success)
