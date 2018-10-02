@@ -6,7 +6,7 @@ from cleverhans.attacks import Attack
 
 _logger = utils.create_logger("EOT_attacks")
 
-class EOT_L2(Attack):
+class EOT_ATTACK(Attack):
     """
     This attack was originally proposed by Carlini and Wagner. It is an
     iterative attack that finds adversarial examples on many defenses that
@@ -26,14 +26,14 @@ class EOT_L2(Attack):
         if not isinstance(model, Model):
             model = CallableModelWrapper(model, 'logits')
 
-        super(EOT_L2, self).__init__(model, back, sess, dtypestr)
+        super(EOT_ATTACK, self).__init__(model, back, sess, dtypestr)
 
         self.feedable_kwargs = {'y': self.tf_dtype,
                                 'y_target': self.tf_dtype}
 
         self.structural_kwargs = ['batch_size', 'confidence',
                                   'targeted', 'learning_rate',
-                                  'binary_search_steps', 'max_iterations',
+                                  'binary_search_steps', 'max_iterations', 'dis_metric'
                                   'abort_early', 'initial_const',
                                   'clip_min', 'clip_max']
 
@@ -77,15 +77,15 @@ class EOT_L2(Attack):
         :param clip_max: (optional float) Maximum input component value
         """
         import tensorflow as tf
-        from EOT_g_tf import EOT_tf_L2
+        from EOT_tile_tf import EOT_tf_ATTACK
         self.parse_params(**kwargs)
 
         labels, nb_classes = self.get_or_guess_labels(x, kwargs)
 
-        attack = EOT_tf_L2(self.sess, self.model, self.batch_size,
+        attack = EOT_tf_ATTACK(self.sess, self.model, self.batch_size,
                       self.confidence, 'y_target' in kwargs,
-                      self.learning_rate, self.binary_search_steps,
-                      self.max_iterations, self.abort_early,
+                      self.learning_rate, self.perturb_window, self.binary_search_steps,
+                      self.max_iterations, self.dis_metric, self.abort_early,
                       self.initial_const, self.clip_min, self.clip_max,
                       nb_classes, x.get_shape().as_list()[1:])
 
@@ -97,8 +97,8 @@ class EOT_L2(Attack):
 
     def parse_params(self, y=None, y_target=None, nb_classes=None,
                      batch_size=1, confidence=0,
-                     learning_rate=5e-3,
-                     binary_search_steps=5, max_iterations=1000,
+                     learning_rate=5e-3, perturb_window=9000,
+                     binary_search_steps=5, max_iterations=1000, dis_metric=1,
                      abort_early=True, initial_const=1e-2,
                      clip_min=0, clip_max=1):
 
@@ -109,8 +109,10 @@ class EOT_L2(Attack):
         self.batch_size = batch_size
         self.confidence = confidence
         self.learning_rate = learning_rate
+        self.perturb_window = perturb_window
         self.binary_search_steps = binary_search_steps
         self.max_iterations = max_iterations
+        self.dis_metric = dis_metric
         self.abort_early = abort_early
         self.initial_const = initial_const
         self.clip_min = clip_min
