@@ -21,6 +21,10 @@ def preprocess(x, maxlen):
     x = np.expand_dims(x, axis=2)  # required by Keras
     del tmp
     return x
+def zero_mean(x):
+    x = x - np.mean(x)
+    x = x / np.std(x)
+    return x
 
 # parameters
 dataDir = '../training_raw/'
@@ -33,7 +37,7 @@ csvfile = list(csv.reader(open('../REFERENCE-v3.csv')))
 files = sorted(glob.glob(dataDir+"*.mat"))
 
 id = 5
-target = 2
+target = 1
 perturb_window = 100
 count = id-1
 record = "A{:05d}".format(id)
@@ -50,7 +54,7 @@ ground_truth_label = csvfile[count][1]
 ground_truth = classes.index(ground_truth_label)
 print('Ground truth:{}'.format(ground_truth))
 
-inputstr = '../output/EOTtile_w'+str(perturb_window)+'_f1_l2_A'+str(id)+'T'+str(target)+'.out'
+inputstr = '../output/EOTtile_w'+str(perturb_window)+'_f1_smooth_A'+str(id)+'T'+str(target)+'.out'
 print("input file: ", inputstr)
 perturb = genfromtxt(inputstr, delimiter=',')
 dist = np.sum(perturb**2)/len(perturb) * 9000
@@ -76,19 +80,9 @@ model = load_model('../ResNet_30s_34lay_16conv.hdf5')
 
 attack_success = np.zeros(4)
 perturb_window = perturb.shape[1]
-prob_att = model.predict(op_concate(perturb, perturb_window, False)+X_test)
-    #if np.argmax(prob_ori) == ground_truth:
-        #correct = correct + 1
-print(prob_att)
-ind = np.argmax(prob_att)
-attack_success[ind] = attack_success[ind] + 1
 
-for _ in range(99):
-    #new_X_test = op_concate(X_test)
-    #prob_ori = model.predict(new_X_test)
-    prob_att = model.predict(op_concate(perturb, perturb_window, True)+X_test)
-    #if np.argmax(prob_ori) == ground_truth:
-        #correct = correct + 1
+for _ in range(100):
+    prob_att = model.predict(zero_mean(op_concate(perturb, perturb_window, True)+X_test))
     ind = np.argmax(prob_att)
     attack_success[ind] = attack_success[ind] + 1
 

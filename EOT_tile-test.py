@@ -24,10 +24,8 @@ classes = ['A', 'N', 'O','~']
 
 keras.layers.core.K.set_learning_phase(0)
 # loading model
-session_conf = tf.ConfigProto(
-      intra_op_parallelism_threads=2,
-      inter_op_parallelism_threads=2)
-sess = tf.Session(config= session_conf)
+
+sess = tf.Session()
 K.set_session(sess)
 
 print("Loading model")    
