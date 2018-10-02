@@ -13,3 +13,8 @@ build/
 /.idea
 *.zip
 weights-best_k0_r0.hdf5
+cwsdtw_eval/
+cw_smooth_eval/
+result_6755/
+result_zero/
+fig/

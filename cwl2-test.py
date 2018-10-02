@@ -78,7 +78,7 @@ def preprocess(x, maxlen):
 preds = model(x)
 
 ## Loading time serie signals
-id = 9
+id = 6755
 count = id-1
 record = "A{:05d}".format(id)
 local_filename = "./training_raw/"+record
@@ -132,7 +132,7 @@ np.savetxt('./result_zero/zero_tarA_l2.out', adv_sample[0,:], delimiter=",")
 from numpy import genfromtxt
 perturb = genfromtxt('./result_zero/zero_tarA.out', delimiter=',')
 
-plt.plot(X_test_0[0,:])
+#plt.plot(X_test_0[0,:])
 import matplotlib.pyplot as plt
 plt.plot(adv_sample[0,:])
 plt.xlabel('index')
