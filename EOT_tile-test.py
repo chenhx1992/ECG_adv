@@ -24,7 +24,10 @@ classes = ['A', 'N', 'O','~']
 
 keras.layers.core.K.set_learning_phase(0)
 # loading model
-sess = tf.Session()
+session_conf = tf.ConfigProto(
+      intra_op_parallelism_threads=2,
+      inter_op_parallelism_threads=2)
+sess = tf.Session(config= session_conf)
 K.set_session(sess)
 
 print("Loading model")    
@@ -106,6 +109,8 @@ adv_x = eotl2.generate(x, **eotl2_params)
 adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
 #preds_adv = model(adv_x)
 feed_dict = {x: X_test}
+
+
 adv_sample = adv_x.eval(feed_dict=feed_dict, session = sess)
 
 print("time used:", time.time()-start_time)
@@ -146,5 +151,8 @@ perturb_squeeze = np.squeeze(perturb, axis=2)
 if dis_metric == 1:
     outputstr = './output/EOTtile_w'+sys.argv[4]+'_f1_l2_A'+sys.argv[1]+'T'+sys.argv[2]+'.out'
 else:
-    outputstr = './output/EOTtile_w'+sys.argv[4]+'_f1_dtw_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
+    if dis_metric == 2:
+        outputstr = './output/EOTtile_w'+sys.argv[4]+'_f1_dtw_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
+    else:
+        outputstr = './output/EOTtile_w' + sys.argv[4] + '_f1_smooth_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
 np.savetxt(outputstr, perturb_squeeze,delimiter=",")
