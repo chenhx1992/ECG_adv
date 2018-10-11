@@ -2,9 +2,11 @@ training_raw/
 training_spec/
 mnist/
 log/
+Old-code/
 cinc-challenge2017-oxford/
 __pycache__/
 build/
+*.m
 *.mat
 *.so
 *.pkl
@@ -13,8 +15,13 @@ build/
 /.idea
 *.zip
 weights-best_k0_r0.hdf5
-cwsdtw_eval/
+cw_sdtw_eval/
 cw_smooth_eval/
+cw_l2_eval/
+cw_l2smooth_0_01_eval/
 result_6755/
 result_zero/
+metric_compare/
 fig/
+cython_sample/
+DataAnalysis/

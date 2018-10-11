@@ -134,7 +134,7 @@ class CarliniWagnerL2(object):
 #            2 * (clip_max - clip_min) + clip_min
 #        self.l2dist = reduce_sum(tf.square(self.newimg - self.other),
 #                                 list(range(1, len(shape))))
-#        self.l2dist = tf.reduce_sum(tf.square(self.newimg - self.timg),list(range(1, len(shape))))
+        self.l2dist1 = tf.reduce_sum(tf.square(self.newimg - self.timg),list(range(1, len(shape))))
 #        self.l2dist = mysoftdtw(self.timg, modifier, 0.0001) 
         _, self.l2dist = tf.nn.moments(tf.multiply(tf.concat([modifier, [[[0.]]]], 1) - 
                                  tf.concat([[[[0.]]], modifier], 1), Seq1()), axes=[1])
@@ -164,6 +164,7 @@ class CarliniWagnerL2(object):
         # sum up the losses
 #        self.loss3 = tf.reduce_sum(20000*self.loss3)
         self.loss2 = tf.reduce_sum(self.l2dist*10000)
+#        self.loss2 = tf.reduce_sum(self.l2dist1)
 #        self.loss2 = tf.reduce_sum(self.sdtw)
         self.loss1 = tf.reduce_sum(self.const * loss1)
         self.loss = self.loss1 + self.loss2 
