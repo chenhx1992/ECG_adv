@@ -25,8 +25,8 @@ def ZERO():
 
 def EOT_time(x, ensemble_size=30):
     def randomizing_EOT(x, i):
-        rand_i = tf.expand_dims(tf.constant(i, dtype=tf.int32), axis=0)
-        #rand_i = tf.expand_dims(tf.random_uniform((), 0, data_len, dtype=tf.int32), axis=0)
+        #rand_i = tf.expand_dims(tf.constant(i, dtype=tf.int32), axis=0)
+        rand_i = tf.expand_dims(tf.random_uniform((), 0, data_len, dtype=tf.int32), axis=0)
         p = tf.concat([rand_i, data_len - rand_i], axis=0)
         x1, x2 = tf.split(x, p, axis=1)
         res = tf.reshape(tf.concat([x2, x1], axis=1), [1, data_len, 1])

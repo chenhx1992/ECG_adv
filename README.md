@@ -10,7 +10,8 @@ source /home/ubuntu/.bashrc
 export PATH=/home/ubuntu/anaconda/bin:$PATH
 echo 'export PATH=/home/ubuntu/anaconda/bin:$PATH' >>~/.bashrc
 source ~/.bashrc
-pip install https://github.com/mind/wheels/releases/download/tf1.8-cpu/tensorflow-1.8.0-cp36-cp36m-linux_x86_64.whl
+#(CPU)pip install https://github.com/mind/wheels/releases/download/tf1.8-cpu/tensorflow-1.8.0-cp36-cp36m-linux_x86_64.whl
+pip install https://github.com/mind/wheels/releases/download/tf1.8-gpu-nomkl/tensorflow-1.8.0-cp36-cp36m-linux_x86_64.whl
 pip install pydot
 pip install keras
 pip install cleverhans
