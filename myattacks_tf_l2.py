@@ -20,8 +20,6 @@ import warnings
 import cleverhans.utils as utils
 import cleverhans.utils_tf as utils_tf
 import itertools
-#from mysoftdtw_c import py_func, mysoftdtw, softdtw, softdtwGrad
-from mysoftdtw_c_wd import mysoftdtw
 
 _logger = utils.create_logger("myattacks.tf")
 
@@ -100,8 +98,7 @@ class CarliniWagnerL2(object):
         self.repeat = binary_search_steps >= 10
 
         self.shape = shape = tuple([batch_size] + list(shape))
-#        self.shape = shape = tuple(list(shape))
-        
+
         # the variable we're going to optimize over
         modifier = tf.Variable(np.zeros(shape, dtype=np_dtype))
 
@@ -121,36 +118,25 @@ class CarliniWagnerL2(object):
         self.assign_const = tf.placeholder(tf_dtype, [batch_size],
                                            name='assign_const')
 
-        # the resulting instance, tanh'd to keep bounded from clip_min
-        # to clip_max
+        # the resulting instance, tanh'd to keep bounded from clip_min to clip_max
+        # not need
 #        self.newimg = (tf.tanh(modifier + self.timg) + 1) / 2
 #        self.newimg = self.newimg * (clip_max - clip_min) + clip_min
         self.newimg = modifier + self.timg
-        data_mean, data_var = tf.nn.moments(self.newimg, axes=1)
-        self.newimg = (self.newimg - data_mean)/tf.sqrt(data_var)
         
         # distance to the input data
 #        self.other = (tf.tanh(self.timg) + 1) / \
 #            2 * (clip_max - clip_min) + clip_min
 #        self.l2dist = reduce_sum(tf.square(self.newimg - self.other),
 #                                 list(range(1, len(shape))))
-        self.l2dist1 = tf.reduce_sum(tf.square(self.newimg - self.timg),list(range(1, len(shape))))
-#        self.l2dist = mysoftdtw(self.timg, modifier, 0.0001) 
-        _, self.l2dist = tf.nn.moments(tf.multiply(tf.concat([modifier, [[[0.]]]], 1) - 
-                                 tf.concat([[[[0.]]], modifier], 1), Seq1()), axes=[1])
-#        self.sdtw = reduce_sum(mysquare_new(self.timg, modifier, 1),list(range(1, len(shape))))
+        self.l2dist = tf.reduce_sum(tf.square(self.newimg - self.timg),list(range(1, len(shape))))
         
-#        data_mean, data_var = tf.nn.moments(self.newimg, axes=1)
-#        self.newimg = (self.newimg - data_mean)/tf.sqrt(data_var)
-#        self.newimg = tf.stop_gradient(self.newimg)
         # prediction BEFORE-SOFTMAX of the model
         self.output = model.get_logits(self.newimg)
         
         # compute the probability of the label class versus the maximum other
         real = tf.reduce_sum((self.tlab) * self.output, 1)
-        other = tf.reduce_max(
-            (1 - self.tlab) * self.output - self.tlab * 10000,
-            1)
+        other = tf.reduce_max((1 - self.tlab) * self.output - self.tlab * 10000,1)
 
         if self.TARGETED:
             # if targeted, optimize for making the other class most likely
@@ -162,10 +148,7 @@ class CarliniWagnerL2(object):
 #        loss1 =  tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.output,labels=self.tlab))
         
         # sum up the losses
-#        self.loss3 = tf.reduce_sum(20000*self.loss3)
-        self.loss2 = tf.reduce_sum(self.l2dist*10000)
-#        self.loss2 = tf.reduce_sum(self.l2dist1)
-#        self.loss2 = tf.reduce_sum(self.sdtw)
+        self.loss2 = tf.reduce_sum(self.l2dist)
         self.loss1 = tf.reduce_sum(self.const * loss1)
         self.loss = self.loss1 + self.loss2 
 
@@ -173,11 +156,6 @@ class CarliniWagnerL2(object):
         start_vars = set(x.name for x in tf.global_variables())
         optimizer = tf.train.AdamOptimizer(self.LEARNING_RATE)
         self.train = optimizer.minimize(self.loss, var_list=[modifier])
-        
-#        tf.summary.scalar('loss', self.loss)
-#        self.train_writer = tf.summary.FileWriter('./log', self.sess.graph)
-#        self.merge = tf.summary.merge_all()
-        
         end_vars = tf.global_variables()
         new_vars = [x for x in end_vars if x.name not in start_vars]
 
@@ -272,10 +250,10 @@ class CarliniWagnerL2(object):
             for iteration in range(self.MAX_ITERATIONS):
                 # perform the attack
 #                print('Iteration:{}'.format(iteration))
-                _, l, l1, l2s, scores, nimg = self.sess.run([self.train,
+                _, l, l1, l2, scores, nimg = self.sess.run([self.train,
                                                          self.loss,
                                                          self.loss1,
-                                                         self.l2dist,
+                                                         self.loss2,
                                                          self.output,
                                                          self.newimg,
                                                          ])
@@ -284,9 +262,9 @@ class CarliniWagnerL2(object):
                     _logger.debug(("    Iteration {} of {}: loss={:.3g} " +
                                    "l2={:.3g} f={:.3g}")
                                   .format(iteration, self.MAX_ITERATIONS,
-                                          l, np.mean(l2s), np.mean(scores)))
+                                          l, np.mean(l2), np.mean(scores)))
                     print('Iteration {} of {}: loss={:.3g} " + "l1={:.3g}" + "l2={:.3g} f={:.3g} shape={}'.format(iteration, 
-                          self.MAX_ITERATIONS, l, l1, np.mean(l2s), np.mean(scores), self.shape))
+                          self.MAX_ITERATIONS, l, l1, np.mean(l2), np.mean(scores), self.shape))
                     print('logits', scores)
     
                 # check if we should abort search if we're getting nowhere.
@@ -299,7 +277,7 @@ class CarliniWagnerL2(object):
                     prev = l
 
                 # adjust the best result found so far
-                for e, (l2, sc, ii) in enumerate(zip(itertools.repeat(l2s, len(scores)), scores, nimg)):
+                for e, (l2, sc, ii) in enumerate(zip(itertools.repeat(l2, len(scores)), scores, nimg)):
                     lab = np.argmax(batchlab[e])
                     if l2 < bestl2[e] and compare(sc, lab):
                         bestl2[e] = l2

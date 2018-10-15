@@ -16,7 +16,7 @@ from keras import metrics
 import tensorflow as tf
 import pydot
 import h5py
-
+import scipy.io
 from cleverhans.utils_keras import KerasModelWrapper
 from cleverhans.attacks import FastGradientMethod, SaliencyMapMethod
 from cleverhans.utils_tf import model_eval, model_argmax
@@ -83,7 +83,7 @@ def zero_mean(x):
 preds = model(x)
 
 ## Loading time serie signals
-id = 5
+id = 6755
 count = id-1
 record = "A{:05d}".format(id)
 local_filename = "./training_raw/"+record
@@ -129,29 +129,16 @@ print("--- %s seconds ---" % (time.time() - start_time))
 #adv_sample = cwl2.generate_np(X_test, **cwl2_params)
 
 
-prob = model.predict(adv_sample)
-ann = np.argmax(prob)
-ann_label = classes[ann]
-print(ann)
+#prob = model.predict(adv_sample)
+#ann = np.argmax(prob)
+#ann_label = classes[ann]
+#print(ann)
 
 adv_sample_1 = zero_mean(adv_sample)
 prob = model.predict(adv_sample_1)
 ann = np.argmax(prob)
 ann_label = classes[ann]
 print(ann)
-
-X_test_1 = zero_mean(X_test)
-
-np.savetxt('./result_6755/R6755_0_1_1_diff_1.csv', adv_sample[0,:], delimiter=",")
-
-from numpy import genfromtxt
-adv_sample_g1_0 = genfromtxt('./result_6755/R' + str(id) + '_0_1_1_g1_0.csv', delimiter=',')
-adv_sample_g1_0 = np.float32(adv_sample_g1_0)
-adv_sample_g1_0 = np.reshape(adv_sample_g1_0, (9000,1))
-
-adv_sample_g0_0001 = genfromtxt('./result_6755/R' + str(id) + '_0_1_1_g0_0001.csv', delimiter=',')
-adv_sample_g0_0001 = np.float32(adv_sample_g0_0001)
-adv_sample_g0_0001 = np.reshape(adv_sample_g0_0001, (9000,1))
 
 import matplotlib.pyplot as plt
 
@@ -161,37 +148,19 @@ ymin = np.min(adv_sample)-0.5
 dist = np.var(np.diff(adv_sample[0,:]-X_test[0,:], axis=0), axis=0)
 
 fig, axs = plt.subplots(2, 1, figsize=(80,40), sharex=True)
-
+axs[0].plot(adv_sample_1[0,0:4000,:]-X_test[0,0:4000,:], color='lightblue', label='delta signal')
 axs[0].plot(X_test[0,0:4000,:], color='black')
-#axs[0].plot(X_test_1[0,0:4000,:], color='black')
-#axs[0].plot(adv_sample_g1_0[0:4000,:], color='lightblue', label='adv g1.0 data')
-#axs[0].plot(adv_sample_g0_0001[0:4000,:], color='lightblue', label='adv g0.001 data')
-#axs[0].plot(adv_sample[0,0:4000,:], color='blue', label='adv l2 data')
-#axs[0].plot(X_test[0,:])
 axs[0].set_title('Original signal {}'.format(ground_truth_label))
 axs[0].set_ylim([ymin, ymax])
-#axs[0].set_xlabel('index')
 axs[0].set_ylabel('signal value')
 axs[0].legend()
-#axs[1].plot(adv_sample[0,0:4000,:])
-##axs[1].plot(adv_sample[0,:])
-#axs[1].set_title('Adversarial signal {}'.format(ann_label))
-#axs[1].set_ylim([ymin, ymax])
-#axs[1].set_xlabel('index')
-#axs[1].set_ylabel('signal value')
 
-
-#axs[1].plot(adv_sample_g1_0[0:4000,:]-X_test[0,0:4000,:], color='lightblue')
 axs[1].plot(adv_sample_1[0,0:4000,:], color='blue', label='adv l2 data')
-axs[1].plot(adv_sample_1[0,0:4000,:]-X_test[0,0:4000,:], color='green', label='adv l2 data')
-#axs[1].plot(adv_sample[0,0:4000,:]-X_test[0,0:4000,:], color='lightblue')
-#axs[1].plot(adv_sample_g0_0001[0:4000,:]-X_test[0,0:4000,:], color='lightgreen')
 axs[1].set_title('Adv signal N')
 axs[1].set_ylim([ymin, ymax])
 axs[1].set_xlabel('index')
 axs[1].set_ylabel('signal value')
 
-#plt.plot(adv_sample[0,:]-X_test[0,:])
-#plt.ylim([-0.1, 0.1])
-
 #fig.savefig('p9.png',dpi=fig.dpi)
+
+np.savetxt('./result_6755/R6755_0_1_1_l2_smooth.csv', adv_sample_1[0,:], delimiter=",")
