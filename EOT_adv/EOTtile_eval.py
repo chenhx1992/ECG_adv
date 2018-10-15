@@ -38,7 +38,7 @@ files = sorted(glob.glob(dataDir+"*.mat"))
 
 id = 5
 target = 1
-perturb_window = 100
+perturb_window = 500
 count = id-1
 record = "A{:05d}".format(id)
 local_filename = dataDir+record
