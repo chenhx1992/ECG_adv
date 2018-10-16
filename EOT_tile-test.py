@@ -62,14 +62,11 @@ def zero_mean(x):
     x = x / np.std(x)
     return x
 
-def op_concate(x, w, random_p=True):
+def op_concate(x, w, i):
     data_len = 9000
     tile_times = math.ceil(data_len/w)
     x_tile = np.tile(x, (1, tile_times, 1))
-    if random_p:
-        p = np.random.randint(data_len)
-    else:
-        p = data_len
+    p = i
     x1 = x_tile[:, 0:p, :]
     x2 = x_tile[:, p:data_len, :]
 
@@ -123,8 +120,8 @@ perturb = perturb[:, 0:perturb_window, :]
 correct = 0
 attack_success = np.zeros(4)
 
-for _ in range(100):
-    prob_att = model.predict(zero_mean(op_concate(perturb, perturb_window, True)+X_test))
+for i in range(perturb_window):
+    prob_att = model.predict(zero_mean(op_concate(perturb, perturb_window, i)+X_test))
     ind = np.argmax(prob_att)
     attack_success[ind] = attack_success[ind] + 1
 
