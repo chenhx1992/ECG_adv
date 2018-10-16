@@ -124,6 +124,8 @@ for i in range(perturb_window):
     prob_att = model.predict(zero_mean(op_concate(perturb, perturb_window, i)+X_test))
     ind = np.argmax(prob_att)
     attack_success[ind] = attack_success[ind] + 1
+    if i<60 and ind!=int(sys.argv[2]):
+        print("not success:", i)
 
 
 
