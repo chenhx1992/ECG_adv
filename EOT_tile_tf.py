@@ -23,7 +23,7 @@ def ZERO():
     return np.asarray(0., dtype=np_dtype)
 
 
-def EOT_time(x, ensemble_size=30):
+def EOT_time(x, ensemble_size=60):
     def randomizing_EOT(x, i):
         rand_i = tf.expand_dims(tf.constant(i, dtype=tf.int32), axis=0)
         #rand_i = tf.expand_dims(tf.random_uniform((), 0, data_len, dtype=tf.int32), axis=0)
