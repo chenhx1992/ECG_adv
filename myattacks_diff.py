@@ -90,7 +90,7 @@ class CarliniWagnerL2(Attack):
         :param clip_max: (optional float) Maximum input component value
         """
         import tensorflow as tf
-        from myattacks_tf_sdtw import CarliniWagnerL2 as CWL2
+        from myattacks_tf_diff import CarliniWagnerL2 as CWL2
         self.parse_params(**kwargs)
 
         labels, nb_classes = self.get_or_guess_labels(x, kwargs)
