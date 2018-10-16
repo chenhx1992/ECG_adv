@@ -120,17 +120,17 @@ perturb = perturb[:, 0:perturb_window, :]
 
 correct = 0
 attack_success = np.zeros(4)
-
+not_success_in_ensemble_size = 0
 for i in range(perturb_window):
     prob_att = model.predict(zero_mean(op_concate(perturb, perturb_window, i)+X_test))
     ind = np.argmax(prob_att)
     attack_success[ind] = attack_success[ind] + 1
     if i < ensemble_size and ind != int(sys.argv[2]):
-        print("not success:", i)
+        not_success_in_ensemble_size = not_success_in_ensemble_size + 1
 
 
 
-
+print("not_success_in_ensemble_size:", not_success_in_ensemble_size)
 #print("correct:", correct)
 print("attack success times:", attack_success)
 '''
