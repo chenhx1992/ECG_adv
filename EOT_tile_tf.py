@@ -152,9 +152,10 @@ class EOT_tf_ATTACK(object):
         self.batch_newimg = (batch_newdata - mean) / tf.sqrt(var)
 
         self.loss_batch = model.get_logits(self.batch_newimg)
+
         self.batch_tlab = tf.tile(self.tlab, (self.batch_newimg.shape[0], 1))
-        self.xent = tf.reduce_mean(
-            tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.loss_batch, labels=self.batch_tlab))
+        #self.xent = tf.reduce_mean(
+        #    tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.loss_batch, labels=self.batch_tlab))
 
 
         self.output = tf.expand_dims(tf.reduce_mean(self.loss_batch, axis=0), 0)
@@ -180,22 +181,21 @@ class EOT_tf_ATTACK(object):
         #        self.sdtw = reduce_sum(mysquare_new(self.timg, modifier, 1),list(range(1, len(shape))))
 
         # compute the probability of the label class versus the maximum other
-        #real = tf.reduce_sum((self.tlab) * self.output, 1)
-        #other = tf.reduce_max(
-        #    (1 - self.tlab) * self.output - self.tlab * 10000,
-        #    1)
+        real = tf.reduce_sum(self.tlab * self.output, 1)
+        other = tf.reduce_max((1 - self.tlab) * self.output - self.tlab * 10000,1)
 
-        #if self.TARGETED:
+        if self.TARGETED:
             # if targeted, optimize for making the other class most likely
-            #loss1 = tf.maximum(ZERO(), other - real + self.CONFIDENCE)
-        #else:
+            loss1 = tf.maximum(ZERO(), other - real + self.CONFIDENCE)
+        else:
             # if untargeted, optimize for making this class least likely.
-            #loss1 = tf.maximum(ZERO(), real - other + self.CONFIDENCE)
+            loss1 = tf.maximum(ZERO(), real - other + self.CONFIDENCE)
 
         # sum up the losses
         self.loss2 = tf.reduce_sum(self.dist)
         # self.loss2 = tf.reduce_sum(self.sdtw)
-        self.loss1 = tf.reduce_sum(self.const * self.xent)
+        #self.loss1 = tf.reduce_sum(self.const * self.xent)
+        self.loss1 = tf.reduce_sum(self.const * loss1)
         self.loss = self.loss1 + self.loss2
 
         # Setup the adam optimizer and keep track of variables we're creating
@@ -298,17 +298,16 @@ class EOT_tf_ATTACK(object):
             prev = 1e6
             for iteration in range(self.MAX_ITERATIONS):
                 # perform the attack
-                _, l, l2s, scores, nimg, xent = self.sess.run([self.train,
+                _, l, l2s, scores, nimg = self.sess.run([self.train,
                                                          self.loss,
                                                          self.dist,
                                                          self.output,
-                                                         self.newimg,
-                                                         self.xent])
+                                                         self.newimg])
 
 
                 print(
-                    'Iteration {} of {}: loss={:.3g} " + "dis={:.3g} xent={:.3g}'.format(iteration, self.MAX_ITERATIONS, l,
-                                                                                     np.mean(l2s), xent))
+                    'Iteration {} of {}: loss={:.3g} " + "dis={:.3g}'.format(iteration, self.MAX_ITERATIONS, l,
+                                                                                     np.mean(l2s)))
                 print('logits:', scores)
 
                 # check if we should abort search if we're getting nowhere.
