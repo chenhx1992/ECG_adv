@@ -100,8 +100,9 @@ dis_metric = int(sys.argv[3])
 
 start_time = time.time()
 perturb_window = int(sys.argv[4])
+ensemble_size = int(sys.argv[5])
 eotl2 = EOT_ATTACK(wrap, sess=sess)
-eotl2_params = {'y_target': target_a, 'learning_rate': 0.1, 'max_iterations': 500, 'initial_const': 100, 'perturb_window': perturb_window, 'dis_metric': dis_metric}
+eotl2_params = {'y_target': target_a, 'learning_rate': 0.1, 'max_iterations': 500, 'initial_const': 100, 'perturb_window': perturb_window, 'dis_metric': dis_metric, 'ensemble_size': ensemble_size}
 
 adv_x = eotl2.generate(x, **eotl2_params)
 adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
@@ -124,7 +125,7 @@ for i in range(perturb_window):
     prob_att = model.predict(zero_mean(op_concate(perturb, perturb_window, i)+X_test))
     ind = np.argmax(prob_att)
     attack_success[ind] = attack_success[ind] + 1
-    if i<60 and ind!=int(sys.argv[2]):
+    if i < ensemble_size and ind != int(sys.argv[2]):
         print("not success:", i)
 
 

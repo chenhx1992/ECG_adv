@@ -23,7 +23,7 @@ def ZERO():
     return np.asarray(0., dtype=np_dtype)
 
 
-def EOT_time(x, ensemble_size=60):
+def EOT_time(x, ensemble_size):
     def randomizing_EOT(x, i):
         rand_i = tf.expand_dims(tf.constant(i, dtype=tf.int32), axis=0)
         #rand_i = tf.expand_dims(tf.random_uniform((), 0, data_len, dtype=tf.int32), axis=0)
@@ -44,7 +44,7 @@ class EOT_tf_ATTACK(object):
 
     def __init__(self, sess, model, batch_size, confidence,
                  targeted, learning_rate, perturb_window,
-                 binary_search_steps, max_iterations, dis_metric,
+                 binary_search_steps, max_iterations, dis_metric, ensemble_size,
                  abort_early, initial_const,
                  clip_min, clip_max, num_labels, shape):
         """
@@ -95,6 +95,7 @@ class EOT_tf_ATTACK(object):
         self.perturb_window = perturb_window
         self.MAX_ITERATIONS = max_iterations
         self.dis_metric = dis_metric
+        self.ensemble_size = ensemble_size
         self.BINARY_SEARCH_STEPS = binary_search_steps
         self.ABORT_EARLY = abort_early
         self.CONFIDENCE = confidence
@@ -145,7 +146,7 @@ class EOT_tf_ATTACK(object):
         self.newimg = tf.slice(modifier_tile, (0, 0, 0), shape) + self.timg
 
 
-        batch_newdata = EOT_time(modifier_tile) + self.timg
+        batch_newdata = EOT_time(modifier_tile, self.ensemble_size) + self.timg
         data_mean, data_var = tf.nn.moments(batch_newdata, axes=1)
         mean = tf.expand_dims(tf.tile(data_mean, [1, data_len]), 2)
         var = tf.expand_dims(tf.tile(data_var, [1, data_len]), 2)
