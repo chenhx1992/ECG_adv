@@ -24,7 +24,10 @@ classes = ['A', 'N', 'O','~']
 
 keras.layers.core.K.set_learning_phase(0)
 # loading model
-
+#set session config
+#session_conf = tf.ConfigProto(
+#      intra_op_parallelism_threads=2,
+#     inter_op_parallelism_threads=2)
 sess = tf.Session()
 K.set_session(sess)
 
@@ -59,14 +62,11 @@ def zero_mean(x):
     x = x / np.std(x)
     return x
 
-def op_concate(x, w, random_p=True):
+def op_concate(x, w, i):
     data_len = 9000
     tile_times = math.ceil(data_len/w)
     x_tile = np.tile(x, (1, tile_times, 1))
-    if random_p:
-        p = np.random.randint(data_len)
-    else:
-        p = data_len
+    p = i
     x1 = x_tile[:, 0:p, :]
     x2 = x_tile[:, p:data_len, :]
 
@@ -100,8 +100,9 @@ dis_metric = int(sys.argv[3])
 
 start_time = time.time()
 perturb_window = int(sys.argv[4])
+ensemble_size = int(sys.argv[5])
 eotl2 = EOT_ATTACK(wrap, sess=sess)
-eotl2_params = {'y_target': target_a, 'learning_rate': 0.5, 'max_iterations': 200, 'initial_const': 10, 'perturb_window':perturb_window, 'dis_metric': dis_metric}
+eotl2_params = {'y_target': target_a, 'learning_rate': 0.1, 'max_iterations': 500, 'initial_const': 100, 'perturb_window': perturb_window, 'dis_metric': dis_metric, 'ensemble_size': ensemble_size}
 
 adv_x = eotl2.generate(x, **eotl2_params)
 adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
@@ -119,15 +120,17 @@ perturb = perturb[:, 0:perturb_window, :]
 
 correct = 0
 attack_success = np.zeros(4)
-
-for _ in range(100):
-    prob_att = model.predict(zero_mean(op_concate(perturb, perturb_window, True)+X_test))
+not_success_in_ensemble_size = 0
+for i in range(perturb_window):
+    prob_att = model.predict(zero_mean(op_concate(perturb, perturb_window, i)+X_test))
     ind = np.argmax(prob_att)
     attack_success[ind] = attack_success[ind] + 1
+    if i < ensemble_size and ind != int(sys.argv[2]):
+        not_success_in_ensemble_size = not_success_in_ensemble_size + 1
 
 
 
-
+print("not_success_in_ensemble_size:", not_success_in_ensemble_size)
 #print("correct:", correct)
 print("attack success times:", attack_success)
 '''
