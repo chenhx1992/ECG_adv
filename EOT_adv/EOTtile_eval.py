@@ -39,6 +39,7 @@ files = sorted(glob.glob(dataDir+"*.mat"))
 id = 5
 target = 1
 perturb_window = 200
+ensemble_size = 60
 count = id-1
 record = "A{:05d}".format(id)
 local_filename = dataDir+record
@@ -54,7 +55,7 @@ ground_truth_label = csvfile[count][1]
 ground_truth = classes.index(ground_truth_label)
 print('Ground truth:{}'.format(ground_truth))
 
-inputstr = '../output/EOTtile_w'+str(perturb_window)+'_f1_l2_A'+str(id)+'T'+str(target)+'.out'
+inputstr = '../output/EOTtile_w'+str(perturb_window)+'_e'+str(ensemble_size)+'_l2_A'+str(id)+'T'+str(target)+'.out'
 print("input file: ", inputstr)
 perturb = genfromtxt(inputstr, delimiter=',')
 dist = np.sum(perturb**2)/len(perturb) * 9000
