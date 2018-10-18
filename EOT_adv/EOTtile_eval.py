@@ -81,22 +81,22 @@ for i in range(perturb_window):
     prob_att = model.predict(zero_mean(op_concate(perturb, perturb_window, i)+X_test))
     ind = np.argmax(prob_att)
     attack_success[ind] = attack_success[ind] + 1
-    if ind == target:
+    if ind != target:
         print(prob_att, "not success:", i)
 
 #print("correct:", correct)
 print("attack success times:", attack_success)
 
 import matplotlib.pyplot as plt
-plt.figure()
-plt.plot(perturb[0,:,0])
-plt.show(block=False)
+#plt.figure()
+#plt.plot(perturb[0,:,0])
+#plt.show(block=False)
 
-adv_sample = op_concate(perturb,perturb_window,False) + X_test
-plt.figure()
-plt.plot(adv_sample[0,1000:2000,0])
-plt.show(block=False)
+#adv_sample = op_concate(perturb,perturb_window,False) + X_test
+#plt.figure()
+#plt.plot(adv_sample[0,1000:2000,0])
+#plt.show(block=False)
 
-plt.figure()
-plt.plot(X_test[0,1000:2000,0])
-plt.show(block=False)
+#plt.figure()
+#plt.plot(X_test[0,1000:2000,0])
+#plt.show(block=False)
