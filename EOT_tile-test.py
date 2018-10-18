@@ -150,10 +150,10 @@ plt.show(block=False)
 '''
 perturb_squeeze = np.squeeze(perturb, axis=2)
 if dis_metric == 1:
-    outputstr = './output/EOTtile_w'+sys.argv[4]+'_f1_l2_A'+sys.argv[1]+'T'+sys.argv[2]+'.out'
+    outputstr = './output/EOTtile_w'+sys.argv[4]+'_e'+sys.argv[5]+'_l2_A'+sys.argv[1]+'T'+sys.argv[2]+'.out'
 else:
     if dis_metric == 2:
-        outputstr = './output/EOTtile_w'+sys.argv[4]+'_f1_dtw_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
+        outputstr = './output/EOTtile_w'+sys.argv[4]+'_e'+sys.argv[5]+'_dtw_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
     else:
-        outputstr = './output/EOTtile_w' + sys.argv[4] + '_f1_smooth_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
+        outputstr = './output/EOTtile_w' + sys.argv[4]+'_e'+sys.argv[5] + '_smooth_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
 np.savetxt(outputstr, perturb_squeeze,delimiter=",")
