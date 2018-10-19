@@ -164,6 +164,7 @@ class EOT_tf_ATTACK(object):
         #self.loss_batch_rest = model.get_logits(self.batch_restimg)
 
         loss_softmax = tf.nn.softmax(self.loss_batch, axis=1)
+        self.loss_softmax = loss_softmax 
         loss_softmax_sum = tf.zeros([ensemble_size,1],tf_dtype)
         for i in range(1, self.ensemble_size):
             #tf_i = tf.expand_dims(tf.constant(i, dtype=tf.int32), axis=0)
