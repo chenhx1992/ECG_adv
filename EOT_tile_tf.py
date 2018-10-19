@@ -151,7 +151,6 @@ class EOT_tf_ATTACK(object):
         mean = tf.expand_dims(tf.tile(data_mean, [1, data_len]), 2)
         var = tf.expand_dims(tf.tile(data_var, [1, data_len]), 2)
         self.batch_newimg = (batch_newdata - mean) / tf.sqrt(var)
-
         self.loss_batch = model.get_logits(self.batch_newimg)
         self.batch_tlab = tf.tile(self.tlab, (self.batch_newimg.shape[0], 1))
         self.xent = tf.reduce_mean(
@@ -259,7 +258,7 @@ class EOT_tf_ATTACK(object):
                 for _, loss in enumerate(x):
                     if np.argmax(loss) != y:
                         res = res + 1
-                return res > 0.9 * self.ensemble_size
+                return res > 0.8 * self.ensemble_size
         def compare_single(x, y):
             if not isinstance(x, (float, int, np.int64)):
                 x = np.copy(x)
@@ -294,7 +293,7 @@ class EOT_tf_ATTACK(object):
         o_bestscore = [-1] * batch_size
         #        o_bestattack = np.copy(oimgs)
         o_bestattack = np.copy(imgs)
-
+        o_bestconst = [-1] * batch_size
         for outer_step in range(self.BINARY_SEARCH_STEPS):
             # completely reset adam's internal state.
             self.sess.run(self.init)
@@ -350,7 +349,7 @@ class EOT_tf_ATTACK(object):
                         o_bestl2[e] = l2
                         o_bestscore[e] = np.argmax(sc)
                         o_bestattack[e] = ii
-
+                        o_bestConst[e] = CONST
             # adjust the constant as needed
             for e in range(batch_size):
                 if compare_single(bestscore[e], np.argmax(batchlab[e])) and \
@@ -377,7 +376,8 @@ class EOT_tf_ATTACK(object):
         # return the best solution found
         o_bestl2 = np.array(o_bestl2)
         print(o_bestscore)
-        print(o_bestl2)
+        print("best distance:", o_bestl2)
+        print("best c:",o_bestconst)
         return o_bestattack
 
 # ---------------------------------------------------------------------------------
