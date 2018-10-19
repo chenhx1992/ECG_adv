@@ -36,7 +36,7 @@ def EOT_time(x, start, ensemble_size):
 
 def Seq1():
    tmp = np.zeros((1, 9001, 1), dtype=np_dtype)
-   tmp[:,1:9001,:]=1.
+   tmp[:,1:9001,:] = 1.
    return np.asarray(tmp, dtype=np_dtype)
 
 def zero_mean(batch_newdata):
@@ -50,7 +50,7 @@ class EOT_tf_ATTACK(object):
     def __init__(self, sess, model, batch_size, confidence,
                  targeted, learning_rate, perturb_window,
                  binary_search_steps, max_iterations, dis_metric, ensemble_size,
-                 abort_early, initial_const,
+                 ground_truth, abort_early, initial_const,
                  clip_min, clip_max, num_labels, shape):
         """
         Return a tensor that constructs adversarial examples for the given
@@ -111,7 +111,7 @@ class EOT_tf_ATTACK(object):
         self.model = model
         self.perturb_window = perturb_window
         self.repeat = binary_search_steps >= 10
-
+        self.ground_truth = ground_truth
         self.shape = shape = tuple([batch_size] + list(shape))
         shape_perturb = tuple([batch_size, perturb_window, 1])
 
@@ -155,12 +155,19 @@ class EOT_tf_ATTACK(object):
         batch_restdata = EOT_time(modifier_tile, self.ensemble_size, self.perturb_window) + self.timg
 
         self.batch_newimg = zero_mean(batch_newdata)
+        self.batch_restimg = zero_mean(batch_restdata)
 
         self.loss_batch = model.get_logits(self.batch_newimg)
+        #self.loss_batch_rest = model.get_logits(self.batch_restimg)
+
         self.batch_tlab = tf.tile(self.tlab, (self.batch_newimg.shape[0], 1))
+        #self.batch_tlab_rest = tf.tile(self.ground_truth, (self.batch_restimg.shape[0], 1))
+
         self.xent = tf.reduce_mean(
             tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.loss_batch, labels=self.batch_tlab))
 
+        #self.xent_rest = tf.reduce_mean(
+        #    tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.loss_batch_rest, labels=self.batch_tlab_rest))
 
         self.output = tf.expand_dims(tf.reduce_mean(self.loss_batch, axis=0), 0)
 
@@ -200,6 +207,7 @@ class EOT_tf_ATTACK(object):
         # sum up the losses
         self.loss2 = tf.reduce_sum(self.dist)
         # self.loss2 = tf.reduce_sum(self.sdtw)
+        #self.loss1 = tf.reduce_sum(self.const * (self.xent+self.xent_rest))
         self.loss1 = tf.reduce_sum(self.const * self.xent)
         self.loss = self.loss1 + self.loss2
 

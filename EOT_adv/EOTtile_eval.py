@@ -39,7 +39,7 @@ files = sorted(glob.glob(dataDir+"*.mat"))
 id = 5
 target = 1
 perturb_window = 200
-ensemble_size = 60
+ensemble_size = 30
 count = id-1
 record = "A{:05d}".format(id)
 local_filename = dataDir+record
@@ -82,6 +82,7 @@ for i in range(perturb_window):
     prob_att = model.predict(zero_mean(op_concate(perturb, perturb_window, i)+X_test))
     ind = np.argmax(prob_att)
     attack_success[ind] = attack_success[ind] + 1
+    print(prob_att)
     if ind != target:
         print(prob_att, "not success:", i)
 
