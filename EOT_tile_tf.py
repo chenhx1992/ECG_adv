@@ -177,7 +177,7 @@ class EOT_tf_ATTACK(object):
         self.loss_weight = tf.tile(tf.nn.softmax(loss_softmax_sum,axis=0), [1,num_labels])
         
         self.loss_batch = tf.multiply(self.loss_batch, self.loss_weight)
-
+        self.loss_batch = self.loss_batch*ensemble_size
         self.batch_tlab = tf.tile(self.tlab, (self.batch_newimg.shape[0], 1))
         #self.batch_tlab_rest = tf.tile(self.glab, (self.batch_restimg.shape[0], 1))
 
