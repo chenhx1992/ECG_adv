@@ -249,13 +249,17 @@ class EOT_tf_ATTACK(object):
                     x[:,y] += self.CONFIDENCE
 
             if self.TARGETED:
-                flag = True
+                res = 0
+                for _, loss in enumerate(x):
+                    if np.argmax(loss) == y:
+                        res = res + 1
+                return res > 0.9 * self.ensemble_size
+            else:
+                res = 0
                 for _, loss in enumerate(x):
                     if np.argmax(loss) != y:
-                        flag = False
-                return flag
-            else:
-                return x != y
+                        res = res + 1
+                return res > 0.9 * self.ensemble_size
         def compare_single(x, y):
             if not isinstance(x, (float, int, np.int64)):
                 x = np.copy(x)
