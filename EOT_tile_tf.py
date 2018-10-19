@@ -39,6 +39,11 @@ def Seq1():
    tmp[:,1:9001,:]=1.
    return np.asarray(tmp, dtype=np_dtype)
 
+def zero_mean(batch_newdata):
+    data_mean, data_var = tf.nn.moments(batch_newdata, axes=1)
+    mean = tf.expand_dims(tf.tile(data_mean, [1, data_len]), 2)
+    var = tf.expand_dims(tf.tile(data_var, [1, data_len]), 2)
+    return (batch_newdata - mean) / tf.sqrt(var)
 
 class EOT_tf_ATTACK(object):
 
@@ -147,11 +152,10 @@ class EOT_tf_ATTACK(object):
 
 
         batch_newdata = EOT_time(modifier_tile, 0, self.ensemble_size) + self.timg
-        #batch_restdata = EOT_time(modifier_tile, self.ensemble_size, self.perturb_window) + self.timg
-        data_mean, data_var = tf.nn.moments(batch_newdata, axes=1)
-        mean = tf.expand_dims(tf.tile(data_mean, [1, data_len]), 2)
-        var = tf.expand_dims(tf.tile(data_var, [1, data_len]), 2)
-        self.batch_newimg = (batch_newdata - mean) / tf.sqrt(var)
+        batch_restdata = EOT_time(modifier_tile, self.ensemble_size, self.perturb_window) + self.timg
+
+        self.batch_newimg = zero_mean(batch_newdata)
+
         self.loss_batch = model.get_logits(self.batch_newimg)
         self.batch_tlab = tf.tile(self.tlab, (self.batch_newimg.shape[0], 1))
         self.xent = tf.reduce_mean(
@@ -378,7 +382,7 @@ class EOT_tf_ATTACK(object):
         o_bestl2 = np.array(o_bestl2)
         print(o_bestscore)
         print("best distance:", o_bestl2)
-        print("best c:",o_bestconst)
+        print("best c:",o_bestConst)
         return o_bestattack
 
 # ---------------------------------------------------------------------------------
