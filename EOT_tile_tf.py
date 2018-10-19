@@ -210,7 +210,7 @@ class EOT_tf_ATTACK(object):
         # sum up the losses
         self.loss2 = tf.reduce_sum(self.dist)
         # self.loss2 = tf.reduce_sum(self.sdtw)
-        self.loss1 = tf.reduce_sum(self.const * (self.xent+self.xent_rest))
+        self.loss1 = tf.reduce_sum(self.const * self.xent+self.xent_rest)
         #self.loss1 = tf.reduce_sum(self.const * self.xent)
         self.loss = self.loss1 + self.loss2
 

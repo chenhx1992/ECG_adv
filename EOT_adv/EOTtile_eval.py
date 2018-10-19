@@ -38,7 +38,7 @@ files = sorted(glob.glob(dataDir+"*.mat"))
 
 id = 5
 target = 1
-perturb_window = 200
+perturb_window = 100
 ensemble_size = 30
 count = id-1
 record = "A{:05d}".format(id)
@@ -90,15 +90,15 @@ for i in range(perturb_window):
 print("attack success times:", attack_success)
 
 import matplotlib.pyplot as plt
-#plt.figure()
-#plt.plot(perturb[0,:,0])
-#plt.show(block=False)
+plt.figure()
+plt.plot(perturb[0,:,0])
+plt.show(block=False)
 
-#adv_sample = op_concate(perturb,perturb_window,False) + X_test
-#plt.figure()
-#plt.plot(adv_sample[0,1000:2000,0])
-#plt.show(block=False)
+adv_sample = op_concate(perturb,perturb_window,False) + X_test
+plt.figure()
+plt.plot(adv_sample[0,1000:2000,0])
+plt.show(block=False)
 
-#plt.figure()
-#plt.plot(X_test[0,1000:2000,0])
-#plt.show(block=False)
+plt.figure()
+plt.plot(X_test[0,1000:2000,0])
+plt.show(block=False)
