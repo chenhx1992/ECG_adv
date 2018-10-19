@@ -174,7 +174,7 @@ class EOT_tf_ATTACK(object):
             cross_loss_softmax = tf.reshape(tf.concat([l2, l1], axis=0), [ensemble_size, num_labels])
             loss_softmax_sum = loss_softmax_sum + tf.reshape(tf.reduce_sum(tf.multiply(loss_softmax, cross_loss_softmax), 1), [ensemble_size, 1])
         self.loss_softmax_sum = loss_softmax_sum
-        self.loss_weight = tf.tile(tf.nn.softmax(loss_softmax_sum), [1,num_labels])
+        self.loss_weight = tf.tile(tf.nn.softmax(loss_softmax_sum,axis=0), [1,num_labels])
         
         self.loss_batch = tf.multiply(self.loss_batch, self.loss_weight)
 
