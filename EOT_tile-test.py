@@ -118,6 +118,15 @@ print("time used:", time.time()-start_time)
 perturb = adv_sample - X_test
 
 perturb = perturb[:, 0:perturb_window, :]
+perturb_squeeze = np.squeeze(perturb, axis=2)
+if dis_metric == 1:
+    outputstr = './output/EOTtile_w'+sys.argv[4]+'_e'+sys.argv[5]+'_l2_A'+sys.argv[1]+'T'+sys.argv[2]+'.out'
+else:
+    if dis_metric == 2:
+        outputstr = './output/EOTtile_w'+sys.argv[4]+'_e'+sys.argv[5]+'_dtw_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
+    else:
+        outputstr = './output/EOTtile_w' + sys.argv[4]+'_e'+sys.argv[5] + '_smooth_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
+np.savetxt(outputstr, perturb_squeeze,delimiter=",")
 
 correct = 0
 attack_success = np.zeros(4)
@@ -149,12 +158,3 @@ plt.figure()
 plt.plot(X_test[0,1000:2000,0])
 plt.show(block=False)
 '''
-perturb_squeeze = np.squeeze(perturb, axis=2)
-if dis_metric == 1:
-    outputstr = './output/EOTtile_w'+sys.argv[4]+'_e'+sys.argv[5]+'_l2_A'+sys.argv[1]+'T'+sys.argv[2]+'.out'
-else:
-    if dis_metric == 2:
-        outputstr = './output/EOTtile_w'+sys.argv[4]+'_e'+sys.argv[5]+'_dtw_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
-    else:
-        outputstr = './output/EOTtile_w' + sys.argv[4]+'_e'+sys.argv[5] + '_smooth_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
-np.savetxt(outputstr, perturb_squeeze,delimiter=",")
