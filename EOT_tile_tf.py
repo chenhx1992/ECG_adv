@@ -158,19 +158,19 @@ class EOT_tf_ATTACK(object):
         batch_restdata = EOT_time(modifier_tile, self.ensemble_size, self.perturb_window) + self.timg
 
         self.batch_newimg = zero_mean(batch_newdata)
-        self.batch_restimg = zero_mean(batch_restdata)
+        #self.batch_restimg = zero_mean(batch_restdata)
 
         self.loss_batch = model.get_logits(self.batch_newimg)
-        self.loss_batch_rest = model.get_logits(self.batch_restimg)
+        #self.loss_batch_rest = model.get_logits(self.batch_restimg)
 
         self.batch_tlab = tf.tile(self.tlab, (self.batch_newimg.shape[0], 1))
-        self.batch_tlab_rest = tf.tile(self.glab, (self.batch_restimg.shape[0], 1))
+        #self.batch_tlab_rest = tf.tile(self.glab, (self.batch_restimg.shape[0], 1))
 
         self.xent = tf.reduce_mean(
             tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.loss_batch, labels=self.batch_tlab))
 
-        self.xent_rest = tf.reduce_mean(
-            tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.loss_batch_rest, labels=self.batch_tlab_rest))
+        #self.xent_rest = tf.reduce_mean(
+        #   tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.loss_batch_rest, labels=self.batch_tlab_rest))
 
         self.output = tf.expand_dims(tf.reduce_mean(self.loss_batch, axis=0), 0)
 
@@ -210,8 +210,8 @@ class EOT_tf_ATTACK(object):
         # sum up the losses
         self.loss2 = tf.reduce_sum(self.dist)
         # self.loss2 = tf.reduce_sum(self.sdtw)
-        self.loss1 = tf.reduce_sum(self.const * self.xent+ 500 * self.xent_rest)
-        #self.loss1 = tf.reduce_sum(self.const * self.xent)
+        #self.loss1 = tf.reduce_sum(self.const * self.xent+ 1000 * self.xent_rest)
+        self.loss1 = tf.reduce_sum(self.const * self.xent)
         self.loss = self.loss1 + self.loss2
 
         # Setup the adam optimizer and keep track of variables we're creating
