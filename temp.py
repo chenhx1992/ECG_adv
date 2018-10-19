@@ -4,7 +4,7 @@ import tensorflow as tf
 sess = tf.InteractiveSession()
 
 # Some tensor we want to print the value of
-a = tf.constant([[11][12][11][12][13][11][12]])
+a = tf.constant([[11],[12],[11],[12],[13],[11],[12]])
 
 b = tf.nn.softmax(a)
 
