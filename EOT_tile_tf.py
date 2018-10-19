@@ -160,8 +160,20 @@ class EOT_tf_ATTACK(object):
         self.batch_newimg = zero_mean(batch_newdata)
         #self.batch_restimg = zero_mean(batch_restdata)
 
-        self.loss_batch = model.get_logits(self.batch_newimg)
+        self.loss_batch = tf.reshape(model.get_logits(self.batch_newimg), [ensemble_size, num_labels])
         #self.loss_batch_rest = model.get_logits(self.batch_restimg)
+
+        loss_softmax = tf.nn.softmax(self.loss_batch, axis=1)
+        loss_softmax_sum = tf.zeros([ensemble_size,1],tf_dtype)
+        for i in range(1, self.ensemble_size):
+            tf_i = tf.expand_dims(tf.constant(i, dtype=tf.int32), axis=0)
+            p = tf.concat([tf_i, ensemble_size - tf_i], axis=0)
+            l1, l2 = tf.split(loss_softmax, p, axis=0)
+            cross_loss_softmax = tf.reshape(tf.concat([l2, l1], axis=0), [ensemble_size, num_labels])
+            loss_softmax_sum = loss_softmax_sum + tf.reshape(tf.reduce_sum(tf.multiply(loss_softmax, cross_loss_softmax), 1), [ensemble_size, 1])
+        self.loss_weight = tf.tile(tf.nn.softmax(loss_softmax_sum), [1,num_labels])
+
+        self.loss_batch = tf.multiply(self.loss_batch, self.loss_weight)
 
         self.batch_tlab = tf.tile(self.tlab, (self.batch_newimg.shape[0], 1))
         #self.batch_tlab_rest = tf.tile(self.glab, (self.batch_restimg.shape[0], 1))
@@ -335,19 +347,20 @@ class EOT_tf_ATTACK(object):
             prev = 1e6
             for iteration in range(self.MAX_ITERATIONS):
                 # perform the attack
-                _, l, l2s, scores, nimg, xent, loss_batch = self.sess.run([self.train,
+                _, l, l2s, scores, nimg, xent, loss_batch, loss_weight = self.sess.run([self.train,
                                                          self.loss,
                                                          self.dist,
                                                          self.output,
                                                          self.newimg,
                                                          self.xent,
-                                                         self.loss_batch])
+                                                         self.loss_batch,self.loss_weight])
 
 
                 print(
                     'Iteration {} of {}: loss={:.3g} " + "dis={:.3g} xent={:.3g}'.format(iteration, self.MAX_ITERATIONS, l,
                                                                                      np.mean(l2s), xent))
                 print('logits:', scores)
+
                 # check if we should abort search if we're getting nowhere.
                 if self.ABORT_EARLY and \
                         iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
@@ -368,6 +381,7 @@ class EOT_tf_ATTACK(object):
                         o_bestscore[e] = np.argmax(sc)
                         o_bestattack[e] = ii
                         o_bestConst[e] = CONST
+            print('weight:', loss_weight)
             # adjust the constant as needed
             for e in range(batch_size):
                 if compare_single(bestscore[e], np.argmax(batchlab[e])) and \
