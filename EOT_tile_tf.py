@@ -23,7 +23,7 @@ def ZERO():
     return np.asarray(0., dtype=np_dtype)
 
 
-def EOT_time(x, ensemble_size):
+def EOT_time(x, start, ensemble_size):
     def randomizing_EOT(x, i):
         rand_i = tf.expand_dims(tf.constant(i, dtype=tf.int32), axis=0)
         #rand_i = tf.expand_dims(tf.random_uniform((), 0, data_len, dtype=tf.int32), axis=0)
@@ -32,7 +32,7 @@ def EOT_time(x, ensemble_size):
         res = tf.reshape(tf.concat([x2, x1], axis=1), [1, data_len, 1])
         return res
 
-    return tf.concat([randomizing_EOT(x, i) for i in range(ensemble_size)], axis=0)
+    return tf.concat([randomizing_EOT(x, i) for i in range(start, ensemble_size)], axis=0)
 
 def Seq1():
    tmp = np.zeros((1, 9001, 1), dtype=np_dtype)
@@ -146,7 +146,8 @@ class EOT_tf_ATTACK(object):
         self.newimg = tf.slice(modifier_tile, (0, 0, 0), shape) + self.timg
 
 
-        batch_newdata = EOT_time(modifier_tile, self.ensemble_size) + self.timg
+        batch_newdata = EOT_time(modifier_tile, 0, self.ensemble_size) + self.timg
+        batch_restdata = EOT_time(modifier_tile, self.ensemble_size, self.perturb_window) + self.timg
         data_mean, data_var = tf.nn.moments(batch_newdata, axes=1)
         mean = tf.expand_dims(tf.tile(data_mean, [1, data_len]), 2)
         var = tf.expand_dims(tf.tile(data_var, [1, data_len]), 2)
@@ -293,7 +294,7 @@ class EOT_tf_ATTACK(object):
         o_bestscore = [-1] * batch_size
         #        o_bestattack = np.copy(oimgs)
         o_bestattack = np.copy(imgs)
-        o_bestconst = [-1] * batch_size
+        o_bestConst = [-1] * batch_size
         for outer_step in range(self.BINARY_SEARCH_STEPS):
             # completely reset adam's internal state.
             self.sess.run(self.init)
