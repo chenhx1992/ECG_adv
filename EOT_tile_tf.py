@@ -172,7 +172,8 @@ class EOT_tf_ATTACK(object):
             l1, l2 = tf.split(loss_softmax, p, axis=0)
             cross_loss_softmax = tf.reshape(tf.concat([l2, l1], axis=0), [ensemble_size, num_labels])
             loss_softmax_sum = loss_softmax_sum + tf.reshape(tf.reduce_sum(tf.multiply(loss_softmax, cross_loss_softmax), 1), [ensemble_size, 1])
-        self.x = tf.tile(tf.nn.softmax(loss_softmax_sum), [1,num_labels])
+
+        self.loss_weight = tf.tile(tf.nn.softmax(loss_softmax_sum), [1,num_labels])
 
         self.loss_batch = tf.multiply(self.loss_batch, self.loss_weight)
 
@@ -348,15 +349,15 @@ class EOT_tf_ATTACK(object):
             prev = 1e6
             for iteration in range(self.MAX_ITERATIONS):
                 # perform the attack
-                _, l, l2s, scores, nimg, xent, loss_batch, loss_softmax,loss_weight = self.sess.run([self.train,
+                _, l, l2s, scores, nimg, xent, loss_batch, loss_weight = self.sess.run([self.train,
                                                          self.loss,
                                                          self.dist,
                                                          self.output,
                                                          self.newimg,
                                                          self.xent,
-                                                         self.loss_batch,self.loss_softmax,self.loss_wegith])
+                                                         self.loss_batch,self.loss_softmax])
 
-
+                print('weight:', loss_weight)
                 print(
                     'Iteration {} of {}: loss={:.3g} " + "dis={:.3g} xent={:.3g}'.format(iteration, self.MAX_ITERATIONS, l,
                                                                                      np.mean(l2s), xent))
@@ -382,8 +383,7 @@ class EOT_tf_ATTACK(object):
                         o_bestscore[e] = np.argmax(sc)
                         o_bestattack[e] = ii
                         o_bestConst[e] = CONST
-            print('weight:', loss_weight)
-            print('softmax:',loss_softmax)
+
             # adjust the constant as needed
             for e in range(batch_size):
                 if compare_single(bestscore[e], np.argmax(batchlab[e])) and \
