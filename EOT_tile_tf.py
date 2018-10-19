@@ -147,7 +147,7 @@ class EOT_tf_ATTACK(object):
 
 
         batch_newdata = EOT_time(modifier_tile, 0, self.ensemble_size) + self.timg
-        batch_restdata = EOT_time(modifier_tile, self.ensemble_size, self.perturb_window) + self.timg
+        #batch_restdata = EOT_time(modifier_tile, self.ensemble_size, self.perturb_window) + self.timg
         data_mean, data_var = tf.nn.moments(batch_newdata, axes=1)
         mean = tf.expand_dims(tf.tile(data_mean, [1, data_len]), 2)
         var = tf.expand_dims(tf.tile(data_var, [1, data_len]), 2)
