@@ -103,7 +103,7 @@ start_time = time.time()
 perturb_window = int(sys.argv[4])
 ensemble_size = int(sys.argv[5])
 eotl2 = EOT_ATTACK(wrap, sess=sess)
-eotl2_params = {'y_target': target_a, 'learning_rate': 0.5, 'max_iterations': 200, 'initial_const': 10, 'perturb_window': perturb_window, 'dis_metric': dis_metric, 'ensemble_size': ensemble_size, 'ground_truth': ground_truth_a}
+eotl2_params = {'y_target': target_a, 'learning_rate': 0.5, 'max_iterations': 200, 'initial_const': 1, 'perturb_window': perturb_window, 'dis_metric': dis_metric, 'ensemble_size': ensemble_size, 'ground_truth': ground_truth_a}
 
 adv_x = eotl2.generate(x, **eotl2_params)
 adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
