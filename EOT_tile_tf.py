@@ -166,12 +166,13 @@ class EOT_tf_ATTACK(object):
         loss_softmax = tf.nn.softmax(self.loss_batch, axis=1)
         loss_softmax_sum = tf.zeros([ensemble_size,1],tf_dtype)
         for i in range(1, self.ensemble_size):
-            tf_i = tf.expand_dims(tf.constant(i, dtype=tf.int32), axis=0)
+            #tf_i = tf.expand_dims(tf.constant(i, dtype=tf.int32), axis=0)
+            tf_i = tf.constant([i], dtype=tf.int32)
             p = tf.concat([tf_i, ensemble_size - tf_i], axis=0)
             l1, l2 = tf.split(loss_softmax, p, axis=0)
             cross_loss_softmax = tf.reshape(tf.concat([l2, l1], axis=0), [ensemble_size, num_labels])
             loss_softmax_sum = loss_softmax_sum + tf.reshape(tf.reduce_sum(tf.multiply(loss_softmax, cross_loss_softmax), 1), [ensemble_size, 1])
-        self.loss_weight = tf.tile(tf.nn.softmax(loss_softmax_sum), [1,num_labels])
+        self.x = tf.tile(tf.nn.softmax(loss_softmax_sum), [1,num_labels])
 
         self.loss_batch = tf.multiply(self.loss_batch, self.loss_weight)
 
@@ -347,13 +348,13 @@ class EOT_tf_ATTACK(object):
             prev = 1e6
             for iteration in range(self.MAX_ITERATIONS):
                 # perform the attack
-                _, l, l2s, scores, nimg, xent, loss_batch, loss_weight = self.sess.run([self.train,
+                _, l, l2s, scores, nimg, xent, loss_batch, loss_softmax,loss_weight = self.sess.run([self.train,
                                                          self.loss,
                                                          self.dist,
                                                          self.output,
                                                          self.newimg,
                                                          self.xent,
-                                                         self.loss_batch,self.loss_weight])
+                                                         self.loss_batch,self.loss_softmax,self.loss_wegith])
 
 
                 print(
@@ -382,6 +383,7 @@ class EOT_tf_ATTACK(object):
                         o_bestattack[e] = ii
                         o_bestConst[e] = CONST
             print('weight:', loss_weight)
+            print('softmax:',loss_softmax)
             # adjust the constant as needed
             for e in range(batch_size):
                 if compare_single(bestscore[e], np.argmax(batchlab[e])) and \
