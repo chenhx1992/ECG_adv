@@ -244,6 +244,22 @@ class EOT_tf_ATTACK(object):
             if not isinstance(x, (float, int, np.int64)):
                 x = np.copy(x)
                 if self.TARGETED:
+                    x[:,y] -= self.CONFIDENCE
+                else:
+                    x[:,y] += self.CONFIDENCE
+
+            if self.TARGETED:
+                flag = True
+                for _, loss in enumerate(x):
+                    if np.argmax(loss) != y:
+                        flag = False
+                return flag
+            else:
+                return x != y
+        def compare_single(x, y):
+            if not isinstance(x, (float, int, np.int64)):
+                x = np.copy(x)
+                if self.TARGETED:
                     x[y] -= self.CONFIDENCE
                 else:
                     x[y] += self.CONFIDENCE
@@ -252,7 +268,6 @@ class EOT_tf_ATTACK(object):
                 return x == y
             else:
                 return x != y
-
         batch_size = self.batch_size
 
         #        oimgs = np.clip(imgs, self.clip_min, self.clip_max)
@@ -299,19 +314,19 @@ class EOT_tf_ATTACK(object):
             prev = 1e6
             for iteration in range(self.MAX_ITERATIONS):
                 # perform the attack
-                _, l, l2s, scores, nimg, xent = self.sess.run([self.train,
+                _, l, l2s, scores, nimg, xent, loss_batch = self.sess.run([self.train,
                                                          self.loss,
                                                          self.dist,
                                                          self.output,
                                                          self.newimg,
-                                                         self.xent])
+                                                         self.xent,
+                                                         self.loss_batch])
 
 
                 print(
                     'Iteration {} of {}: loss={:.3g} " + "dis={:.3g} xent={:.3g}'.format(iteration, self.MAX_ITERATIONS, l,
                                                                                      np.mean(l2s), xent))
                 print('logits:', scores)
-
                 # check if we should abort search if we're getting nowhere.
                 if self.ABORT_EARLY and \
                         iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
@@ -322,19 +337,19 @@ class EOT_tf_ATTACK(object):
                     prev = l
 
                 # adjust the best result found so far
-                for e, (l2, sc, ii) in enumerate(zip(itertools.repeat(l2s, len(scores)), scores, nimg)):
+                for e, (l2, sc, ii,lb) in enumerate(zip(itertools.repeat(l2s, len(scores)), scores, nimg, loss_batch)):
                     lab = np.argmax(batchlab[e])
-                    if l2 < bestl2[e] and compare(sc, lab):
+                    if l2 < bestl2[e] and compare(loss_batch, lab):
                         bestl2[e] = l2
                         bestscore[e] = np.argmax(sc)
-                    if l2 < o_bestl2[e] and compare(sc, lab):
+                    if l2 < o_bestl2[e] and compare(loss_batch, lab):
                         o_bestl2[e] = l2
                         o_bestscore[e] = np.argmax(sc)
                         o_bestattack[e] = ii
 
             # adjust the constant as needed
             for e in range(batch_size):
-                if compare(bestscore[e], np.argmax(batchlab[e])) and \
+                if compare_single(bestscore[e], np.argmax(batchlab[e])) and \
                         bestscore[e] != -1:
                     # success, divide const by two
                     upper_bound[e] = min(upper_bound[e], CONST[e])
