@@ -350,13 +350,13 @@ class EOT_tf_ATTACK(object):
             prev = 1e6
             for iteration in range(self.MAX_ITERATIONS):
                 # perform the attack
-                _, l, l2s, scores, nimg, xent, loss_batch, loss_weight = self.sess.run([self.train,
+                _, l, l2s, scores, nimg, xent, loss_batch, loss_weight,loss_softmax = self.sess.run([self.train,
                                                          self.loss,
                                                          self.dist,
                                                          self.output,
                                                          self.newimg,
                                                          self.xent,
-                                                         self.loss_batch,self.loss_softmax])
+                                                         self.loss_batch,self.loss_weight,self.loss_softmax])
 
                 print(
                     'Iteration {} of {}: loss={:.3g} " + "dis={:.3g} xent={:.3g}'.format(iteration, self.MAX_ITERATIONS, l,
@@ -384,7 +384,7 @@ class EOT_tf_ATTACK(object):
                         o_bestattack[e] = ii
                         o_bestConst[e] = CONST
             print("weight:",loss_weight)
-            print("loss_batch:",loss_batch)
+            print("loss_softmax:",loss_softmax)
             # adjust the constant as needed
             for e in range(batch_size):
                 if compare_single(bestscore[e], np.argmax(batchlab[e])) and \
