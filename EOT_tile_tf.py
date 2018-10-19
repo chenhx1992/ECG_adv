@@ -174,7 +174,7 @@ class EOT_tf_ATTACK(object):
             loss_softmax_sum = loss_softmax_sum + tf.reshape(tf.reduce_sum(tf.multiply(loss_softmax, cross_loss_softmax), 1), [ensemble_size, 1])
 
         self.loss_weight = tf.tile(tf.nn.softmax(loss_softmax_sum), [1,num_labels])
-
+        
         self.loss_batch = tf.multiply(self.loss_batch, self.loss_weight)
 
         self.batch_tlab = tf.tile(self.tlab, (self.batch_newimg.shape[0], 1))
@@ -357,7 +357,6 @@ class EOT_tf_ATTACK(object):
                                                          self.xent,
                                                          self.loss_batch,self.loss_softmax])
 
-                print('weight:', loss_weight)
                 print(
                     'Iteration {} of {}: loss={:.3g} " + "dis={:.3g} xent={:.3g}'.format(iteration, self.MAX_ITERATIONS, l,
                                                                                      np.mean(l2s), xent))
@@ -383,7 +382,8 @@ class EOT_tf_ATTACK(object):
                         o_bestscore[e] = np.argmax(sc)
                         o_bestattack[e] = ii
                         o_bestConst[e] = CONST
-
+            print("weight:",loss_weight)
+            print("loss_batch:",loss_batch)
             # adjust the constant as needed
             for e in range(batch_size):
                 if compare_single(bestscore[e], np.argmax(batchlab[e])) and \
