@@ -66,7 +66,7 @@ attack_success_all = np.zeros((4),dtype=int)
 for i, id_1 in enumerate(id_i):
     print(i)
     count = id_1 - 1
-    for j, id_2 in enumerate(id_A):
+    for j, id_2 in enumerate(id_N):
         record_1 = "A{:05d}".format(id_1)
         record_2 = "A{:05d}".format(id_2)
 
