@@ -63,10 +63,10 @@ model = load_model('../ResNet_30s_34lay_16conv.hdf5')
 attack_success = np.zeros((30, 30, 4),dtype=int)
 attack_success_all = np.zeros((4),dtype=int)
 
-for i, id_1 in enumerate(id_O):
+for i, id_1 in enumerate(id_i):
     print(i)
     count = id_1 - 1
-    for j, id_2 in enumerate(id_i):
+    for j, id_2 in enumerate(id_A):
         record_1 = "A{:05d}".format(id_1)
         record_2 = "A{:05d}".format(id_2)
 
