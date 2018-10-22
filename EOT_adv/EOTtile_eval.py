@@ -36,9 +36,9 @@ print("Loading ground truth file")
 csvfile = list(csv.reader(open('../REFERENCE-v3.csv')))
 files = sorted(glob.glob(dataDir+"*.mat"))
 
-id = 5
+id = 102
 target = 1
-perturb_window = 100
+perturb_window = 200
 ensemble_size = 30
 count = id-1
 record = "A{:05d}".format(id)
@@ -55,7 +55,7 @@ ground_truth_label = csvfile[count][1]
 ground_truth = classes.index(ground_truth_label)
 print('Ground truth:{}'.format(ground_truth))
 
-inputstr = '../output/EOTtile_w'+str(perturb_window)+'_e'+str(ensemble_size)+'_l2_A'+str(id)+'T'+str(target)+'.out'
+inputstr = '../output/EOTtile_w'+str(perturb_window)+'_e'+str(ensemble_size)+'_l2_A5'+'T'+str(target)+'.out'
 print("input file: ", inputstr)
 perturb = genfromtxt(inputstr, delimiter=',')
 dist = np.sum(perturb**2)/len(perturb) * 9000
@@ -90,15 +90,15 @@ for i in range(perturb_window):
 print("attack success times:", attack_success)
 
 import matplotlib.pyplot as plt
-plt.figure()
-plt.plot(perturb[0,:,0])
-plt.show(block=False)
+#plt.figure()
+#plt.plot(perturb[0,:,0])
+#plt.show(block=False)
 
-adv_sample = op_concate(perturb,perturb_window,False) + X_test
-plt.figure()
-plt.plot(adv_sample[0,1000:2000,0])
-plt.show(block=False)
+#adv_sample = op_concate(perturb,perturb_window,False) + X_test
+#plt.figure()
+#plt.plot(adv_sample[0,1000:2000,0])
+#plt.show(block=False)
 
-plt.figure()
-plt.plot(X_test[0,1000:2000,0])
-plt.show(block=False)
+#plt.figure()
+#plt.plot(X_test[0,1000:2000,0])
+#plt.show(block=False)
