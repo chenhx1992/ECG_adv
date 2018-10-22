@@ -25,7 +25,11 @@ def zero_mean(x):
     x = x - np.mean(x)
     x = x / np.std(x)
     return x
-
+def op_concate(x, p):
+    data_len = 9000
+    x1 = x[:, 0:p, :]
+    x2 = x[:, p:data_len, :]
+    return np.append(x2, x1, axis=1)
 # parameters
 dataDir = '../training_raw/'
 FS = 300
@@ -36,59 +40,59 @@ print("Loading ground truth file")
 csvfile = list(csv.reader(open('../REFERENCE-v3.csv')))
 files = sorted(glob.glob(dataDir+"*.mat"))
 
-id_1 = 51
-id_2 = 5
-target = 1
-count = id_1-1
-record_1 = "A{:05d}".format(id_1)
-record_2 = "A{:05d}".format(id_1)
+id_A = np.array([4,5,9,71,90,101,102,128,137,208,\
+                 216,225,231,253,267,271,282,301,375,422,\
+                 432,438,439,441,456,465,486,509,520,542])
+id_N = np.array([1,2,3,6,7,10,12,14,16,18,\
+                 19,21,25,26,28,32,33,35,36,37,\
+                 40,44,45,46,48,49,50,51,52,53])
+id_O = np.array([8,13,20,23,29,30,38,41,61,65,\
+                 69,74,77,82,88,92,96,110,114,115,\
+                 119,121,123,126,131,133,136,138,145,159])
 
-# Loading record 1
-local_filename = dataDir+record_1
-mat_data = scipy.io.loadmat(local_filename)
-data = mat_data['val']
-data = preprocess(data, WINDOW_SIZE)
-X_test_1 = np.float32(data)
-
-
-# Loading record 2
-local_filename = dataDir+record_2
-mat_data = scipy.io.loadmat(local_filename)
-data = mat_data['val']
-data = preprocess(data, WINDOW_SIZE)
-X_test_2 = np.float32(data)
-
-#loading ground truth
-ground_truth_label = csvfile[count][1]
-ground_truth = classes.index(ground_truth_label)
-print('Ground truth:{}'.format(ground_truth))
-
-
-
-def op_concate(x, p):
-    data_len = 9000
-    x1 = x[:, 0:p, :]
-    x2 = x[:, p:data_len, :]
-    return np.append(x2, x1, axis=1)
-
+#id_A = np.array([4])
+#id_N = np.array([1])
 print("Loading model")
 model = load_model('../ResNet_30s_34lay_16conv.hdf5')
+attack_success = np.zeros((30, 30, 4),dtype=int)
+attack_success_all = np.zeros((4),dtype=int)
+
+for i, id_1 in enumerate(id_A):
+    count = id_1 - 1
+    for j, id_2 in enumerate(id_N):
+        record_1 = "A{:05d}".format(id_1)
+        record_2 = "A{:05d}".format(id_2)
+
+        # Loading record 1
+        local_filename = dataDir + record_1
+        mat_data = scipy.io.loadmat(local_filename)
+        data = mat_data['val']
+        data = preprocess(data, WINDOW_SIZE)
+        X_test_1 = np.float32(data)
+
+        # Loading record 2
+        local_filename = dataDir + record_2
+        mat_data = scipy.io.loadmat(local_filename)
+        data = mat_data['val']
+        data = preprocess(data, WINDOW_SIZE)
+        X_test_2 = np.float32(data)
+
+        # Generate test data
+        test_all = zero_mean(X_test_1 + X_test_2)
+        for _ in range(99):
+            p = randrange(0, 9000)
+            test_all = np.append(test_all, zero_mean(op_concate(X_test_2, p) + X_test_1), axis=0)
+
+        prob = model.predict(test_all)
+        ind = np.argmax(prob, axis=1)
+        for _, it in enumerate(ind):
+            attack_success[i,j,it] = attack_success[i, j, it] + 1
+            attack_success_all[it] = attack_success_all[it] + 1
 
 
-attack_success = np.zeros(4)
-
-test_all = zero_mean(X_test_1 + X_test_2)
-for i in range(99):
-    p = randrange(0, 9000)
-    test_all = np.append(test_all, zero_mean(op_concate(X_test_2, p) + X_test_1), axis=0)
-
-prob = model.predict(test_all)
-ind = np.argmax(prob, axis=1)
-for _,it in enumerate(ind):
-    attack_success[it] = attack_success[it] + 1
-print(test_all.shape)
 #print("correct:", correct)
-print("attack success times:", attack_success)
+attack_success_all = attack_success_all/np.sum(attack_success_all)
+print("attack success times:", attack_success_all)
 
 import matplotlib.pyplot as plt
 #plt.figure()
