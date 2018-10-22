@@ -355,7 +355,7 @@ class EOT_tf_ATTACK(object):
                                                          self.output,
                                                          self.newimg,
                                                          self.xent,
-                                                         self.loss_batch,self.loss_softmax])
+                                                         self.loss_batch,self.loss_weight])
 
                 print('weight:', loss_weight)
                 print(
