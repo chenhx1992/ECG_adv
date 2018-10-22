@@ -84,6 +84,9 @@ for i, id_1 in enumerate(id_i):
         data = preprocess(data, WINDOW_SIZE)
         X_test_2 = np.float32(data)
 
+        dist = np.linalg.norm(X_test_2)
+        print("distance:", dist)
+
         # Generate test data
         test_all = zero_mean(X_test_1 + X_test_2)
         for _ in range(99):

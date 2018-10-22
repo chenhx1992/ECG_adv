@@ -58,7 +58,7 @@ print('Ground truth:{}'.format(ground_truth))
 inputstr = '../output/EOTtile_w'+str(perturb_window)+'_e'+str(ensemble_size)+'_l2_A5'+'T'+str(target)+'.out'
 print("input file: ", inputstr)
 perturb = genfromtxt(inputstr, delimiter=',')
-dist = np.sum(perturb**2)/len(perturb) * 9000
+dist = np.linalg.norm(perturb)
 print("distance:", dist)
 perturb = np.expand_dims(perturb, axis=0)
 perturb = np.expand_dims(perturb, axis=2)
