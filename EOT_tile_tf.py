@@ -357,7 +357,6 @@ class EOT_tf_ATTACK(object):
                                                          self.xent,
                                                          self.loss_batch,self.loss_weight])
 
-                print('weight:', loss_weight)
                 print(
                     'Iteration {} of {}: loss={:.3g} " + "dis={:.3g} xent={:.3g}'.format(iteration, self.MAX_ITERATIONS, l,
                                                                                      np.mean(l2s), xent))
