@@ -137,9 +137,13 @@ for i in range(perturb_window):
     else:
         test_all = np.append(test_all, zero_mean(op_concate(perturb, perturb_window, i)+X_test), axis=0)
 
-    prob_att = model.predict()
-    ind = np.argmax(prob_att)
-    attack_success[ind] = attack_success[ind] + 1
+prob_att = model.predict(test_all)
+ind = np.argmax(prob_att)
+attack_success[ind] = attack_success[ind] + 1
+prob = model.predict(test_all)
+ind = np.argmax(prob, axis=1)
+for _, it in enumerate(ind):
+    attack_success[it] = attack_success[it] + 1
     #if i < ensemble_size and ind != int(sys.argv[2]):
     #    not_success_in_ensemble_size = not_success_in_ensemble_size + 1
 
