@@ -100,6 +100,8 @@ for i, id_1 in enumerate(id_A):
     prob = model.predict(test_all)
     ind = np.argmax(prob, axis=1)
     for _, it in enumerate(ind):
+        print("id:",id_1)
+        print("attack success:", attack_success)
         attack_success[i, it] = attack_success[i, it] + 1
         attack_success_all[it] = attack_success_all[it] + 1
 
@@ -109,7 +111,7 @@ for i, id_1 in enumerate(id_A):
 
 
 #print("correct:", correct)
-print("attack success:",attack_success)
+
 attack_success_all = attack_success_all/np.sum(attack_success_all)
 print("attack success all:", attack_success_all)
 print("attack success")
