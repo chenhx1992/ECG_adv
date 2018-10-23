@@ -155,7 +155,7 @@ class EOT_tf_ATTACK(object):
 
 
         batch_newdata = EOT_time(modifier_tile, 0, self.ensemble_size) + self.timg
-        batch_restdata = EOT_time(modifier_tile, self.ensemble_size, self.perturb_window) + self.timg
+        #batch_restdata = EOT_time(modifier_tile, self.ensemble_size, self.perturb_window) + self.timg
 
         self.batch_newimg = zero_mean(batch_newdata)
         #self.batch_restimg = zero_mean(batch_restdata)
