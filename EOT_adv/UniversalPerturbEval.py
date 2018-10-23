@@ -6,6 +6,7 @@ import glob
 import scipy.io
 from numpy import genfromtxt
 import math
+import sys
 def preprocess(x, maxlen):
     x = np.nan_to_num(x)
     x = x[0, 0:maxlen]
@@ -64,10 +65,10 @@ attack_success = np.zeros((30, 4),dtype=int)
 attack_success_all = np.zeros((4),dtype=int)
 
 #loading perturbation
-perturb_window = 200
-ensemble_size = 30
-id_perturb = 65
-target = 3
+perturb_window = int(sys.argv[3])
+ensemble_size = int(sys.argv[4])
+id_perturb = int(sys.argv[1])
+target = int(sys.argv[2])
 
 inputstr = '../output/EOTtile_w'+str(perturb_window)+'_e'+str(ensemble_size)+'_l2_A'+str(id_perturb)+'T'+str(target)+'.out'
 print("input file: ", inputstr)
