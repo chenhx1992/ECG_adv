@@ -65,9 +65,9 @@ attack_success_all = np.zeros((4),dtype=int)
 
 #loading perturbation
 perturb_window = 200
-ensemble_size = 200
-id_perturb = 5
-target = 1
+ensemble_size = 30
+id_perturb = 10
+target = 0
 
 inputstr = '../output/EOTtile_w'+str(perturb_window)+'_e'+str(ensemble_size)+'_l2_A'+str(id_perturb)+'T'+str(target)+'.out'
 print("input file: ", inputstr)
@@ -77,7 +77,7 @@ print("distance:", dist)
 perturb = np.expand_dims(perturb, axis=0)
 perturb = np.expand_dims(perturb, axis=2)
 
-for i, id_1 in enumerate(id_A):
+for i, id_1 in enumerate(id_O):
     print(i)
     count = id_1 - 1
     record_1 = "A{:05d}".format(id_1)
