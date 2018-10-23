@@ -64,8 +64,8 @@ attack_success = np.zeros((30, 4),dtype=int)
 attack_success_all = np.zeros((4),dtype=int)
 
 #loading perturbation
-perturb_window = 100
-ensemble_size = 100
+perturb_window = 200
+ensemble_size = 50
 id_perturb = 96
 target = 0
 
