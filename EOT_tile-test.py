@@ -103,7 +103,7 @@ start_time = time.time()
 perturb_window = int(sys.argv[4])
 ensemble_size = int(sys.argv[5])
 eotl2 = EOT_ATTACK(wrap, sess=sess)
-eotl2_params = {'y_target': target_a, 'learning_rate': 0.5, 'max_iterations': 200, 'initial_const': 10, 'perturb_window': perturb_window, 'dis_metric': dis_metric, 'ensemble_size': ensemble_size, 'ground_truth': ground_truth_a}
+eotl2_params = {'y_target': target_a, 'learning_rate': 0.1, 'max_iterations': 500, 'initial_const': 100, 'perturb_window': perturb_window, 'dis_metric': dis_metric, 'ensemble_size': ensemble_size, 'ground_truth': ground_truth_a}
 
 adv_x = eotl2.generate(x, **eotl2_params)
 adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
@@ -118,15 +118,6 @@ print("time used:", time.time()-start_time)
 perturb = adv_sample - X_test
 
 perturb = perturb[:, 0:perturb_window, :]
-perturb_squeeze = np.squeeze(perturb, axis=2)
-if dis_metric == 1:
-    outputstr = './output/EOTtile_w'+sys.argv[4]+'_e'+sys.argv[5]+'_l2_A'+sys.argv[1]+'T'+sys.argv[2]+'.out'
-else:
-    if dis_metric == 2:
-        outputstr = './output/EOTtile_w'+sys.argv[4]+'_e'+sys.argv[5]+'_dtw_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
-    else:
-        outputstr = './output/EOTtile_w' + sys.argv[4]+'_e'+sys.argv[5] + '_smooth_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
-np.savetxt(outputstr, perturb_squeeze,delimiter=",")
 
 correct = 0
 attack_success = np.zeros(4)
@@ -142,13 +133,11 @@ prob = model.predict(test_all)
 ind = np.argmax(prob, axis=1)
 for _, it in enumerate(ind):
     attack_success[it] = attack_success[it] + 1
-    #if i < ensemble_size and ind != int(sys.argv[2]):
-    #    not_success_in_ensemble_size = not_success_in_ensemble_size + 1
 
 
 
-#print("not_success_in_ensemble_size:", not_success_in_ensemble_size)
 
+#print("correct:", correct)
 print("attack success times:", attack_success)
 '''
 import matplotlib.pyplot as plt
@@ -165,3 +154,12 @@ plt.figure()
 plt.plot(X_test[0,1000:2000,0])
 plt.show(block=False)
 '''
+perturb_squeeze = np.squeeze(perturb, axis=2)
+if dis_metric == 1:
+    outputstr = './output/EOTtile_w'+sys.argv[4]+'_e'+sys.argv[5]+'_l2_A'+sys.argv[1]+'T'+sys.argv[2]+'.out'
+else:
+    if dis_metric == 2:
+        outputstr = './output/EOTtile_w'+sys.argv[4]+'_e'+sys.argv[5]+'_dtw_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
+    else:
+        outputstr = './output/EOTtile_w' + sys.argv[4]+'_e'+sys.argv[5] + '_smooth_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
+np.savetxt(outputstr, perturb_squeeze,delimiter=",")

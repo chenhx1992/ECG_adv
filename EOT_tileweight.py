@@ -77,7 +77,7 @@ class EOT_ATTACK(Attack):
         :param clip_max: (optional float) Maximum input component value
         """
         import tensorflow as tf
-        from EOT_tile_tf import EOT_tf_ATTACK
+        from EOT_tileweight_tf import EOT_tf_ATTACK
         self.parse_params(**kwargs)
 
         labels, nb_classes = self.get_or_guess_labels(x, kwargs)

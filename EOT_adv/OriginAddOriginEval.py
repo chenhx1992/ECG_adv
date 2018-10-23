@@ -88,15 +88,17 @@ for i, id_1 in enumerate(id_i):
         print("distance:", dist)
 
         # Generate test data
-        test_all = zero_mean(X_test_1 + X_test_2)
-        for _ in range(99):
+        for ii in range(100):
             p = randrange(0, 9000)
-            test_all = np.append(test_all, zero_mean(op_concate(X_test_2, p) + X_test_1), axis=0)
+            if ii == 0:
+                test_all = zero_mean(op_concate(X_test_2, p) + X_test_1)
+            else:
+                test_all = np.append(test_all, zero_mean(op_concate(X_test_2, p) + X_test_1), axis=0)
 
         prob = model.predict(test_all)
         ind = np.argmax(prob, axis=1)
         for _, it in enumerate(ind):
-            attack_success[i,j,it] = attack_success[i, j, it] + 1
+            attack_success[i, j, it] = attack_success[i, j, it] + 1
             attack_success_all[it] = attack_success_all[it] + 1
 
 
