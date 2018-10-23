@@ -109,9 +109,10 @@ for i, id_1 in enumerate(id_A):
 
 
 #print("correct:", correct)
+print("attack success:",attack_success)
 attack_success_all = attack_success_all/np.sum(attack_success_all)
-print("attack success times:", attack_success_all)
-
+print("attack success all:", attack_success_all)
+print("attack success")
 import matplotlib.pyplot as plt
 #plt.figure()
 #plt.plot(perturb[0,:,0])
