@@ -66,7 +66,7 @@ attack_success_all = np.zeros((4),dtype=int)
 #loading perturbation
 perturb_window = 100
 ensemble_size = 100
-id_perturb = 65
+id_perturb = 96
 target = 0
 
 inputstr = '../output/EOTtile_w'+str(perturb_window)+'_e'+str(ensemble_size)+'_l2_A'+str(id_perturb)+'T'+str(target)+'.out'
