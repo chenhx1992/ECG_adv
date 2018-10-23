@@ -67,7 +67,7 @@ attack_success_all = np.zeros((4),dtype=int)
 perturb_window = 200
 ensemble_size = 50
 id_perturb = 10
-target = 0
+target = 2
 
 inputstr = '../output/EOTtile_w'+str(perturb_window)+'_e'+str(ensemble_size)+'_l2_A'+str(id_perturb)+'T'+str(target)+'.out'
 print("input file: ", inputstr)
