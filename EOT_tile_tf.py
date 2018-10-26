@@ -216,9 +216,7 @@ class EOT_tf_ATTACK(object):
 
         # Setup the adam optimizer and keep track of variables we're creating
         start_vars = set(x.name for x in tf.global_variables())
-        #optimizer = tf.train.AdamOptimizer(self.LEARNING_RATE)
-        optimizer = tf.train.GradientDescentOptimizer(self.LEARNING_RATE)
-
+        optimizer = tf.train.AdamOptimizer(self.LEARNING_RATE)
         self.train = optimizer.minimize(self.loss, var_list=[modifier])
 
         #        tf.summary.scalar('loss', self.loss)
