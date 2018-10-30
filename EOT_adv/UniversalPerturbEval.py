@@ -68,17 +68,19 @@ perturb_window = int(sys.argv[3])
 ensemble_size = int(sys.argv[4])
 id_perturb = int(sys.argv[1])
 target = int(sys.argv[2])
-if target == 0:
-    target_file = np.genfromtxt('data_select_A.csv', delimiter=',')
+ground_truth = int(csvfile[id_perturb-1][1])
+print(ground_truth)
+if ground_truth == 0:
+    target_file = np.genfromtxt('..\data_select_A.csv', delimiter=',')
     target_id = target_file[:,3]
-if target == 1:
-    target_file = np.genfromtxt('data_select_N.csv', delimiter=',')
+if ground_truth == 1:
+    target_file = np.genfromtxt('..\data_select_N.csv', delimiter=',')
     target_id = target_file[:,3]
-if target == 2:
-    target_file = np.genfromtxt('data_select_O.csv', delimiter=',')
+if ground_truth == 2:
+    target_file = np.genfromtxt('..\data_select_O.csv', delimiter=',')
     target_id = target_file[:,3]
-if target == 3:
-    target_file = np.genfromtxt('data_select_i.csv', delimiter=',')
+if ground_truth == 3:
+    target_file = np.genfromtxt('..\data_select_i.csv', delimiter=',')
     target_id = target_file[:,3]
 
 
