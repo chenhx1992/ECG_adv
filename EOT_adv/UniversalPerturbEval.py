@@ -40,7 +40,7 @@ classes = ['A', 'N', 'O','~']
 print("Loading ground truth file")
 csvfile = list(csv.reader(open('../REFERENCE-v3.csv')))
 files = sorted(glob.glob(dataDir+"*.mat"))
-
+'''
 id_A = np.array([4,5,9,71,90,101,102,128,137,208,\
                  216,225,231,253,267,271,282,301,375,422,\
                  432,438,439,441,456,465,486,509,520,542])
@@ -56,9 +56,8 @@ id_O = np.array([8,13,20,23,29,30,38,41,61,65,\
 id_i = np.array([22,34,56,106,125,139,164,201,205,307,\
                  370,445,474,524,537,585,591,619,629,690,\
                  700,705,761,774,813,984,988,1006,1048,1063])
+'''
 
-#id_A = np.array([4])
-#id_N = np.array([1])
 print("Loading model")
 model = load_model('../ResNet_30s_34lay_16conv.hdf5')
 attack_success = np.zeros((30, 4),dtype=int)
@@ -69,6 +68,19 @@ perturb_window = int(sys.argv[3])
 ensemble_size = int(sys.argv[4])
 id_perturb = int(sys.argv[1])
 target = int(sys.argv[2])
+if target == 0:
+    target_file = np.genfromtxt('data_select_A.csv', delimiter=',')
+    target_id = target_file[:,3]
+if target == 1:
+    target_file = np.genfromtxt('data_select_N.csv', delimiter=',')
+    target_id = target_file[:,3]
+if target == 2:
+    target_file = np.genfromtxt('data_select_O.csv', delimiter=',')
+    target_id = target_file[:,3]
+if target == 3:
+    target_file = np.genfromtxt('data_select_i.csv', delimiter=',')
+    target_id = target_file[:,3]
+
 
 inputstr = '../output/EOTtile_w'+str(perturb_window)+'_e'+str(ensemble_size)+'_l2_A'+str(id_perturb)+'T'+str(target)+'.out'
 print("input file: ", inputstr)
@@ -78,8 +90,9 @@ print("distance:", dist)
 perturb = np.expand_dims(perturb, axis=0)
 perturb = np.expand_dims(perturb, axis=2)
 
-for i, id_1 in enumerate(id_A):
+for i, id_float in enumerate(target_id):
     print(i)
+    id_1 = int(id_float)
     count = id_1 - 1
     record_1 = "A{:05d}".format(id_1)
 

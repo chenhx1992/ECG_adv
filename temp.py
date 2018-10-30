@@ -1,5 +1,21 @@
+import csv
 import numpy as np
+a = np.genfromtxt('data_select_A.csv', delimiter=',', dtype=)
+
+b = a[:,3]
+
+
+
+
+
+
+
+
+
+
+
 import tensorflow as tf
+
 
 sess = tf.InteractiveSession()
 tf_dtype = tf.as_dtype('float32')
