@@ -71,16 +71,16 @@ target = int(sys.argv[2])
 ground_truth =  ground_truth = classes.index(csvfile[id_perturb-1][1])
 print(ground_truth)
 if ground_truth == 0:
-    target_file = np.genfromtxt('..\data_select_A.csv', delimiter=',')
+    target_file = np.genfromtxt('../data_select_A.csv', delimiter=',')
     target_id = target_file[:,3]
 if ground_truth == 1:
-    target_file = np.genfromtxt('..\data_select_N.csv', delimiter=',')
+    target_file = np.genfromtxt('../data_select_N.csv', delimiter=',')
     target_id = target_file[:,3]
 if ground_truth == 2:
-    target_file = np.genfromtxt('..\data_select_O.csv', delimiter=',')
+    target_file = np.genfromtxt('../data_select_O.csv', delimiter=',')
     target_id = target_file[:,3]
 if ground_truth == 3:
-    target_file = np.genfromtxt('..\data_select_i.csv', delimiter=',')
+    target_file = np.genfromtxt('../data_select_i.csv', delimiter=',')
     target_id = target_file[:,3]
 
 
