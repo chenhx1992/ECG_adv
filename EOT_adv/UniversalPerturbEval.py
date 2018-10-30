@@ -7,6 +7,7 @@ import scipy.io
 from numpy import genfromtxt
 import math
 import sys
+import time
 def preprocess(x, maxlen):
     x = np.nan_to_num(x)
     x = x[0, 0:maxlen]
@@ -57,19 +58,19 @@ id_i = np.array([22,34,56,106,125,139,164,201,205,307,\
                  370,445,474,524,537,585,591,619,629,690,\
                  700,705,761,774,813,984,988,1006,1048,1063])
 '''
-
+start_time = time.time()
 print("Loading model")
 model = load_model('../ResNet_30s_34lay_16conv.hdf5')
-attack_success = np.zeros((30, 4),dtype=int)
-attack_success_all = np.zeros((4),dtype=int)
+
 
 #loading perturbation
 perturb_window = int(sys.argv[3])
 ensemble_size = int(sys.argv[4])
 id_perturb = int(sys.argv[1])
 target = int(sys.argv[2])
-ground_truth =  ground_truth = classes.index(csvfile[id_perturb-1][1])
+ground_truth = ground_truth = classes.index(csvfile[id_perturb-1][1])
 print(ground_truth)
+
 if ground_truth == 0:
     target_file = np.genfromtxt('../data_select_A.csv', delimiter=',')
     target_id = target_file[:,3]
@@ -84,6 +85,7 @@ if ground_truth == 3:
     target_id = target_file[:,3]
 
 
+attack_success_all = np.zeros((4),dtype=int)
 inputstr = '../output/EOTtile_w'+str(perturb_window)+'_e'+str(ensemble_size)+'_l2_A'+str(id_perturb)+'T'+str(target)+'.out'
 print("input file: ", inputstr)
 perturb = genfromtxt(inputstr, delimiter=',')
@@ -93,7 +95,6 @@ perturb = np.expand_dims(perturb, axis=0)
 perturb = np.expand_dims(perturb, axis=2)
 
 for i, id_float in enumerate(target_id):
-    print(i)
     id_1 = int(id_float)
     count = id_1 - 1
     record_1 = "A{:05d}".format(id_1)
@@ -114,11 +115,12 @@ for i, id_float in enumerate(target_id):
 
     prob = model.predict(test_all)
     ind = np.argmax(prob, axis=1)
+    attack_success = np.zeros((4), dtype=int)
     for _, it in enumerate(ind):
-        attack_success[i, it] = attack_success[i, it] + 1
+        attack_success[it] = attack_success[it] + 1
         attack_success_all[it] = attack_success_all[it] + 1
     print("id:", id_1)
-    print("attack success:", attack_success[i, :])
+    print("attack success:", attack_success)
 
 
 
@@ -129,6 +131,7 @@ for i, id_float in enumerate(target_id):
 attack_success_all = attack_success_all/np.sum(attack_success_all)
 print("attack success all:", attack_success_all)
 print("attack success")
+print("time:",time.time()-start_time)
 import matplotlib.pyplot as plt
 #plt.figure()
 #plt.plot(perturb[0,:,0])
