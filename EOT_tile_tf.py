@@ -51,7 +51,7 @@ class EOT_tf_ATTACK(object):
                  targeted, learning_rate, perturb_window,
                  binary_search_steps, max_iterations, dis_metric, ensemble_size,
                  ground_truth, abort_early, initial_const,
-                 clip_min, clip_max, num_labels, shape):
+                 dist_tolerance, clip_min, clip_max, num_labels, shape):
         """
         Return a tensor that constructs adversarial examples for the given
         input. Generate uses tf.py_func in order to operate over tensors.
@@ -106,6 +106,7 @@ class EOT_tf_ATTACK(object):
         self.CONFIDENCE = confidence
         self.initial_const = initial_const
         self.batch_size = batch_size
+        self.dist_tolerance = dist_tolerance
         self.clip_min = clip_min
         self.clip_max = clip_max
         self.model = model
@@ -311,6 +312,7 @@ class EOT_tf_ATTACK(object):
         #        o_bestattack = np.copy(oimgs)
         o_bestattack = np.copy(imgs)
         o_bestConst = [-1] * batch_size
+        o_bestdist = [-1] * batch_size
         for outer_step in range(self.BINARY_SEARCH_STEPS):
             # completely reset adam's internal state.
             self.sess.run(self.init)
@@ -320,6 +322,7 @@ class EOT_tf_ATTACK(object):
             print(batchlab)
             print(batchglab)
             bestl2 = [1e10] * batch_size
+            bestdist = [-1] * batch_size
             bestscore = [-1] * batch_size
             _logger.debug("  Binary search step {} of {}".
                           format(outer_step, self.BINARY_SEARCH_STEPS))
@@ -360,20 +363,22 @@ class EOT_tf_ATTACK(object):
                     prev = l
 
                 # adjust the best result found so far
-                for e, (l2, sc, ii,lb) in enumerate(zip(itertools.repeat(l, len(scores)), scores, nimg, loss_batch)):
+                for e, (l2, sc, ii, dist) in enumerate(zip(itertools.repeat(l, len(scores)), scores, nimg, l2s)):
                     lab = np.argmax(batchlab[e])
                     if l2 < bestl2[e] and compare_single(sc, lab):
                         bestl2[e] = l2
                         bestscore[e] = np.argmax(sc)
+                        bestdist[e] = dist
                     if l2 < o_bestl2[e] and compare_single(sc, lab):
                         o_bestl2[e] = l2
                         o_bestscore[e] = np.argmax(sc)
                         o_bestattack[e] = ii
                         o_bestConst[e] = CONST
+                        o_bestdist[e] = dist
             # adjust the constant as needed
             for e in range(batch_size):
                 if compare_single(bestscore[e], np.argmax(batchlab[e])) and \
-                        bestscore[e] != -1:
+                        bestscore[e] != -1 and bestdist > self.dist_tolerance:
                     # success, divide const by two
                     upper_bound[e] = min(upper_bound[e], CONST[e])
                     if upper_bound[e] < 1e9:
@@ -396,7 +401,7 @@ class EOT_tf_ATTACK(object):
         # return the best solution found
         o_bestl2 = np.array(o_bestl2)
         print(o_bestscore)
-        print("best distance:", o_bestl2)
+        print("best distance:", o_bestdist)
         print("best c:",o_bestConst)
         return o_bestattack
 
