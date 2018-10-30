@@ -68,7 +68,7 @@ perturb_window = int(sys.argv[3])
 ensemble_size = int(sys.argv[4])
 id_perturb = int(sys.argv[1])
 target = int(sys.argv[2])
-ground_truth = int(csvfile[id_perturb-1][1])
+ground_truth =  ground_truth = classes.index(csvfile[id_perturb-1][1])
 print(ground_truth)
 if ground_truth == 0:
     target_file = np.genfromtxt('..\data_select_A.csv', delimiter=',')
