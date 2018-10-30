@@ -353,6 +353,7 @@ class EOT_tf_ATTACK(object):
                     'Iteration {} of {}: loss={:.3g} " + "dis={:.3g} xent={:.3g}'.format(iteration, self.MAX_ITERATIONS, l,
                                                                                      np.mean(l2s), xent))
                 print('logits:', scores)
+
                 # check if we should abort search if we're getting nowhere.
                 if self.ABORT_EARLY and \
                         iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
@@ -378,7 +379,7 @@ class EOT_tf_ATTACK(object):
             # adjust the constant as needed
             for e in range(batch_size):
                 if compare_single(bestscore[e], np.argmax(batchlab[e])) and \
-                        bestscore[e] != -1 and bestdist > self.dist_tolerance:
+                        bestscore[e] != -1 and bestdist[e] > self.dist_tolerance:
                     # success, divide const by two
                     upper_bound[e] = min(upper_bound[e], CONST[e])
                     if upper_bound[e] < 1e9:
