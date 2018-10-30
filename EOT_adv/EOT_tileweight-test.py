@@ -13,7 +13,7 @@ import scipy.io
 import glob
 import numpy as np
 import sys
-from EOT_tileweight import EOT_ATTACK
+from EOT_adv.EOT_tileweight import EOT_ATTACK
 import math
 
 # parameters

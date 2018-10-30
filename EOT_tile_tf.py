@@ -51,7 +51,7 @@ class EOT_tf_ATTACK(object):
                  targeted, learning_rate, perturb_window,
                  binary_search_steps, max_iterations, dis_metric, ensemble_size,
                  ground_truth, abort_early, initial_const,
-                 dist_tolerance, clip_min, clip_max, num_labels, shape):
+                 clip_min, clip_max, dist_tolerance, num_labels, shape):
         """
         Return a tensor that constructs adversarial examples for the given
         input. Generate uses tf.py_func in order to operate over tensors.
@@ -353,7 +353,7 @@ class EOT_tf_ATTACK(object):
                     'Iteration {} of {}: loss={:.3g} " + "dis={:.3g} xent={:.3g}'.format(iteration, self.MAX_ITERATIONS, l,
                                                                                      np.mean(l2s), xent))
                 print('logits:', scores)
-
+                print('dist:',self.dist_tolerance)
                 # check if we should abort search if we're getting nowhere.
                 if self.ABORT_EARLY and \
                         iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
