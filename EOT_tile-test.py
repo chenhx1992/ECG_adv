@@ -93,24 +93,22 @@ print('Ground truth:{}'.format(ground_truth))
 X_test=np.float32(data)
 new_X_test = np.repeat(data, 5, axis=0)
 
-target_a = np.zeros((1, 1))
-target_a = np.array([int(sys.argv[2])])
-target_a = utils.to_categorical(target_a, num_classes=4)
+target = np.zeros((1, 1))
+target = np.array([int(sys.argv[2])])
+target_a = utils.to_categorical(target, num_classes=4)
+
 ground_truth_a = utils.to_categorical(ground_truth, num_classes=4)
 dis_metric = int(sys.argv[3])
 
 start_time = time.time()
-perturb_window = int(sys.argv[4])
-ensemble_size = int(sys.argv[5])
+perturb_window = 200#int(sys.argv[4])
+ensemble_size = 30#int(sys.argv[5])
+
 eotl2 = EOT_ATTACK(wrap, sess=sess)
 eotl2_params = {'y_target': target_a, 'learning_rate': 0.5, 'max_iterations': 500, 'initial_const': 50000, 'perturb_window': perturb_window, 'dis_metric': dis_metric, 'ensemble_size': ensemble_size, 'ground_truth': ground_truth_a}
-
 adv_x = eotl2.generate(x, **eotl2_params)
 adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
-#preds_adv = model(adv_x)
 feed_dict = {x: X_test}
-
-
 adv_sample = adv_x.eval(feed_dict=feed_dict, session = sess)
 
 print("time used:", time.time()-start_time)
@@ -119,6 +117,7 @@ perturb = adv_sample - X_test
 
 perturb = perturb[:, 0:perturb_window, :]
 
+'''
 correct = 0
 attack_success = np.zeros(4)
 not_success_in_ensemble_size = 0
@@ -134,11 +133,9 @@ ind = np.argmax(prob, axis=1)
 for _, it in enumerate(ind):
     attack_success[it] = attack_success[it] + 1
 
-
-
-
-#print("correct:", correct)
 print("attack success times:", attack_success)
+'''
+
 '''
 import matplotlib.pyplot as plt
 plt.figure()
