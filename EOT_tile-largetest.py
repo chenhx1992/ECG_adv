@@ -122,9 +122,9 @@ for _ in range(10):
 
         perturb_squeeze = np.squeeze(perturb, axis=2)
         if dis_metric == 1:
-            outputstr = './output/'+str(ground_truth)+'/EOTtile_w300_e30_l2_A'+sys.argv[1]+'T'+str(target[0,0])+'.out'
+            outputstr = './output/'+str(ground_truth)+'/EOTtile_w300_e30_l2_A'+str(int(id))+'T'+str(int(target[0, 0]))+'.out'
         else:
-            outputstr = './output/' +str(ground_truth)+'/EOTtile_w300_e30_smooth_A' + sys.argv[1] + 'T' + str(target[0, 0]) + '.out'
+            outputstr = './output/' +str(ground_truth)+'/EOTtile_w300_e30_smooth_A' + str(int(id)) + 'T' + str(int(target[0, 0])) + '.out'
         np.savetxt(outputstr, perturb_squeeze,delimiter=",")
 
     print("time used:", time.time() - start_time)
