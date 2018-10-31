@@ -129,8 +129,6 @@ class EOT_tf_ATTACK(object):
                                 name='timg')
         self.tlab = tf.Variable(np.zeros((batch_size, num_labels)),
                                 dtype=tf_dtype, name='tlab')
-        self.glab = tf.Variable(np.zeros((batch_size, num_labels)),
-                                dtype=tf_dtype, name='glab')
         self.const = tf.Variable(np.zeros(batch_size), dtype=tf_dtype,
                                  name='const')
 
@@ -139,8 +137,6 @@ class EOT_tf_ATTACK(object):
                                           name='assign_timg')
         self.assign_tlab = tf.placeholder(tf_dtype, (batch_size, num_labels),
                                           name='assign_tlab')
-        self.assign_glab = tf.placeholder(tf_dtype, (batch_size, num_labels),
-                                          name='assign_glab')
         self.assign_const = tf.placeholder(tf_dtype, [batch_size],
                                            name='assign_const')
 
@@ -156,16 +152,12 @@ class EOT_tf_ATTACK(object):
 
 
         batch_newdata = EOT_time(modifier_tile, 0, self.ensemble_size) + self.timg
-        #batch_restdata = EOT_time(modifier_tile, self.ensemble_size, self.perturb_window) + self.timg
 
         self.batch_newimg = zero_mean(batch_newdata)
-        #self.batch_restimg = zero_mean(batch_restdata)
 
         self.loss_batch = model.get_logits(self.batch_newimg)
-        #self.loss_batch_rest = model.get_logits(self.batch_restimg)
 
         self.batch_tlab = tf.tile(self.tlab, (self.batch_newimg.shape[0], 1))
-        #self.batch_tlab_rest = tf.tile(self.glab, (self.batch_restimg.shape[0], 1))
 
         self.xent = tf.reduce_mean(
             tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.loss_batch, labels=self.batch_tlab))
@@ -231,7 +223,6 @@ class EOT_tf_ATTACK(object):
         self.setup = []
         self.setup.append(self.timg.assign(self.assign_timg))
         self.setup.append(self.tlab.assign(self.assign_tlab))
-        self.setup.append(self.glab.assign(self.assign_glab))
         self.setup.append(self.const.assign(self.assign_const))
 
         self.init = tf.variables_initializer(var_list=[modifier] + new_vars)
@@ -318,9 +309,6 @@ class EOT_tf_ATTACK(object):
             self.sess.run(self.init)
             batch = imgs[:batch_size]
             batchlab = labs[:batch_size]
-            batchglab = self.ground_truth
-            print(batchlab)
-            print(batchglab)
             bestl2 = [1e10] * batch_size
             bestdist = [-1] * batch_size
             bestscore = [-1] * batch_size
@@ -334,7 +322,6 @@ class EOT_tf_ATTACK(object):
             # set the variables so that we don't have to send them over again
             self.sess.run(self.setup, {self.assign_timg: batch,
                                        self.assign_tlab: batchlab,
-                                       self.assign_glab: batchglab,
                                        self.assign_const: CONST})
             print("current const:", CONST)
             prev = 1e6
