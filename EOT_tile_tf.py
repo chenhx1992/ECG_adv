@@ -340,8 +340,6 @@ class EOT_tf_ATTACK(object):
                     'Iteration {} of {}: loss={:.3g} " + "dis={:.3g} xent={:.3g}'.format(iteration, self.MAX_ITERATIONS, l,
                                                                                      np.mean(l2s), np.mean(xent)))
                 print('logits:', scores)
-                print(np.shape(l2s))
-                print(np.shape(xent))
                 # check if we should abort search if we're getting nowhere.
                 if self.ABORT_EARLY and \
                         iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
@@ -354,13 +352,12 @@ class EOT_tf_ATTACK(object):
                 # adjust the best result found so far
                 for e, (l2, sc, ii, dist, xe) in enumerate(zip(itertools.repeat(l, len(scores)), scores, nimg, l2s, xent)):
                     lab = np.argmax(batchlab[e])
-                    print(l2)
-                    if l2 < bestl2[e] and compare_single(sc, lab):
-                        bestl2[e] = l2
+                    if xe < bestl2[e] and compare_single(sc, lab):
+                        bestl2[e] = xe
                         bestscore[e] = np.argmax(sc)
                         bestdist[e] = dist
-                    if l2 < o_bestl2[e] and compare_single(sc, lab) and (dist > self.dist_tolerance):
-                        o_bestl2[e] = l2
+                    if xe < o_bestl2[e] and compare_single(sc, lab) and (dist > self.dist_tolerance):
+                        o_bestl2[e] = xe
                         o_bestscore[e] = np.argmax(sc)
                         o_bestattack[e] = ii
                         o_bestConst[e] = CONST[e]
