@@ -76,8 +76,8 @@ for (_, _, filenames) in walk(perturbDir):
     for inputstr in filenames:
         if re.match(pattern,inputstr) != None:
             attack_success = np.zeros((4), dtype=int)
-            print("input file: ", inputstr)
-            perturb = genfromtxt(inputstr, delimiter=',')
+            print("input file: ", perturbDir+inputstr)
+            perturb = genfromtxt(perturbDir+inputstr, delimiter=',')
             dist = np.linalg.norm(perturb)
             perturb = np.expand_dims(perturb, axis=0)
             perturb = np.expand_dims(perturb, axis=2)
@@ -100,6 +100,7 @@ for (_, _, filenames) in walk(perturbDir):
                     else:
                         test_all = np.append(test_all, zero_mean(op_concate(perturb, perturb_window, p) + X_test_1), axis=0)
 
+                #predict
                 prob = model.predict(test_all)
                 ind = np.argmax(prob, axis=1)
                 for _, it in enumerate(ind):
