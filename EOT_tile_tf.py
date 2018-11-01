@@ -303,7 +303,7 @@ class EOT_tf_ATTACK(object):
         #        o_bestattack = np.copy(oimgs)
         o_bestattack = np.copy(imgs)
         o_bestConst = [-1] * batch_size
-        o_bestdist = [-1] * batch_size
+        o_bestdist = [2000] * batch_size
         for outer_step in range(self.BINARY_SEARCH_STEPS):
             # completely reset adam's internal state.
             self.sess.run(self.init)
@@ -356,11 +356,11 @@ class EOT_tf_ATTACK(object):
                         bestl2[e] = l2
                         bestscore[e] = np.argmax(sc)
                         bestdist[e] = dist
-                    if l2 < o_bestl2[e] and compare_single(sc, lab) and (o_bestscore[e]==-1 or dist > o_bestdist[e] or dist > self.dist_tolerance):
+                    if l2 < o_bestl2[e] and compare_single(sc, lab) and (dist > o_bestdist[e] or dist > self.dist_tolerance):
                         o_bestl2[e] = l2
                         o_bestscore[e] = np.argmax(sc)
                         o_bestattack[e] = ii
-                        o_bestConst[e] = CONST
+                        o_bestConst[e] = CONST[e]
                         o_bestdist[e] = dist
             # adjust the constant as needed
             for e in range(batch_size):
