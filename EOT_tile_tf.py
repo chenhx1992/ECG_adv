@@ -164,7 +164,7 @@ class EOT_tf_ATTACK(object):
 
         #self.xent_rest = tf.reduce_mean(
         #    tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.loss_batch_rest, labels=self.batch_tlab_rest))
-
+        self.outputxent = tf.expand_dims(self.xent, axis=0), 0)
         self.output = tf.expand_dims(tf.reduce_mean(self.loss_batch, axis=0), 0)
 
         # distance to the input data
@@ -332,7 +332,7 @@ class EOT_tf_ATTACK(object):
                                                          self.dist,
                                                          self.output,
                                                          self.newimg,
-                                                         self.xent,
+                                                         self.outputxent,
                                                          self.loss_batch])
 
 
@@ -350,7 +350,7 @@ class EOT_tf_ATTACK(object):
                     prev = l
 
                 # adjust the best result found so far
-                for e, (l2, sc, ii, dist) in enumerate(zip(itertools.repeat(l, len(scores)), scores, nimg, l2s)):
+                for e, (sco, l2, sc, ii, dist) in enumerate(zip(itertools.repeat(l, len(scores)), scores, xent, nimg, l2s)):
                     lab = np.argmax(batchlab[e])
                     if l2 < bestl2[e] and compare_single(sc, lab):
                         bestl2[e] = l2
