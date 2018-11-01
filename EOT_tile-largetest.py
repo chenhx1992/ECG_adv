@@ -127,4 +127,4 @@ for _ in range(10):
             outputstr = './output/' +str(ground_truth)+'/EOTtile_w300_e30_smooth_A' + str(int(id)) + 'T' + str(int(target[0, 0])) + '.out'
         np.savetxt(outputstr, perturb_squeeze,delimiter=",")
 
-    print("time used:", time.time() - start_time)
+print("time used:", time.time() - start_time)
