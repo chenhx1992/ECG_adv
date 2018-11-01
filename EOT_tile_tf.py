@@ -356,7 +356,7 @@ class EOT_tf_ATTACK(object):
                         bestl2[e] = l2
                         bestscore[e] = np.argmax(sc)
                         bestdist[e] = dist
-                    if l2 < o_bestl2[e] and compare_single(sc, lab) and (o_bestscore[e]==-1 or dist > self.dist_tolerance):
+                    if l2 < o_bestl2[e] and compare_single(sc, lab) and (o_bestscore[e]==-1 or dist > o_bestdist[e] or dist > self.dist_tolerance):
                         o_bestl2[e] = l2
                         o_bestscore[e] = np.argmax(sc)
                         o_bestattack[e] = ii
