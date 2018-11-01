@@ -324,7 +324,7 @@ class EOT_tf_ATTACK(object):
                                        self.assign_tlab: batchlab,
                                        self.assign_const: CONST})
             print("current const:", CONST)
-            prev = 1e6
+            prev = 1e9
             for iteration in range(self.MAX_ITERATIONS):
                 # perform the attack
                 _, l, l2s, scores, nimg, xent, loss_batch = self.sess.run([self.train,
