@@ -100,7 +100,7 @@ class EOT_ATTACK(Attack):
                      learning_rate=5e-3, perturb_window=9000,
                      binary_search_steps=5, max_iterations=1000, dis_metric=1, ensemble_size=30,
                      ground_truth = None, abort_early=True, initial_const=1e-2,
-                     clip_min=0, clip_max=1, dist_tolerance=6500):
+                     clip_min=0, clip_max=1, dist_tolerance=4500):
 
         # ignore the y and y_target argument
         if nb_classes is not None:
