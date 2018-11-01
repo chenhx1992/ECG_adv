@@ -332,7 +332,7 @@ class EOT_tf_ATTACK(object):
                                                          self.dist,
                                                          self.output,
                                                          self.newimg,
-                                                         self.outputxent,
+                                                         self.xent,
                                                          self.loss_batch])
 
 
@@ -350,8 +350,9 @@ class EOT_tf_ATTACK(object):
                     prev = l
 
                 # adjust the best result found so far
-                for e, (sco, l2, sc, ii, dist) in enumerate(zip(itertools.repeat(l, len(scores)), scores, xent, nimg, l2s)):
+                for e, (l2, sc, ii, dist) in enumerate(zip(itertools.repeat(l, len(scores)), scores, nimg, l2s)):
                     lab = np.argmax(batchlab[e])
+                    print(l2)
                     if l2 < bestl2[e] and compare_single(sc, lab):
                         bestl2[e] = l2
                         bestscore[e] = np.argmax(sc)
