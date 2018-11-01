@@ -332,7 +332,7 @@ class EOT_tf_ATTACK(object):
                                                          self.dist,
                                                          self.output,
                                                          self.newimg,
-                                                         self.xent,
+                                                         self.outputxent,
                                                          self.loss_batch])
 
 
@@ -340,6 +340,8 @@ class EOT_tf_ATTACK(object):
                     'Iteration {} of {}: loss={:.3g} " + "dis={:.3g} xent={:.3g}'.format(iteration, self.MAX_ITERATIONS, l,
                                                                                      np.mean(l2s), np.mean(xent)))
                 print('logits:', scores)
+                print(np.shape(l2s))
+                print(np.shape(xent))
                 # check if we should abort search if we're getting nowhere.
                 if self.ABORT_EARLY and \
                         iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
