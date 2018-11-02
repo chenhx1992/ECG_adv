@@ -84,7 +84,8 @@ if ground_truth == 3:
 target_len = target_file[:,2]
 ## Loading time serie signals
 k = 0
-while k<2:
+ooo = np.zeros(6)
+while k<6:
     k = k + 1
     start_time = time.time()
     ind = random.randint(0,len(target_id)-1)
@@ -92,10 +93,16 @@ while k<2:
     count = id-1
     record = "A{:05d}".format(id)
     local_filename = dataDir+record
-    if int(target_len[ind])<30:
+    ooo[k] = id
+    if int(target_len[ind])<30 and id !=8213 and id != 8112 and id !=7198 and id !=1578:
         k = k - 1
         continue
-        
+    flag = True
+    for oo in range(k):
+        if ooo[oo] == id:
+            flag = False
+    if k != 0 and flag == False:
+        continue
     # Loading
     mat_data = scipy.io.loadmat(local_filename)
     print('Loading record {}'.format(record))
