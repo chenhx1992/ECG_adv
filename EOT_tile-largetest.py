@@ -85,8 +85,8 @@ target_len = target_file[:,2]
 ## Loading time serie signals
 k = 0
 ooo = np.zeros(6)
-while k<6:
-    k = k + 1
+while k<3:
+    
     start_time = time.time()
     ind = random.randint(0,len(target_id)-1)
     id = int(target_id[ind])
@@ -95,7 +95,6 @@ while k<6:
     local_filename = dataDir+record
     ooo[k] = id
     if int(target_len[ind])<30 and id !=8213 and id != 8112 and id !=7198 and id !=1578:
-        k = k - 1
         continue
     flag = True
     for oo in range(k):
@@ -104,6 +103,7 @@ while k<6:
     if k != 0 and flag == False:
         continue
     # Loading
+    k = k + 1
     mat_data = scipy.io.loadmat(local_filename)
     print('Loading record {}'.format(record))
     #    data = mat_data['val'].squeeze()
