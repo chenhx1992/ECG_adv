@@ -83,7 +83,7 @@ if ground_truth == 3:
     target_id = target_file[:,3]
 
 ## Loading time serie signals
-for _ in range(1):
+for _ in range(10):
     start_time = time.time()
     id = int(target_id[random.randint(0,len(target_id)-1)])
     count = id-1
@@ -110,7 +110,7 @@ for _ in range(1):
         ensemble_size = 30
 
         eotl2 = EOT_ATTACK(wrap, sess=sess)
-        eotl2_params = {'y_target': target_a, 'learning_rate': 0.5, 'max_iterations': 500, 'initial_const': 50000, 'perturb_window': perturb_window, 'dis_metric': dis_metric, 'ensemble_size': ensemble_size, 'ground_truth': ground_truth_a}
+        eotl2_params = {'y_target': target_a, 'learning_rate': 1, 'max_iterations': 500, 'initial_const': 50000, 'perturb_window': perturb_window, 'dis_metric': dis_metric, 'ensemble_size': ensemble_size, 'ground_truth': ground_truth_a}
         adv_x = eotl2.generate(x, **eotl2_params)
         adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
         feed_dict = {x: X_test}
