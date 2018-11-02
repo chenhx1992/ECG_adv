@@ -83,7 +83,7 @@ if ground_truth == 3:
     target_id = target_file[:,3]
 
 ## Loading time serie signals
-for _ in range(10):
+for _ in range(1):
     start_time = time.time()
     id = int(target_id[random.randint(0,len(target_id)-1)])
     count = id-1
