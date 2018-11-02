@@ -68,7 +68,7 @@ if ground_truth == 2:
 if ground_truth == 3:
     target_file = np.genfromtxt('../data_select_i.csv', delimiter=',')
     target_id = target_file[:,3]
-
+target_len = target_file[:,2]
 perturbDir = '../output/'+str(ground_truth)+'/'
 pattern = r'EOTtile_w200_e30_l2_A[0-9]+T'+str(target)+'.out'
 attack_success_all = np.zeros((4),dtype=int)
@@ -82,6 +82,9 @@ for (_, _, filenames) in walk(perturbDir):
             perturb = np.expand_dims(perturb, axis=0)
             perturb = np.expand_dims(perturb, axis=2)
             for i, id_float in enumerate(target_id):
+                if int(target_len[i]) < 30:
+                    continue
+                   
                 id_1 = int(id_float)
                 count = id_1 - 1
                 record_1 = "A{:05d}".format(id_1)
@@ -103,10 +106,12 @@ for (_, _, filenames) in walk(perturbDir):
                 #predict
                 prob = model.predict(test_all)
                 ind = np.argmax(prob, axis=1)
+                attack_success_current = np.zeros((4),dtype=int)
                 for _, it in enumerate(ind):
+                    attack_success_current[it] = attack_success_current[it] + 1
                     attack_success[it] = attack_success[it] + 1
                     attack_success_all[it] = attack_success_all[it] + 1
-
+                print("attack_success_current:",attack_success_current)
             print("attack success:", attack_success)
 
 attack_success_all = attack_success_all/np.sum(attack_success_all)
