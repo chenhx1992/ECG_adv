@@ -81,14 +81,20 @@ if ground_truth == 2:
 if ground_truth == 3:
     target_file = np.genfromtxt('data_select_i.csv', delimiter=',')
     target_id = target_file[:,3]
-
+target_len = target_file[:,2]
 ## Loading time serie signals
-for _ in range(1):
+k = 0
+while k<10:
+    k = k + 1
     start_time = time.time()
     id = int(target_id[random.randint(0,len(target_id)-1)])
     count = id-1
     record = "A{:05d}".format(id)
     local_filename = dataDir+record
+    if int(target_len)<30:
+        k = k - 1
+        continue
+        
     # Loading
     mat_data = scipy.io.loadmat(local_filename)
     print('Loading record {}'.format(record))
@@ -99,7 +105,7 @@ for _ in range(1):
     for i in range(4):
         if (i == ground_truth):
             continue
-
+        
         target = np.zeros((1, 1))
         target[0,0] = int(i)
         target_a = utils.to_categorical(target, num_classes=4)
