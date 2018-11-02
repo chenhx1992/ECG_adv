@@ -84,14 +84,15 @@ if ground_truth == 3:
 target_len = target_file[:,2]
 ## Loading time serie signals
 k = 0
-while k<10:
+while k<2:
     k = k + 1
     start_time = time.time()
-    id = int(target_id[random.randint(0,len(target_id)-1)])
+    ind = random.randint(0,len(target_id)-1)
+    id = int(target_id[ind])
     count = id-1
     record = "A{:05d}".format(id)
     local_filename = dataDir+record
-    if int(target_len)<30:
+    if int(target_len[ind])<30:
         k = k - 1
         continue
         
