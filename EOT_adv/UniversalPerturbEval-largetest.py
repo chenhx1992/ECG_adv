@@ -70,7 +70,7 @@ if ground_truth == 3:
     target_id = target_file[:,3]
 
 perturbDir = '../output/'+str(ground_truth)+'/'
-pattern = r'EOTtile_w300_e30_l2_A[0-9]+T'+str(target)+'.out'
+pattern = r'EOTtile_w200_e30_l2_A[0-9]+T'+str(target)+'.out'
 attack_success_all = np.zeros((4),dtype=int)
 for (_, _, filenames) in walk(perturbDir):
     for inputstr in filenames:
