@@ -84,8 +84,8 @@ if ground_truth == 3:
 target_len = target_file[:,2]
 ## Loading time serie signals
 k = 0
-ooo = np.zeros(6)
-while k<1:
+ooo = np.zeros(10)
+while k<6:
     
     start_time = time.time()
     ind = random.randint(0,len(target_id)-1)
