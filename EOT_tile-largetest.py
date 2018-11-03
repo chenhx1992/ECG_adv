@@ -85,7 +85,7 @@ target_len = target_file[:,2]
 ## Loading time serie signals
 k = 0
 ooo = np.zeros(10)
-while k<6:
+while k<5:
     
     start_time = time.time()
     ind = random.randint(0,len(target_id)-1)
