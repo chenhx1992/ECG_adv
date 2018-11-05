@@ -120,6 +120,7 @@ for i, id_float in enumerate(target_id):
     prob = model.predict(test_all)
     ind = np.argmax(prob, axis=1)
     attack_success = np.zeros((4), dtype=int)
+    print(prob)
     for _, it in enumerate(ind):
         attack_success[it] = attack_success[it] + 1
         attack_success_all[it] = attack_success_all[it] + 1
