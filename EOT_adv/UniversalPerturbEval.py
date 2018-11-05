@@ -97,7 +97,8 @@ perturb = np.expand_dims(perturb, axis=2)
 for i, id_float in enumerate(target_id):
     if int(target_len[i]) < 30:
         continue
-            
+    if i>30:
+        break
     id_1 = int(id_float)
     count = id_1 - 1
     record_1 = "A{:05d}".format(id_1)
