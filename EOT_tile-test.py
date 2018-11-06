@@ -101,7 +101,7 @@ ground_truth_a = utils.to_categorical(ground_truth, num_classes=4)
 dis_metric = int(sys.argv[3])
 
 start_time = time.time()
-perturb_window = 200#int(sys.argv[4])
+perturb_window = 450#int(sys.argv[4])
 ensemble_size = 30#int(sys.argv[5])
 
 eotl2 = EOT_ATTACK(wrap, sess=sess)
