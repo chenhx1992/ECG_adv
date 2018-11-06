@@ -64,7 +64,7 @@ model = load_model('../ResNet_30s_34lay_16conv.hdf5')
 
 
 #loading perturbation
-perturb_window = 200#int(sys.argv[3])
+perturb_window = 450#int(sys.argv[3])
 ensemble_size = 30#int(sys.argv[4])
 id_perturb = int(sys.argv[1])
 target = int(sys.argv[2])
