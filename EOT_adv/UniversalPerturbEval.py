@@ -118,6 +118,7 @@ for i, id_float in enumerate(target_id):
             test_all = np.append(test_all, zero_mean(op_concate(perturb, perturb_window, p) + X_test_1), axis=0)
 
     prob = model.predict(test_all)
+    print(prob)
     ind = np.argmax(prob, axis=1)
     attack_success = np.zeros((4), dtype=int)
     for _, it in enumerate(ind):
