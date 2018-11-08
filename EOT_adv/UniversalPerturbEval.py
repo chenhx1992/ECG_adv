@@ -64,8 +64,8 @@ model = load_model('../ResNet_30s_34lay_16conv.hdf5')
 
 
 #loading perturbation
-perturb_window = 200#int(sys.argv[3])
-ensemble_size = 30#int(sys.argv[4])
+perturb_window = int(sys.argv[3])
+ensemble_size = int(sys.argv[4])
 id_perturb = int(sys.argv[1])
 target = int(sys.argv[2])
 ground_truth = ground_truth = classes.index(csvfile[id_perturb-1][1])
