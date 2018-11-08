@@ -86,7 +86,7 @@ if ground_truth == 3:
 target_len = target_file[:,2]
 
 attack_success_all = np.zeros((4),dtype=int)
-inputstr = '../output/2/EOTtile_w'+str(perturb_window)+'_e'+str(ensemble_size)+'_l2_A'+str(id_perturb)+'T'+str(target)+'.out'
+inputstr = '../output/EOTtile_w'+str(perturb_window)+'_e'+str(ensemble_size)+'_l2_A'+str(id_perturb)+'T'+str(target)+'.out'
 print("input file: ", inputstr)
 perturb = genfromtxt(inputstr, delimiter=',')
 dist = np.linalg.norm(perturb)
