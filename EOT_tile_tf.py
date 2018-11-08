@@ -247,28 +247,7 @@ class EOT_tf_ATTACK(object):
         """
         Run the attack on a batch of instance and labels.
         """
-
         def compare(x, y):
-            if not isinstance(x, (float, int, np.int64)):
-                x = np.copy(x)
-                if self.TARGETED:
-                    x[:,y] -= self.CONFIDENCE
-                else:
-                    x[:,y] += self.CONFIDENCE
-
-            if self.TARGETED:
-                res = 0
-                for _, loss in enumerate(x):
-                    if np.argmax(loss) == y:
-                        res = res + 1
-                return res > 0.9 * self.ensemble_size
-            else:
-                res = 0
-                for _, loss in enumerate(x):
-                    if np.argmax(loss) != y:
-                        res = res + 1
-                return res > 0.8 * self.ensemble_size
-        def compare_single(x, y):
             if not isinstance(x, (float, int, np.int64)):
                 x = np.copy(x)
                 if self.TARGETED:
@@ -352,11 +331,11 @@ class EOT_tf_ATTACK(object):
                 # adjust the best result found so far
                 for e, (l2, sc, ii, dist, xe) in enumerate(zip(itertools.repeat(l, len(scores)), scores, nimg, l2s, xent)):
                     lab = np.argmax(batchlab[e])
-                    if xe < bestl2[e] and compare_single(sc, lab):
+                    if xe < bestl2[e] and compare(sc, lab):
                         bestl2[e] = xe
                         bestscore[e] = np.argmax(sc)
                         bestdist[e] = dist
-                    if xe < o_bestl2[e] and compare_single(sc, lab) and (dist > 50 and dist < 3000):
+                    if xe < o_bestl2[e] and compare(sc, lab) and (dist > 10000 and dist < 15000):
                         o_bestl2[e] = xe
                         o_bestscore[e] = np.argmax(sc)
                         o_bestattack[e] = ii
@@ -364,8 +343,8 @@ class EOT_tf_ATTACK(object):
                         o_bestdist[e] = dist
             # adjust the constant as needed
             for e in range(batch_size):
-                if compare_single(bestscore[e], np.argmax(batchlab[e])) and \
-                        bestscore[e] != -1 and bestdist[e] > 1000:
+                if compare(bestscore[e], np.argmax(batchlab[e])) and \
+                        bestscore[e] != -1 and bestdist[e] > 12000:
                     # success, divide const by two
                     upper_bound[e] = min(upper_bound[e], CONST[e])
                     if upper_bound[e] < 1e9:
