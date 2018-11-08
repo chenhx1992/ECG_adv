@@ -98,8 +98,8 @@ for i, id_float in enumerate(target_id):
     if int(target_len[i]) < 30:
         continue
     id_1 = int(id_float)
-    if id_1 != 4575 and id_1 != 3330 and id_1 != 716:
-        continue
+    if i>30:
+        break
     count = id_1 - 1
     record_1 = "A{:05d}".format(id_1)
 
