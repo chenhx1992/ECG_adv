@@ -2,7 +2,6 @@ import keras.backend as K
 import keras
 from keras.models import load_model
 import tensorflow as tf
-import time
 from cleverhans.utils_keras import KerasModelWrapper
 from cleverhans import utils
 
@@ -83,27 +82,25 @@ if ground_truth == 3:
     target_id = target_file[:,3]
 target_len = target_file[:,2]
 ## Loading time serie signals
-k = 0
-ooo = np.zeros(10)
-while k<5:
-    
-    start_time = time.time()
+has_data = []
+while len(has_data)<10:
+
+
+
     ind = random.randint(0,len(target_id)-1)
     id = int(target_id[ind])
     count = id-1
     record = "A{:05d}".format(id)
     local_filename = dataDir+record
-    ooo[k] = id
-    if int(target_len[ind])<30:
+    if int(target_len[ind]) < 30:
         continue
-    flag = True
-    for oo in range(k):
-        if ooo[oo] == id:
-            flag = False
-    if k != 0 and flag == False:
+    if id in has_data:
         continue
+    else:
+        has_data.append(id)
+
+
     # Loading
-    k = k + 1
     mat_data = scipy.io.loadmat(local_filename)
     print('Loading record {}'.format(record))
     #    data = mat_data['val'].squeeze()
@@ -120,7 +117,7 @@ while k<5:
         ground_truth_a = utils.to_categorical(ground_truth, num_classes=4)
 
         dis_metric = int(sys.argv[2])
-        perturb_window = 200
+        perturb_window = int(sys.argv[3])
         ensemble_size = 30
 
         eotl2 = EOT_ATTACK(wrap, sess=sess)
@@ -136,9 +133,9 @@ while k<5:
 
         perturb_squeeze = np.squeeze(perturb, axis=2)
         if dis_metric == 1:
-            outputstr = './output/'+str(ground_truth)+'/EOTtile_w200_e30_l2_A'+str(int(id))+'T'+str(int(target[0, 0]))+'.out'
+            outputstr = './output/'+str(ground_truth)+'/EOTtile_w'+str(perturb_window)+'_e30_l2_A'+str(int(id))+'T'+str(int(target[0, 0]))+'.out'
         else:
             outputstr = './output/' +str(ground_truth)+'/EOTtile_w200_e30_smooth_A' + str(int(id)) + 'T' + str(int(target[0, 0])) + '.out'
         np.savetxt(outputstr, perturb_squeeze,delimiter=",")
 
-print("time used:", time.time() - start_time)
+
