@@ -369,6 +369,7 @@ class EOT_tf_ATTACK(object):
         print(o_bestscore)
         print("best distance:", o_bestdist)
         print("best c:",o_bestConst)
+        print("best xent:",o_bestl2)
         return o_bestattack
 
 # ---------------------------------------------------------------------------------

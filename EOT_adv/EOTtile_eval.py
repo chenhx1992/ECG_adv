@@ -38,7 +38,7 @@ files = sorted(glob.glob(dataDir+"*.mat"))
 
 id = 4575
 target = 1
-perturb_window = 450
+perturb_window = 200
 ensemble_size = 30
 count = id-1
 record = "A{:05d}".format(id)
