@@ -50,7 +50,7 @@ model = load_model('../ResNet_30s_34lay_16conv.hdf5')
 
 
 #loading perturbation
-perturb_window = 200
+perturb_window = int(sys.argv[3])
 ensemble_size = 30
 ground_truth = int(sys.argv[1])
 target = int(sys.argv[2])
@@ -70,7 +70,7 @@ if ground_truth == 3:
     target_id = target_file[:,3]
 target_len = target_file[:,2]
 perturbDir = '../output/'+str(ground_truth)+'/'
-pattern = r'EOTtile_w200_e30_l2_A[0-9]+T'+str(target)+'.out'
+pattern = r'EOTtile_w'+str(perturb_window)+'_e30_l2_A[0-9]+T'+str(target)+'.out'
 attack_success_all = np.zeros((4),dtype=int)
 for (_, _, filenames) in walk(perturbDir):
     for inputstr in filenames:
@@ -81,10 +81,13 @@ for (_, _, filenames) in walk(perturbDir):
             dist = np.linalg.norm(perturb)
             perturb = np.expand_dims(perturb, axis=0)
             perturb = np.expand_dims(perturb, axis=2)
+            k = 0
             for i, id_float in enumerate(target_id):
                 if int(target_len[i]) < 30:
                     continue
-                   
+                if k >= 100:
+                    break
+                k = k + 1
                 id_1 = int(id_float)
                 count = id_1 - 1
                 record_1 = "A{:05d}".format(id_1)
