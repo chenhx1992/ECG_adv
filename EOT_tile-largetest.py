@@ -84,9 +84,6 @@ target_len = target_file[:,2]
 ## Loading time serie signals
 has_data = []
 while len(has_data)<10:
-
-
-
     ind = random.randint(0,len(target_id)-1)
     id = int(target_id[ind])
     count = id-1
