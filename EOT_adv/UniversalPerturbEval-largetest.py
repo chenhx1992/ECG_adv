@@ -100,11 +100,12 @@ for (_, _, filenames) in walk(perturbDir):
                 X_test_1 = np.float32(data)
 
                 # Generate test data
-                for p in range(perturb_window):
+                for p in range(100):
+                    pos = randrange(0, perturb_window)
                     if p == 0:
-                        test_all = zero_mean(op_concate(perturb, perturb_window, p) + X_test_1)
+                        test_all = zero_mean(op_concate(perturb, perturb_window, pos) + X_test_1)
                     else:
-                        test_all = np.append(test_all, zero_mean(op_concate(perturb, perturb_window, p) + X_test_1), axis=0)
+                        test_all = np.append(test_all, zero_mean(op_concate(perturb, perturb_window, pos) + X_test_1), axis=0)
 
                 #predict
                 prob = model.predict(test_all)
