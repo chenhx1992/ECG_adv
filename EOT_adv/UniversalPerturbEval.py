@@ -92,6 +92,8 @@ perturb = genfromtxt(inputstr, delimiter=',')
 dist = np.linalg.norm(perturb)
 print("distance:", dist)
 perturb = np.expand_dims(perturb, axis=0)
+perturb = perturb - np.mean(perturb)
+perturb = perturb/np.std(perturb)
 perturb = np.expand_dims(perturb, axis=2)
 
 for i, id_float in enumerate(target_id):

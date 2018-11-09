@@ -90,6 +90,9 @@ for i in range(perturb_window):
 #print("correct:", correct)
 print("attack success times:", attack_success)
 '''
+dist = np.linalg.norm(X_test[0,:,0])
+dist = dist * dist
+print(dist)
 import matplotlib.pyplot as plt
 plt.figure()
 plt.plot(perturb[0,:,0])
