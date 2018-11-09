@@ -175,7 +175,7 @@ class EOT_tf_ATTACK(object):
 
 
         if self.dis_metric == 1:
-            self.dist = tf.reduce_sum(tf.square(modifier_tile), list(range(1, len(shape))))
+            self.dist = tf.reduce_sum(modifier_tile, list(range(1, len(shape))))
         else:
             if self.dis_metric == 2:
                 self.dist = tf.reduce_sum(mysoftdtw(self.timg, modifier_tile, 1)/9000)
