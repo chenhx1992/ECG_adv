@@ -33,6 +33,13 @@ def op_concate(x, w, p):
     x2 = x_tile[:, p:data_len, :]
     return np.append(x2, x1, axis=1)
 
+def op_concate2(x, w, p):
+    data_len = 4500
+    tile_times = math.ceil(data_len/w)
+    x_tile = np.tile(x, (1, tile_times, 1))
+    x1 = np.zeros((1,9000,1))
+    x1[0,p:p+data_len,0] = x_tile[0,:,0]
+    return x1
 
 # parameters
 dataDir = '../training_raw/'
@@ -101,11 +108,11 @@ for (_, _, filenames) in walk(perturbDir):
 
                 # Generate test data
                 for p in range(100):
-                    pos = randrange(0, perturb_window)
+                    pos = randrange(0, 4500)
                     if p == 0:
-                        test_all = zero_mean(op_concate(perturb, perturb_window, pos) + X_test_1)
+                        test_all = zero_mean(op_concate2(perturb, perturb_window, pos) + X_test_1)
                     else:
-                        test_all = np.append(test_all, zero_mean(op_concate(perturb, perturb_window, pos) + X_test_1), axis=0)
+                        test_all = np.append(test_all, zero_mean(op_concate2(perturb, perturb_window, pos) + X_test_1), axis=0)
 
                 #predict
                 prob = model.predict(test_all)
