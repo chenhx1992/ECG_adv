@@ -145,9 +145,10 @@ class EOT_tf_ATTACK(object):
         #        self.newimg = (tf.tanh(modifier + self.timg) + 1) / 2
         #        self.newimg = self.newimg * (clip_max - clip_min) + clip_min
         #self.modifier_tile = tf.tile(modifier, )
-
-        modifier_tile = tf.tile(modifier, tf.constant([1, tile_times, 1]))
-
+        rand_times = tf.expand_dims(tf.random_uniform((), 0, tile_times, dtype=tf.int32), axis=0)
+        modifier_tile = tf.tile(modifier, tf.constant([1, rand_times, 1]))
+        pad_zero = tf.const([0,0,0],[0,(tile_times - rand_times)*perturb_window,0])
+        modifier_zeor = tf.pad(modifier, pad_zero, "CONSTANT")
         self.newimg = tf.slice(modifier_tile, (0, 0, 0), shape) + self.timg
 
 
