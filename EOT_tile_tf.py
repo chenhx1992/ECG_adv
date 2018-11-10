@@ -147,7 +147,7 @@ class EOT_tf_ATTACK(object):
         #self.modifier_tile = tf.tile(modifier, )
         rand_times = tf.expand_dims(tf.random_uniform((), 0, tile_times, dtype=tf.int32),axis=0)
         rand_times = tf.concat([1,rand_times],axis=0)
-        rand_times = tf.concate([rand_times,1],axis=0)
+        rand_times = tf.concat([rand_times,1],axis=0)
         modifier_tile = tf.tile(modifier, rand_times)
         print(modifier_tile.shape)
         pad_zero = tf.const([0,0,0],[0,(tile_times - rand_times)*perturb_window,0])
