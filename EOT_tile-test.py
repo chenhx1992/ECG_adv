@@ -153,7 +153,7 @@ plt.show(block=False)
 '''
 perturb_squeeze = np.squeeze(perturb, axis=2)
 if dis_metric == 1:
-    outputstr = './output/EOTrandtile_w'+sys.argv[4]+'_e'+sys.argv[5]+'_l2_A'+sys.argv[1]+'T'+sys.argv[2]+'_times.out'
+    outputstr = './output/EOTrandtile_w'+sys.argv[4]+'_e'+sys.argv[5]+'_l2_A'+sys.argv[1]+'T'+sys.argv[2]+'.out'
 else:
     if dis_metric == 2:
         outputstr = './output/EOTrandtile_w'+sys.argv[4]+'_e'+sys.argv[5]+'_dtw_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
