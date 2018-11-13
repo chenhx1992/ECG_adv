@@ -37,6 +37,7 @@ def op_concate2(x, w, p):
     data_len = 9000
     tile_times = math.ceil(data_len/w)
     x_tile = np.tile(x, (1, tile_times, 1))
+    print(x_tile.shape)
     x1 = np.zeros((1,9000,1))
     x1[0,p:p+data_len,0] = x_tile[0,:,0]
     return x1
