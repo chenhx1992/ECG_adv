@@ -145,14 +145,23 @@ class EOT_tf_ATTACK(object):
         #        self.newimg = (tf.tanh(modifier + self.timg) + 1) / 2
         #        self.newimg = self.newimg * (clip_max - clip_min) + clip_min
         #self.modifier_tile = tf.tile(modifier, )
-        rand_times = tf.expand_dims(tf.random_uniform((), 0, tile_times, dtype=tf.int32),axis=0)
+        rand_times = tf.expand_dims(tf.random_uniform((), 15, tile_times, dtype=tf.int32),axis=0)
         rand_times = tf.concat([tf.constant([1]),rand_times],axis=0)
         rand_times = tf.concat([rand_times,tf.constant([1])],axis=0)
         modifier_tile = tf.tile(modifier, rand_times)
-        print(modifier_tile.shape)
-        pad_zero = tf.constant([0,0,0],[0,data_len-tf.shape(modifier_tile)[1],0])
-        modifier_tile = tf.reshape(tf.pad(modifier, pad_zero, "CONSTANT"),[1,data_len,1])
-        print(modifier_tile.shape)
+
+        b= tf.expand_dims(tf.shape(modifier_tile)[1],axis=0)
+        c = tf.concat([tf.constant([0]),data_len-b], axis=0)
+        c = tf.expand_dims(c, axis=0)
+        d = tf.expand_dims(tf.constant([0,0]),axis=0)
+
+
+        c = tf.concat([d,c],axis=0)
+        c = tf.concat([c,d], axis=0)
+
+
+        modifier_tile = tf.reshape(tf.pad(modifier_tile, c, "CONSTANT"),[1,data_len,1])
+
         self.newimg = tf.slice(modifier_tile, (0, 0, 0), shape) + self.timg
 
 

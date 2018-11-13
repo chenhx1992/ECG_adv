@@ -1,16 +1,3 @@
-import csv
-import numpy as np
-a = np.genfromtxt('data_select_A.csv', delimiter=',', dtype=)
-
-b = a[:,3]
-
-
-
-
-
-
-
-
 
 
 
@@ -18,14 +5,26 @@ import tensorflow as tf
 
 
 sess = tf.InteractiveSession()
-tf_dtype = tf.as_dtype('float32')
+tf_dtype = tf.as_dtype('int32')
 
 # Some tensor we want to print the value of
-a = tf.constant([[11],[12],[11],[12],[13],[11],[12]],dtype=tf_dtype)
+rand_times = tf.expand_dims(tf.random_uniform((), 5, 10, dtype=tf.int32),axis=0)
+a = tf.constant([[1,2,3]],dtype=tf_dtype)
+b = tf.expand_dims(a,axis=2)
+b_shape=tf.shape(b)
 
-b = tf.nn.softmax(a,axis=0)
+bb= tf.expand_dims(tf.shape(b)[1],axis=0)
+c = tf.concat([tf.constant([0]),rand_times-bb], axis=0)
+c = tf.expand_dims(c, axis=0)
+d = tf.expand_dims(tf.constant([0,0]),axis=0)
 
-c = tf.constant([11,12,11,12,13,11,12],dtype=tf_dtype)
-d = tf.nn.softmax(c)
-print(b.eval())
-print(d.eval())
+c = tf.concat([d,c],axis=0)
+c = tf.concat([c,d], axis=0)
+
+m = tf.pad(b, c, "CONSTANT")
+m_shape = tf.shape(m)
+print(rand_times.eval())
+
+print(c.eval())
+print(m.eval())
+print(m_shape.eval())

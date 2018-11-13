@@ -1,16 +1,12 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import copy
+import math
 import numpy as np
 from six.moves import xrange
 import tensorflow as tf
-import warnings
 import time
 import cleverhans.utils as utils
 import cleverhans.utils_tf as utils_tf
@@ -21,30 +17,41 @@ _logger = utils.create_logger("myattacks.tf")
 
 np_dtype = np.dtype('float32')
 tf_dtype = tf.as_dtype('float32')
-
+data_len = 9000
 
 def ZERO():
     return np.asarray(0., dtype=np_dtype)
 
 
-def EOT_time(x, ensemble_size=30):
+def EOT_time(x, start, ensemble_size):
     def randomizing_EOT(x, i):
-        rand_i = tf.expand_dims(tf.random_uniform((), 0, 9000, dtype=tf.int32), axis=0)
-        p = tf.concat([rand_i, 9000 - rand_i], axis=0)
+        #rand_i = tf.expand_dims(tf.constant(i, dtype=tf.int32), axis=0)
+        rand_i = tf.expand_dims(tf.random_uniform((), 0, data_len, dtype=tf.int32), axis=0)
+        p = tf.concat([rand_i, data_len - rand_i], axis=0)
         x1, x2 = tf.split(x, p, axis=1)
-        res = tf.reshape(tf.concat([x2, x1], axis=1), [1, 9000, 1])
+        res = tf.reshape(tf.concat([x2, x1], axis=1), [1, data_len, 1])
         return res
 
-    return tf.concat([randomizing_EOT(x, i) for i in range(ensemble_size)], axis=0)
+    return tf.concat([randomizing_EOT(x, i) for i in range(start, ensemble_size)], axis=0)
 
+def Seq1():
+   tmp = np.zeros((1, 9001, 1), dtype=np_dtype)
+   tmp[:,1:9001,:] = 1.
+   return np.asarray(tmp, dtype=np_dtype)
 
-class EOT_tf_L2(object):
+def zero_mean(batch_newdata):
+    data_mean, data_var = tf.nn.moments(batch_newdata, axes=1)
+    mean = tf.expand_dims(tf.tile(data_mean, [1, data_len]), 2)
+    var = tf.expand_dims(tf.tile(data_var, [1, data_len]), 2)
+    return (batch_newdata - mean) / tf.sqrt(var)
+
+class EOT_tf_ATTACK(object):
 
     def __init__(self, sess, model, batch_size, confidence,
-                 targeted, learning_rate,
-                 binary_search_steps, max_iterations, dis_metric,
-                 abort_early, initial_const,
-                 clip_min, clip_max, num_labels, shape):
+                 targeted, learning_rate, perturb_window,
+                 binary_search_steps, max_iterations, dis_metric, ensemble_size,
+                 ground_truth, abort_early, initial_const,
+                 clip_min, clip_max, dist_tolerance, num_labels, shape):
         """
         Return a tensor that constructs adversarial examples for the given
         input. Generate uses tf.py_func in order to operate over tensors.
@@ -90,25 +97,32 @@ class EOT_tf_L2(object):
         self.sess = sess
         self.TARGETED = targeted
         self.LEARNING_RATE = learning_rate
+        self.perturb_window = perturb_window
         self.MAX_ITERATIONS = max_iterations
         self.dis_metric = dis_metric
+        self.ensemble_size = ensemble_size
         self.BINARY_SEARCH_STEPS = binary_search_steps
         self.ABORT_EARLY = abort_early
         self.CONFIDENCE = confidence
         self.initial_const = initial_const
         self.batch_size = batch_size
+        self.dist_tolerance = dist_tolerance
         self.clip_min = clip_min
         self.clip_max = clip_max
         self.model = model
-
+        self.perturb_window = perturb_window
         self.repeat = binary_search_steps >= 10
-
+        self.ground_truth = ground_truth
         self.shape = shape = tuple([batch_size] + list(shape))
+        shape_perturb = tuple([batch_size, perturb_window, 1])
+
         #  self.transform_shape = transform_shape = tuple([transform_batch_size] + list(transform_shape))
         #        self.shape = shape = tuple(list(shape))
 
         # the variable we're going to optimize over
-        modifier = tf.Variable(np.zeros(shape, dtype=np_dtype))
+        modifier = tf.Variable(np.zeros(shape_perturb, dtype=np_dtype))
+        tile_times = math.ceil(data_len / perturb_window)
+
 
         # these are variables to be more efficient in sending data to tf
         self.timg = tf.Variable(np.zeros(shape), dtype=tf_dtype,
@@ -130,15 +144,32 @@ class EOT_tf_L2(object):
         # to clip_max
         #        self.newimg = (tf.tanh(modifier + self.timg) + 1) / 2
         #        self.newimg = self.newimg * (clip_max - clip_min) + clip_min
-        self.newimg = modifier + self.timg
+        #self.modifier_tile = tf.tile(modifier, )
+        rand_times = tf.expand_dims(tf.random_uniform((), 0, tile_times, dtype=tf.int32),axis=0)
+        rand_times = tf.concat([tf.constant([1]),rand_times],axis=0)
+        rand_times = tf.concat([rand_times,tf.constant([1])],axis=0)
+        modifier_tile = tf.tile(modifier, rand_times)
+        print(modifier_tile.shape)
+        pad_zero = tf.constant([0,0,0],[0,data_len-tf.shape(modifier_tile)[1],0])
+        modifier_tile = tf.reshape(tf.pad(modifier, pad_zero, "CONSTANT"),[1,data_len,1])
+        print(modifier_tile.shape)
+        self.newimg = tf.slice(modifier_tile, (0, 0, 0), shape) + self.timg
 
-        self.batch_newimg = EOT_time(modifier) + self.timg
+
+        batch_newdata = EOT_time(modifier_tile, 0, self.ensemble_size) + self.timg
+
+        self.batch_newimg = zero_mean(batch_newdata)
+
         self.loss_batch = model.get_logits(self.batch_newimg)
+
         self.batch_tlab = tf.tile(self.tlab, (self.batch_newimg.shape[0], 1))
+
         self.xent = tf.reduce_mean(
             tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.loss_batch, labels=self.batch_tlab))
 
-        #self.output = self.xent
+        #self.xent_rest = tf.reduce_mean(
+        #    tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.loss_batch_rest, labels=self.batch_tlab_rest))
+        self.outputxent = tf.expand_dims(self.xent, 0)
         self.output = tf.expand_dims(tf.reduce_mean(self.loss_batch, axis=0), 0)
 
         # distance to the input data
@@ -146,10 +177,18 @@ class EOT_tf_L2(object):
         #            2 * (clip_max - clip_min) + clip_min
         #        self.l2dist = reduce_sum(tf.square(self.newimg - self.other),
         #                                 list(range(1, len(shape))))
+
+
         if self.dis_metric == 1:
-            self.dist = tf.reduce_sum(tf.square(modifier), list(range(1, len(shape))))
+            self.dist = tf.reduce_sum(tf.square(modifier_tile), list(range(1, len(shape))))
         else:
-            self.dist = tf.reduce_sum(mysoftdtw(self.timg, modifier, 1)/9000)
+            if self.dis_metric == 2:
+                self.dist = tf.reduce_sum(mysoftdtw(self.timg, modifier_tile, 1)/9000)
+            else:
+                _, distvar = tf.nn.moments(
+                    tf.multiply(tf.concat([modifier_tile, [[[0.]]]], 1) - tf.concat([[[[0.]]], modifier_tile], 1), Seq1()),
+                    axes=[1])
+                self.dist = 10000 * distvar
         #self.l2dist= tf.reduce_sum(mysoftdtw(self.timg, modifier, 1))
         #        self.sdtw = reduce_sum(mysquare_new(self.timg, modifier, 1),list(range(1, len(shape))))
 
@@ -169,6 +208,7 @@ class EOT_tf_L2(object):
         # sum up the losses
         self.loss2 = tf.reduce_sum(self.dist)
         # self.loss2 = tf.reduce_sum(self.sdtw)
+        #self.loss1 = tf.reduce_sum(self.const * (self.xent+self.xent_rest))
         self.loss1 = tf.reduce_sum(self.const * self.xent)
         self.loss = self.loss1 + self.loss2
 
@@ -212,7 +252,6 @@ class EOT_tf_L2(object):
         """
         Run the attack on a batch of instance and labels.
         """
-
         def compare(x, y):
             if not isinstance(x, (float, int, np.int64)):
                 x = np.copy(x)
@@ -225,7 +264,6 @@ class EOT_tf_L2(object):
                 return x == y
             else:
                 return x != y
-
         batch_size = self.batch_size
 
         #        oimgs = np.clip(imgs, self.clip_min, self.clip_max)
@@ -248,14 +286,15 @@ class EOT_tf_L2(object):
         o_bestscore = [-1] * batch_size
         #        o_bestattack = np.copy(oimgs)
         o_bestattack = np.copy(imgs)
-
+        o_bestConst = [-1] * batch_size
+        o_bestdist = [2000] * batch_size
         for outer_step in range(self.BINARY_SEARCH_STEPS):
             # completely reset adam's internal state.
             self.sess.run(self.init)
             batch = imgs[:batch_size]
             batchlab = labs[:batch_size]
-
             bestl2 = [1e10] * batch_size
+            bestdist = [-1] * batch_size
             bestscore = [-1] * batch_size
             _logger.debug("  Binary search step {} of {}".
                           format(outer_step, self.BINARY_SEARCH_STEPS))
@@ -269,26 +308,22 @@ class EOT_tf_L2(object):
                                        self.assign_tlab: batchlab,
                                        self.assign_const: CONST})
             print("current const:", CONST)
-            prev = 1e6
+            prev = 1e9
             for iteration in range(self.MAX_ITERATIONS):
                 # perform the attack
-                _, l, l2s, scores, nimg, xent = self.sess.run([self.train,
+                _, l, l2s, scores, nimg, xent, loss_batch = self.sess.run([self.train,
                                                          self.loss,
                                                          self.dist,
                                                          self.output,
                                                          self.newimg,
-                                                         self.xent])
-                if iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
-                    _logger.debug(("    Iteration {} of {}: loss={:.3g} " +
-                                   "dis={:.3g} f={:.3g}")
-                                  .format(iteration, self.MAX_ITERATIONS,
-                                          l, np.mean(l2s), np.mean(scores)))
+                                                         self.outputxent,
+                                                         self.loss_batch])
+
 
                 print(
                     'Iteration {} of {}: loss={:.3g} " + "dis={:.3g} xent={:.3g}'.format(iteration, self.MAX_ITERATIONS, l,
-                                                                                     np.mean(l2s), xent))
+                                                                                     np.mean(l2s), np.mean(xent)))
                 print('logits:', scores)
-
                 # check if we should abort search if we're getting nowhere.
                 if self.ABORT_EARLY and \
                         iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
@@ -299,20 +334,22 @@ class EOT_tf_L2(object):
                     prev = l
 
                 # adjust the best result found so far
-                for e, (l2, sc, ii) in enumerate(zip(itertools.repeat(l2s, len(scores)), scores, nimg)):
+                for e, (l2, sc, ii, dist, xe) in enumerate(zip(itertools.repeat(l, len(scores)), scores, nimg, l2s, xent)):
                     lab = np.argmax(batchlab[e])
-                    if l2 < bestl2[e] and compare(sc, lab):
-                        bestl2[e] = l2
+                    if xe < bestl2[e] and compare(sc, lab):
+                        bestl2[e] = xe
                         bestscore[e] = np.argmax(sc)
-                    if l2 < o_bestl2[e] and compare(sc, lab):
-                        o_bestl2[e] = l2
+                        bestdist[e] = dist
+                    if xe < o_bestl2[e] and compare(sc, lab) and (dist > 4500 and dist < 10000):
+                        o_bestl2[e] = xe
                         o_bestscore[e] = np.argmax(sc)
                         o_bestattack[e] = ii
-
+                        o_bestConst[e] = CONST[e]
+                        o_bestdist[e] = dist
             # adjust the constant as needed
             for e in range(batch_size):
                 if compare(bestscore[e], np.argmax(batchlab[e])) and \
-                        bestscore[e] != -1:
+                        bestscore[e] != -1 and bestdist[e] > 6000:
                     # success, divide const by two
                     upper_bound[e] = min(upper_bound[e], CONST[e])
                     if upper_bound[e] < 1e9:
@@ -334,7 +371,10 @@ class EOT_tf_L2(object):
 
         # return the best solution found
         o_bestl2 = np.array(o_bestl2)
-        print(o_bestl2)
+        print(o_bestscore)
+        print("best distance:", o_bestdist)
+        print("best c:",o_bestConst)
+        print("best xent:",o_bestl2)
         return o_bestattack
 
 # ---------------------------------------------------------------------------------
