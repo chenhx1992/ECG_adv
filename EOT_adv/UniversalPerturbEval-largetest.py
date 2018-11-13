@@ -34,7 +34,7 @@ def op_concate(x, w, p):
     return np.append(x2, x1, axis=1)
 
 def op_concate2(x, w, p):
-    data_len = 4400
+    data_len = 9000
     tile_times = math.ceil(data_len/w)
     x_tile = np.tile(x, (1, tile_times, 1))
     x1 = np.zeros((1,9000,1))
@@ -77,7 +77,7 @@ if ground_truth == 3:
     target_id = target_file[:,3]
 target_len = target_file[:,2]
 perturbDir = '../output/'+str(ground_truth)+'/'
-pattern = r'EOTtile_w'+str(perturb_window)+'_e30_l2_A[0-9]+T'+str(target)+'.out'
+pattern = r'EOTrandtile_w'+str(perturb_window)+'_e30_l2_A[0-9]+T'+str(target)+'.out'
 attack_success_all = np.zeros((4),dtype=int)
 for (_, _, filenames) in walk(perturbDir):
     for inputstr in filenames:
