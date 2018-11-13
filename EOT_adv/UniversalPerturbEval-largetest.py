@@ -109,7 +109,7 @@ for (_, _, filenames) in walk(perturbDir):
 
                 # Generate test data
                 for p in range(100):
-                    pos = randrange(0, 4500)
+                    pos = randrange(0, 0)
                     if p == 0:
                         test_all = zero_mean(op_concate2(perturb, perturb_window, pos) + X_test_1)
                     else:
