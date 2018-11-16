@@ -9,7 +9,6 @@ import scipy.io
 from numpy import genfromtxt
 import math
 import sys
-import time
 def preprocess(x, maxlen):
     x = np.nan_to_num(x)
     x = x[0, 0:maxlen]
@@ -26,19 +25,19 @@ def zero_mean(x):
     x = x / np.std(x)
     return x
 def op_concate(x, w, p):
-    data_len = 9000
-    tile_times = math.ceil(data_len/w)
+    data_len = 4500
+    tile_times = math.floor(data_len/w)
     x_tile = np.tile(x, (1, tile_times, 1))
     x1 = x_tile[:, 0:p, :]
     x2 = x_tile[:, p:data_len, :]
     return np.append(x2, x1, axis=1)
 
 def op_concate2(x, w, p):
-    data_len = 9000
-    p=0
-    tile_times = math.ceil(data_len/w)
+    data_len = 4500
+    tile_times = math.floor(data_len/w)
     x_tile = np.tile(x, (1, tile_times, 1))
     x1 = np.zeros((1,9000,1))
+    data_len = x_tile.shape[1]
     x1[0,p:p+data_len,0] = x_tile[0,:,0]
     return x1
 
@@ -52,7 +51,7 @@ print("Loading ground truth file")
 csvfile = list(csv.reader(open('../REFERENCE-v3.csv')))
 files = sorted(glob.glob(dataDir+"*.mat"))
 
-start_time = time.time()
+
 print("Loading model")
 model = load_model('../ResNet_30s_34lay_16conv.hdf5')
 
@@ -78,7 +77,7 @@ if ground_truth == 3:
     target_id = target_file[:,3]
 target_len = target_file[:,2]
 perturbDir = '../output/'+str(ground_truth)+'/'
-pattern = r'EOTrandtile_w'+str(perturb_window)+'_e30_l2_A[0-9]+T'+str(target)+'.out'
+pattern = r'EOTtile_w'+str(perturb_window)+'_e30_l2_A[0-9]+T'+str(target)+'.out'
 attack_success_all = np.zeros((4),dtype=int)
 for (_, _, filenames) in walk(perturbDir):
     for inputstr in filenames:
@@ -127,8 +126,9 @@ for (_, _, filenames) in walk(perturbDir):
             print("attack success:", attack_success)
 
 attack_success_all = attack_success_all/np.sum(attack_success_all)
-
 print("attack success all:", attack_success_all)
-print("time:",time.time()-start_time)
+print("ground truth:",ground_truth, "target:",target, "perturb_window:",perturb_window)
+
+
 
 
