@@ -146,8 +146,8 @@ class EOT_tf_ATTACK(object):
         #        self.newimg = self.newimg * (clip_max - clip_min) + clip_min
         #self.modifier_tile = tf.tile(modifier, )
 
-        modifier_tile = tf.tile(modifier, tile_times)
-
+        modifier_tile = tf.tile(modifier, tf.constant([1, tile_times, 1]))
+        print(modifier_tile.shape)
         self.newimg = tf.slice(modifier_tile, (0, 0, 0), shape) + self.timg
 
 
