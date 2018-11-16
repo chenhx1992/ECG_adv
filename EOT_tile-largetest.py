@@ -104,7 +104,7 @@ while len(has_data)<1:
     data = mat_data['val']
     data = preprocess(data, WINDOW_SIZE)
     X_test=np.float32(data)
-    for i in range(4):
+    for i in range(3):
         if (i == ground_truth):
             continue
         
@@ -130,7 +130,7 @@ while len(has_data)<1:
 
         perturb_squeeze = np.squeeze(perturb, axis=2)
         if dis_metric == 1:
-            outputstr = './output/'+str(ground_truth)+'/EOTtile_w'+str(perturb_window)+'_e30_l2_A'+str(int(id))+'T'+str(int(target[0, 0]))+'.out'
+            outputstr = './output/'+str(ground_truth)+'/EOTrandtile_w'+str(perturb_window)+'_e30_l2_A'+str(int(id))+'T'+str(int(target[0, 0]))+'.out'
         else:
             outputstr = './output/' +str(ground_truth)+'/EOTtile_w200_e30_smooth_A' + str(int(id)) + 'T' + str(int(target[0, 0])) + '.out'
         np.savetxt(outputstr, perturb_squeeze,delimiter=",")
