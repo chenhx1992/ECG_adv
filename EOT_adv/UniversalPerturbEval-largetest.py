@@ -25,7 +25,7 @@ def zero_mean(x):
     x = x / np.std(x)
     return x
 def op_concate(x, w, p):
-    data_len = 4500
+    data_len = 9000
     tile_times = math.floor(data_len/w)
     x_tile = np.tile(x, (1, tile_times, 1))
     x1 = x_tile[:, 0:p, :]
@@ -79,9 +79,13 @@ target_len = target_file[:,2]
 perturbDir = '../output/'+str(ground_truth)+'/'
 pattern = r'EOTtile_w'+str(perturb_window)+'_e30_l2_A[0-9]+T'+str(target)+'.out'
 attack_success_all = np.zeros((4),dtype=int)
+kk = 0
 for (_, _, filenames) in walk(perturbDir):
     for inputstr in filenames:
         if re.match(pattern,inputstr) != None:
+            kk = kk + 1
+            if kk > 5:
+                break
             attack_success = np.zeros((4), dtype=int)
             print("input file: ", perturbDir+inputstr)
             perturb = genfromtxt(perturbDir+inputstr, delimiter=',')
@@ -108,11 +112,11 @@ for (_, _, filenames) in walk(perturbDir):
 
                 # Generate test data
                 for p in range(100):
-                    pos = randrange(0, 4500)
+                    pos = randrange(0, 9000)
                     if p == 0:
-                        test_all = zero_mean(op_concate2(perturb, perturb_window, pos) + X_test_1)
+                        test_all = zero_mean(op_concate(perturb, perturb_window, pos) + X_test_1)
                     else:
-                        test_all = np.append(test_all, zero_mean(op_concate2(perturb, perturb_window, pos) + X_test_1), axis=0)
+                        test_all = np.append(test_all, zero_mean(op_concate(perturb, perturb_window, pos) + X_test_1), axis=0)
 
                 #predict
                 prob = model.predict(test_all)
