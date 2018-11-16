@@ -96,7 +96,7 @@ for (_, _, filenames) in walk(perturbDir):
             for i, id_float in enumerate(target_id):
                 if int(target_len[i]) < 30:
                     continue
-                if k >= 100:
+                if k >= 5:
                     break
                 k = k + 1
                 id_1 = int(id_float)
