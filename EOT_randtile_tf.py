@@ -145,27 +145,29 @@ class EOT_tf_ATTACK(object):
         #        self.newimg = (tf.tanh(modifier + self.timg) + 1) / 2
         #        self.newimg = self.newimg * (clip_max - clip_min) + clip_min
         #self.modifier_tile = tf.tile(modifier, )
-        rand_times = tf.expand_dims(tf.random_uniform((), tile_times_lb, tile_times + 1, dtype=tf.int32),axis=0)
-        rand_times = tf.concat([tf.constant([1]),rand_times],axis=0)
-        rand_times = tf.concat([rand_times,tf.constant([1])],axis=0)
-        modifier_tile = tf.tile(modifier, rand_times)
+        d = tf.expand_dims(tf.constant([0, 0]), axis=0)
+        for l in range(5):
+            rand_times = tf.expand_dims(tf.random_uniform((), tile_times_lb, tile_times + 1, dtype=tf.int32),axis=0)
+            rand_times = tf.concat([tf.constant([1]),rand_times],axis=0)
+            rand_times = tf.concat([rand_times,tf.constant([1])],axis=0)
+            modifier_tile = tf.tile(modifier, rand_times)
 
-        b= tf.expand_dims(tf.shape(modifier_tile)[1],axis=0)
-        c = tf.concat([tf.constant([0]),data_len-b], axis=0)
-        c = tf.expand_dims(c, axis=0)
-        d = tf.expand_dims(tf.constant([0,0]),axis=0)
+            b= tf.expand_dims(tf.shape(modifier_tile)[1],axis=0)
+            c = tf.concat([tf.constant([0]),data_len-b], axis=0)
+            c = tf.expand_dims(c, axis=0)
 
-
-        c = tf.concat([d,c],axis=0)
-        c = tf.concat([c,d], axis=0)
-
-
-        modifier_tile = tf.reshape(tf.pad(modifier_tile, c, "CONSTANT"),[1,data_len,1])
-
-        self.newimg = tf.slice(modifier_tile, (0, 0, 0), shape) + self.timg
+            c = tf.concat([d,c],axis=0)
+            c = tf.concat([c,d], axis=0)
 
 
-        batch_newdata = EOT_time(modifier_tile, 0, self.ensemble_size) + self.timg
+            modifier_tile = tf.reshape(tf.pad(modifier_tile, c, "CONSTANT"),[1,data_len,1])
+
+            self.newimg = tf.slice(modifier_tile, (0, 0, 0), shape) + self.timg
+
+            if l == 0:
+                batch_newdata = EOT_time(modifier_tile, 0, 10) + self.timg
+            else:
+                batch_newdata = tf.concat([batch_newdata, EOT_time(modifier_tile, 0, 10) + self.timg], axis=0)
 
         self.batch_newimg = zero_mean(batch_newdata)
 
