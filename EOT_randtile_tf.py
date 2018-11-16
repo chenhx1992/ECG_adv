@@ -344,13 +344,12 @@ class EOT_tf_ATTACK(object):
                 # adjust the best result found so far
                 for e, (l2, sc, ii, dist, xe) in enumerate(zip(itertools.repeat(l, len(scores)), scores, nimg, l2s, xent)):
                     lab = np.argmax(batchlab[e])
-                    print(compare(sc, lab))
-                    if xe < bestl2[e] and compare(sc, lab) and (dist > 4500 and dist < 10000):
+                    if xe < bestl2[e] and compare(sc, lab) and (dist > 4500 and dist < 12000):
                         print('yes')
                         bestl2[e] = xe
                         bestscore[e] = np.argmax(sc)
                         bestdist[e] = dist
-                    if xe < o_bestl2[e] and compare(sc, lab) and (dist > 4500 and dist < 10000):
+                    if xe < o_bestl2[e] and compare(sc, lab) and (dist > 4500 and dist < 12000):
                         o_bestl2[e] = xe
                         o_bestscore[e] = np.argmax(sc)
                         o_bestattack[e] = ii
