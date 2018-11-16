@@ -341,7 +341,7 @@ class EOT_tf_ATTACK(object):
                         _logger.debug(msg)
                         break
                     prev = l
-
+                print('less')
                 # adjust the best result found so far
                 for e, (l2, sc, ii, dist, xe) in enumerate(zip(itertools.repeat(l, len(scores)), scores, nimg, l2s, xent)):
                     lab = np.argmax(batchlab[e])
