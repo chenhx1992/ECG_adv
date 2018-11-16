@@ -205,7 +205,7 @@ class EOT_tf_ATTACK(object):
         # self.loss2 = tf.reduce_sum(self.sdtw)
         #self.loss1 = tf.reduce_sum(self.const * (self.xent+self.xent_rest))
         self.loss1 = tf.reduce_sum(self.const * self.xent)
-        self.loss = self.loss1 + self.loss2
+        self.loss = self.loss1
 
         # Setup the adam optimizer and keep track of variables we're creating
         start_vars = set(x.name for x in tf.global_variables())
