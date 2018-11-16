@@ -33,7 +33,7 @@ def op_concate(x, w, p):
     return np.append(x2, x1, axis=1)
 
 def op_concate2(x, w, p):
-    data_len = 4000
+    data_len = 6000
     tile_times = math.floor(data_len/w)
     x_tile = np.tile(x, (1, tile_times, 1))
     x1 = np.zeros((1,9000,1))
