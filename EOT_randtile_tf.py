@@ -291,18 +291,18 @@ class EOT_tf_ATTACK(object):
         upper_bound = np.ones(batch_size) * 1e10
 
         # placeholders for the best l2, score, and instance attack found so far
-        o_bestl2 = [1e10] * batch_size
+        o_bestl2 = [1e6] * batch_size
         o_bestscore = [-1] * batch_size
         #        o_bestattack = np.copy(oimgs)
         o_bestattack = np.copy(imgs)
         o_bestConst = [-1] * batch_size
-        o_bestdist = [2000] * batch_size
+        o_bestdist = [-1] * batch_size
         for outer_step in range(self.BINARY_SEARCH_STEPS):
             # completely reset adam's internal state.
             self.sess.run(self.init)
             batch = imgs[:batch_size]
             batchlab = labs[:batch_size]
-            bestl2 = [1e10] * batch_size
+            bestl2 = [1e6] * batch_size
             bestdist = [-1] * batch_size
             bestscore = [-1] * batch_size
             _logger.debug("  Binary search step {} of {}".
