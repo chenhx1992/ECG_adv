@@ -346,6 +346,7 @@ class EOT_tf_ATTACK(object):
                 for e, (l2, sc, ii, dist, xe) in enumerate(zip(itertools.repeat(l, len(scores)), scores, nimg, l2s, xent)):
                     lab = np.argmax(batchlab[e])
                     if xe < bestl2[e] and compare(sc, lab) and (dist > 4500 and dist < 10000):
+                        print("yes")
                         bestl2[e] = xe
                         bestscore[e] = np.argmax(sc)
                         bestdist[e] = dist
