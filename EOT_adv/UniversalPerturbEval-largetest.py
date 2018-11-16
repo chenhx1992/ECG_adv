@@ -33,7 +33,7 @@ def op_concate(x, w, p):
     return np.append(x2, x1, axis=1)
 
 def op_concate2(x, w, p):
-    data_len = 6000
+    data_len = 4000
     tile_times = math.floor(data_len/w)
     x_tile = np.tile(x, (1, tile_times, 1))
     x1 = np.zeros((1,9000,1))
@@ -96,7 +96,7 @@ for (_, _, filenames) in walk(perturbDir):
             for i, id_float in enumerate(target_id):
                 if int(target_len[i]) < 30:
                     continue
-                if k >= 5:
+                if k >= 10:
                     break
                 k = k + 1
                 id_1 = int(id_float)
