@@ -146,8 +146,7 @@ class EOT_tf_ATTACK(object):
         #        self.newimg = self.newimg * (clip_max - clip_min) + clip_min
         #self.modifier_tile = tf.tile(modifier, )
         d = tf.expand_dims(tf.constant([0, 0]), axis=0)
-        tile_time_ub = tf.random_uniform((), 1, tile_times + 1, dtype=tf.int32)
-        rand_tile_times = tf.random_shuffle(tf.range(1, tile_time_ub + 1))
+        rand_tile_times = tf.random_shuffle(tf.range(1, tile_times + 1))
         tile_range = math.floor(tile_times / 2) + 1
         ensemblesize = math.ceil(90/tile_range)
         for l in range(tile_range):
