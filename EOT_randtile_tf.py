@@ -123,6 +123,7 @@ class EOT_tf_ATTACK(object):
         tile_times = math.ceil(data_len / perturb_window)
         tile_times_lb = max(math.floor(tile_times/3),1)
 
+
         # these are variables to be more efficient in sending data to tf
         self.timg = tf.Variable(np.zeros(shape), dtype=tf_dtype,
                                 name='timg')
