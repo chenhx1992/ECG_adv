@@ -24,15 +24,14 @@ def ZERO():
 
 
 def EOT_time(x, start, ensemble_size):
-    def randomizing_EOT(x, i):
-        #rand_i = tf.expand_dims(tf.constant(i, dtype=tf.int32), axis=0)
-        rand_i = tf.expand_dims(tf.random_uniform((), 0, data_len, dtype=tf.int32), axis=0)
+    def randomizing_EOT(x, start):
+        rand_i = tf.expand_dims(tf.random_uniform((), start+1, data_len+1, dtype=tf.int32), axis=0)
         p = tf.concat([rand_i, data_len - rand_i], axis=0)
         x1, x2 = tf.split(x, p, axis=1)
         res = tf.reshape(tf.concat([x2, x1], axis=1), [1, data_len, 1])
         return res
 
-    return tf.concat([randomizing_EOT(x, i) for i in range(start, ensemble_size)], axis=0)
+    return tf.concat([randomizing_EOT(x, start) for _ in range(ensemble_size)], axis=0)
 
 def Seq1():
    tmp = np.zeros((1, 9001, 1), dtype=np_dtype)
@@ -148,29 +147,31 @@ class EOT_tf_ATTACK(object):
         d = tf.expand_dims(tf.constant([0, 0]), axis=0)
         rand_tile_times = tf.random_shuffle(tf.range(1, tile_times + 1))
         tile_range = math.floor(tile_times / 2) + 1
-        ensemblesize = math.ceil(90/tile_range)
+
+        ensemblesize = math.ceil(100/tile_range)
         for l in range(tile_range):
             rand_times = tf.expand_dims(rand_tile_times[l],axis=0)
             rand_times = tf.concat([tf.constant([1]),rand_times],axis=0)
             rand_times = tf.concat([rand_times,tf.constant([1])],axis=0)
             modifier_tile = tf.tile(modifier, rand_times)
-
-            b= tf.expand_dims(tf.shape(modifier_tile)[1],axis=0)
+            modifier_shape = tf.shape(modifier_tile)[1]
+            b= tf.expand_dims(modifier_shape,axis=0)
             c = tf.concat([tf.constant([0]),data_len-b], axis=0)
             c = tf.expand_dims(c, axis=0)
 
             c = tf.concat([d,c],axis=0)
             c = tf.concat([c,d], axis=0)
 
+            start_p = tf.cond(tf.equal(modifier_shape, tf.constant(data_len)), lambda: tf.constant(0), lambda: modifier_shape)
 
             modifier_tile = tf.reshape(tf.pad(modifier_tile, c, "CONSTANT"),[1,data_len,1])
 
             self.newimg = tf.slice(modifier_tile, (0, 0, 0), shape) + self.timg
-
             if l == 0:
-                batch_newdata = EOT_time(modifier_tile, 0, ensemblesize) + self.timg
+                batch_newdata = EOT_time(modifier_tile, start_p, ensemblesize) + self.timg
             else:
-                batch_newdata = tf.concat([batch_newdata, EOT_time(modifier_tile, 0, 10) + self.timg], axis=0)
+                batch_newdata = tf.concat([batch_newdata, EOT_time(modifier_tile, start_p, ensemblesize) + self.timg], axis=0)
+
 
         self.batch_newimg = zero_mean(batch_newdata)
 

@@ -8,14 +8,15 @@ sess = tf.InteractiveSession()
 tf_dtype = tf.as_dtype('int32')
 
 # Some tensor we want to print the value of
-rand_times = tf.random_uniform((), 5, 10, dtype=tf.int32)
-rand_times = tf.constant(10)
-start = tf.constant(1)
-a = tf.range(start, rand_times)
-b = tf.random_shuffle(a)
+
+a = tf.constant(3)
+b = tf.constant([1,2,3])
+c = tf.shape(b)[0]
+
+d = tf.cond(tf.equal(a,c),lambda: tf.constant(0), lambda: a)
 
 
-print(rand_times.eval())
+
+print(c.eval())
 print(a.eval())
-print(b.eval())
-
+print(d.eval())
