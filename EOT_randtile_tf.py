@@ -149,7 +149,7 @@ class EOT_tf_ATTACK(object):
         rand_tile_times = tf.random_shuffle(tf.range(tile_times_lb, tile_times + 1))
         tile_range = math.floor(tile_times / 2) + 1
 
-        ensemblesize = math.ceil(150/tile_range)
+        ensemblesize = math.ceil(200/tile_range)
         for l in range(tile_range):
             rand_times = tf.expand_dims(rand_tile_times[l],axis=0)
             rand_times = tf.concat([tf.constant([1]),rand_times],axis=0)
