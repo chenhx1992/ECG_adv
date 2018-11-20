@@ -122,7 +122,7 @@ class EOT_tf_ATTACK(object):
         # the variable we're going to optimize over
         modifier = tf.Variable(np.zeros(shape_perturb, dtype=np_dtype))
         tile_times = math.ceil(data_len / perturb_window)
-        tile_times_lb = math.floor(tile_times / 2)
+
 
         # these are variables to be more efficient in sending data to tf
         self.timg = tf.Variable(np.zeros(shape), dtype=tf_dtype,
@@ -146,8 +146,12 @@ class EOT_tf_ATTACK(object):
         #        self.newimg = self.newimg * (clip_max - clip_min) + clip_min
         #self.modifier_tile = tf.tile(modifier, )
         d = tf.expand_dims(tf.constant([0, 0]), axis=0)
-        for l in range(5):
-            rand_times = tf.expand_dims(tf.random_uniform((), tile_times_lb, tile_times + 1, dtype=tf.int32),axis=0)
+        tile_time_ub = tf.random_uniform((), 1, tile_times + 1, dtype=tf.int32)
+        rand_tile_times = tf.random_shuffle(tf.range(1, tile_time_ub + 1))
+        tile_range = math.floor(tile_times / 2) + 1
+        ensemblesize = math.ceil(90/tile_range)
+        for l in range(tile_range):
+            rand_times = tf.expand_dims(rand_tile_times[l],axis=0)
             rand_times = tf.concat([tf.constant([1]),rand_times],axis=0)
             rand_times = tf.concat([rand_times,tf.constant([1])],axis=0)
             modifier_tile = tf.tile(modifier, rand_times)
@@ -165,7 +169,7 @@ class EOT_tf_ATTACK(object):
             self.newimg = tf.slice(modifier_tile, (0, 0, 0), shape) + self.timg
 
             if l == 0:
-                batch_newdata = EOT_time(modifier_tile, 0, 10) + self.timg
+                batch_newdata = EOT_time(modifier_tile, 0, ensemblesize) + self.timg
             else:
                 batch_newdata = tf.concat([batch_newdata, EOT_time(modifier_tile, 0, 10) + self.timg], axis=0)
 
