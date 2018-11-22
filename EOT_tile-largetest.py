@@ -103,7 +103,7 @@ while len(has_data)<1:
     #    data = mat_data['val'].squeeze()
     data = mat_data['val']
     data = preprocess(data, WINDOW_SIZE)
-    X_test=np.float32(data)
+    X_test = np.float32(data)
     for i in range(3):
         if (i == ground_truth):
             continue
