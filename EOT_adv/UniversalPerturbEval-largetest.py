@@ -61,7 +61,10 @@ perturb_window = int(sys.argv[3])
 ensemble_size = 30
 ground_truth = int(sys.argv[1])
 target = int(sys.argv[2])
-
+if perturb_window == 9000:
+    maxpos = 9000
+else:
+    maxpos = 9000-perturb_window
 
 if ground_truth == 0:
     target_file = np.genfromtxt('../data_select_A.csv', delimiter=',')
@@ -109,7 +112,7 @@ for (_, _, filenames) in walk(perturbDir):
 
                 # Generate test data
                 for p in range(100):
-                    pos = randrange(0, 4500)
+                    pos = randrange(0, maxpos)
                     if p == 0:
                         test_all = zero_mean(op_concate2(perturb, perturb_window, pos) + X_test_1)
                     else:
