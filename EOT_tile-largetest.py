@@ -104,7 +104,7 @@ while len(has_data)<5:
     data = mat_data['val']
     data = preprocess(data, WINDOW_SIZE)
     X_test = np.float32(data)
-    for i in range(3):
+    for i in range(4):
         if (i == ground_truth):
             continue
         

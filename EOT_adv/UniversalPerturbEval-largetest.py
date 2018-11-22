@@ -77,15 +77,12 @@ if ground_truth == 3:
     target_id = target_file[:,3]
 target_len = target_file[:,2]
 perturbDir = '../output/'+str(ground_truth)+'/'
-pattern = r'EOTrandtile_w'+str(perturb_window)+'_e30_l2_A[0-9]+T'+str(target)+'.out'
+pattern = r'EOTparttile_w'+str(perturb_window)+'_e30_l2_A[0-9]+T'+str(target)+'.out'
 attack_success_all = np.zeros((4),dtype=int)
-kk = 0
+
 for (_, _, filenames) in walk(perturbDir):
     for inputstr in filenames:
         if re.match(pattern,inputstr) != None:
-            kk = kk + 1
-            if kk > 5:
-                break
             attack_success = np.zeros((4), dtype=int)
             print("input file: ", perturbDir+inputstr)
             perturb = genfromtxt(perturbDir+inputstr, delimiter=',')
@@ -96,7 +93,7 @@ for (_, _, filenames) in walk(perturbDir):
             for i, id_float in enumerate(target_id):
                 if int(target_len[i]) < 30:
                     continue
-                if k >= 10:
+                if k >= 100:
                     break
                 k = k + 1
                 id_1 = int(id_float)
