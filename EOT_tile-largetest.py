@@ -115,7 +115,7 @@ while len(has_data)<1:
 
         dis_metric = int(sys.argv[2])
         perturb_window = int(sys.argv[3])
-        ensemble_size = 30
+        ensemble_size = int(max(30,perturb_window/50))
 
         eotl2 = EOT_ATTACK(wrap, sess=sess)
         eotl2_params = {'y_target': target_a, 'learning_rate': 1, 'max_iterations': 500, 'initial_const': 50000, 'perturb_window': perturb_window, 'dis_metric': dis_metric, 'ensemble_size': ensemble_size, 'ground_truth': ground_truth_a}
@@ -130,7 +130,7 @@ while len(has_data)<1:
 
         perturb_squeeze = np.squeeze(perturb, axis=2)
         if dis_metric == 1:
-            outputstr = './output/'+str(ground_truth)+'/EOTrandtile_w'+str(perturb_window)+'_e30_l2_A'+str(int(id))+'T'+str(int(target[0, 0]))+'.out'
+            outputstr = './output/'+str(ground_truth)+'/EOTparttile_w'+str(perturb_window)+'_e30_l2_A'+str(int(id))+'T'+str(int(target[0, 0]))+'.out'
         else:
             outputstr = './output/' +str(ground_truth)+'/EOTtile_w200_e30_smooth_A' + str(int(id)) + 'T' + str(int(target[0, 0])) + '.out'
         np.savetxt(outputstr, perturb_squeeze,delimiter=",")

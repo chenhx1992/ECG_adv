@@ -140,24 +140,17 @@ class EOT_tf_ATTACK(object):
         self.assign_const = tf.placeholder(tf_dtype, [batch_size],
                                            name='assign_const')
 
-        # the resulting instance, tanh'd to keep bounded from clip_min
-        # to clip_max
-        #        self.newimg = (tf.tanh(modifier + self.timg) + 1) / 2
-        #        self.newimg = self.newimg * (clip_max - clip_min) + clip_min
-        #self.modifier_tile = tf.tile(modifier, )
-        d = tf.expand_dims(tf.constant([0, 0]), axis=0)
-        c = tf.concat([tf.constant([0]), data_len - perturb_window], axis=0)
-        c = tf.expand_dims(c, axis=0)
-        c = tf.concat([d, c], axis=0)
-        c = tf.concat([c, d], axis=0)
-        ensemblesize = math.ceil(perturb_window/10)
+
+        pad_zero = tf.constant([[0,0], [0, data_len - perturb_window], [0,0]])
+        modifier_tile = tf.reshape(tf.pad(modifier, pad_zero, "CONSTANT"), [1, data_len, 1])
+
         if perturb_window == data_len:
             start_p = tf.constant(0)
         else:
             start_p = perturb_window
-        modifier_tile = tf.reshape(tf.pad(modifier, c, "CONSTANT"), [1,data_len,1])
+
         self.newimg = tf.slice(modifier_tile, (0, 0, 0), shape) + self.timg
-        batch_newdata = EOT_time(modifier_tile, start_p, ensemblesize) + self.timg
+        batch_newdata = EOT_time(modifier_tile, start_p, self.ensemble_size) + self.timg
 
         self.batch_newimg = zero_mean(batch_newdata)
 

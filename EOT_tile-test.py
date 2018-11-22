@@ -102,7 +102,7 @@ dis_metric = int(sys.argv[3])
 
 start_time = time.time()
 perturb_window = int(sys.argv[4])
-ensemble_size = int(sys.argv[5])
+ensemble_size = int(max(30, perturb_window/50))
 
 eotl2 = EOT_ATTACK(wrap, sess=sess)
 eotl2_params = {'y_target': target_a, 'learning_rate': 1, 'max_iterations': 500, 'initial_const': 50000, 'perturb_window': perturb_window, 'dis_metric': dis_metric, 'ensemble_size': ensemble_size, 'ground_truth': ground_truth_a}
