@@ -155,7 +155,7 @@ class EOT_tf_ATTACK(object):
             start_p = tf.constant(0)
         else:
             start_p = perturb_window
-        modifier_tile = tf.reshape(tf.pad(modifier, c, "CONSTANT"),[1,data_len,1])
+        modifier_tile = tf.reshape(tf.pad(modifier, c, "CONSTANT"), [1,data_len,1])
         self.newimg = tf.slice(modifier_tile, (0, 0, 0), shape) + self.timg
         batch_newdata = EOT_time(modifier_tile, start_p, ensemblesize) + self.timg
 
