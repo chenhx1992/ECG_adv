@@ -105,7 +105,7 @@ while len(has_data)<5:
     data = preprocess(data, WINDOW_SIZE)
     X_test = np.float32(data)
     for i in range(4):
-        if i != 3 :
+        if i == ground_truth:
             continue
         
         target = np.zeros((1, 1))
