@@ -36,7 +36,7 @@ def op_concate2(x,w,p):
     x_tile = np.tile(x, (1, 1, 1))
     x1 = np.zeros((1,9000,1))
     data_len = x_tile.shape[1]
-    x1[0,p:p+data_len,0] = x_tile[0,:,0]
+    x1[0,p:p+w,0] = x_tile[0,:,0]
     return x1
 
 # parameters
@@ -112,9 +112,9 @@ for (_, _, filenames) in walk(perturbDir):
                 for p in range(100):
                     pos = randrange(0, maxpos)
                     if p == 0:
-                        test_all = zero_mean(op_concate2(perturb, perturb_window, pos) + X_test_1)
+                        test_all = zero_mean(op_concate(perturb, perturb_window, pos) + X_test_1)
                     else:
-                        test_all = np.append(test_all, zero_mean(op_concate2(perturb, perturb_window, pos) + X_test_1), axis=0)
+                        test_all = np.append(test_all, zero_mean(op_concate(perturb, perturb_window, pos) + X_test_1), axis=0)
 
                 #predict
                 prob = model.predict(test_all)
