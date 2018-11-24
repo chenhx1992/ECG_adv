@@ -328,12 +328,13 @@ class EOT_tf_ATTACK(object):
                     prev = l
                 # adjust the best result found so far
                 for e, (l2, sc, ii, dist, xe) in enumerate(zip(itertools.repeat(l, len(scores)), scores, nimg, l2s, xent)):
+                    dist = dist/self.perturb_window
                     lab = np.argmax(batchlab[e])
-                    if xe < bestl2[e] and compare(sc, lab) and iteration>20:
+                    if xe < bestl2[e] and compare(sc, lab):
                         bestl2[e] = xe
                         bestscore[e] = np.argmax(sc)
                         bestdist[e] = dist
-                    if xe < o_bestl2[e] and compare(sc, lab) and (dist > 4500 and dist < 13500):
+                    if xe < o_bestl2[e] and compare(sc, lab) and (dist > 0.5 and dist < 1.5):
                         o_bestl2[e] = xe
                         o_bestscore[e] = np.argmax(sc)
                         o_bestattack[e] = ii
@@ -342,7 +343,7 @@ class EOT_tf_ATTACK(object):
             # adjust the constant as needed
             for e in range(batch_size):
                 if compare(bestscore[e], np.argmax(batchlab[e])) and \
-                        bestscore[e] != -1 and bestdist[e] > 6000:
+                        bestscore[e] != -1 and bestdist[e] > 1:
                     # success, divide const by two
                     upper_bound[e] = min(upper_bound[e], CONST[e])
                     if upper_bound[e] < 1e9:
