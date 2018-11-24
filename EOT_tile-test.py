@@ -108,7 +108,7 @@ else:
     ensemble_size = int(9000/50)
 
 eotl2 = EOT_ATTACK(wrap, sess=sess)
-eotl2_params = {'y_target': target_a, 'learning_rate': 1, 'max_iterations': 500, 'initial_const': 50000, 'perturb_window': perturb_window, 'dis_metric': dis_metric, 'ensemble_size': ensemble_size, 'ground_truth': ground_truth_a}
+eotl2_params = {'y_target': target_a, 'learning_rate': 2, 'max_iterations': 500, 'initial_const': 50000, 'perturb_window': perturb_window, 'dis_metric': dis_metric, 'ensemble_size': ensemble_size, 'ground_truth': ground_truth_a}
 adv_x = eotl2.generate(x, **eotl2_params)
 adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
 feed_dict = {x: X_test}
@@ -156,7 +156,7 @@ plt.show(block=False)
 '''
 perturb_squeeze = np.squeeze(perturb, axis=2)
 if dis_metric == 1:
-    outputstr = './output/EOTrandtile_w'+sys.argv[4]+'_e'+sys.argv[5]+'_l2_A'+sys.argv[1]+'T'+sys.argv[2]+'.out'
+    outputstr = './output/EOTparttile_w'+sys.argv[4]+'_e'+sys.argv[5]+'_l2_A'+sys.argv[1]+'T'+sys.argv[2]+'.out'
 else:
     if dis_metric == 2:
         outputstr = './output/EOTrandtile_w'+sys.argv[4]+'_e'+sys.argv[5]+'_dtw_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
