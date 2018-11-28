@@ -68,21 +68,32 @@ def op_concate(x, w, i):
 
 preds = model(x)
 ground_truth = int(sys.argv[1])
+select_data_A=[7092,4431,5140,6736,621]
+select_data_N=[6946,3748,3353,717,1533]
+select_data_O=[6630,1518,6629,1690,1983]
+select_data_i=[34,4948,7794,3738,2693]
 if ground_truth == 0:
     target_file = np.genfromtxt('data_select_A.csv', delimiter=',')
     target_id = target_file[:,3]
+    select_data = select_data_A
 if ground_truth == 1:
     target_file = np.genfromtxt('data_select_N.csv', delimiter=',')
     target_id = target_file[:,3]
+    select_data = select_data_N
 if ground_truth == 2:
     target_file = np.genfromtxt('data_select_O.csv', delimiter=',')
     target_id = target_file[:,3]
+    select_data = select_data_O
 if ground_truth == 3:
     target_file = np.genfromtxt('data_select_i.csv', delimiter=',')
     target_id = target_file[:,3]
+    select_data = select_data_i
 target_len = target_file[:,2]
 ## Loading time serie signals
 has_data = []
+
+
+perturb_windows_set = [6000, 4500, 3000, 1500]
 while len(has_data)<5:
     ind = random.randint(0,len(target_id)-1)
     id = int(target_id[ind])
