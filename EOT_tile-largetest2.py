@@ -89,10 +89,13 @@ perturb_windows_set = [6000, 4500, 3000, 1500]
 
 for _, target_id in enumerate(select_data):
     for _, perturb_window in enumerate(perturb_windows_set):
+        id = int(target_id)
         if perturb_window == 4500 and target_id == 6946:
             id = int(7758)
-        else:
-            id = int(target_id)
+        if perturb_window == 3000 and target_id == 7794:
+            id = int(7183)
+        if perturb_window == 1500 and target_id == 2693:
+            id = int(4916)
         count = id - 1
         record = "A{:05d}".format(id)
         local_filename = dataDir + record
