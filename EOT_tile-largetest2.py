@@ -118,7 +118,7 @@ for _, target_id in enumerate(select_data):
             if perturb_window != 9000:
                 ensemble_size = int(max(30, (9000 - perturb_window) / 50))
             else:
-                ensemble_size = 9000 / 50
+                ensemble_size = int(9000 / 50)
 
             eotl2 = EOT_ATTACK(wrap, sess=sess)
             eotl2_params = {'y_target': target_a, 'learning_rate': 1, 'max_iterations': 500, 'initial_const': 50000,
