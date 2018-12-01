@@ -69,12 +69,15 @@ def op_concate(x, w, i):
     return np.append(x2, x1, axis=1)
 
 
-preds = model(x)
 ground_truth = int(sys.argv[1])
-select_data_A = [7092, 4431, 5140, 6736, 621]
-select_data_N = [6946, 3748, 3353, 717, 1533]
-select_data_O = [6630, 1518, 6629, 1690, 1983]
-select_data_i = [34, 4948, 7794, 3738, 2693]
+select_data_A = [6713,2509,6911,3852,869]
+select_data_N = [3297,3344,3478,7125,4487]
+select_data_O = [2164,5276,1245,7659,428]
+select_data_i = [4966,4020,7356,2479,4941]
+#select_data_A = [7092, 4431, 5140, 6736, 621]
+#select_data_N = [6946, 3748, 3353, 717, 1533]
+#select_data_O = [6630, 1518, 6629, 1690, 1983]
+#select_data_i = [34, 4948, 7794, 3738, 2693]
 if ground_truth == 0:
     select_data = select_data_A
 if ground_truth == 1:
@@ -85,17 +88,12 @@ if ground_truth == 3:
     select_data = select_data_i
 
 
-perturb_windows_set = [6000, 4500, 3000, 1500]
+perturb_windows_set = [9000]
 
 for _, target_id in enumerate(select_data):
     for _, perturb_window in enumerate(perturb_windows_set):
         id = int(target_id)
-        if perturb_window == 4500 and target_id == 6946:
-            id = int(7758)
-        if perturb_window == 3000 and target_id == 7794:
-            id = int(7183)
-        if perturb_window == 1500 and target_id == 2693:
-            id = int(4916)
+
         count = id - 1
         record = "A{:05d}".format(id)
         local_filename = dataDir + record
