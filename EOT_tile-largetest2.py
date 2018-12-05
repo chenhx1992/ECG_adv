@@ -70,7 +70,8 @@ def op_concate(x, w, i):
 
 
 ground_truth = int(sys.argv[1])
-select_data_A = [6713,2509,6911,3852,869]
+#select_data_A = [6713,2509,6911,3852,869]
+select_data_A = [7600]
 select_data_N = [3297,3344,3478,7125,4487]
 select_data_O = [2164,5276,1245,7659,428]
 select_data_i = [4966,4020,7356,2479,4941]
