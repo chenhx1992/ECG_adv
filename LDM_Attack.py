@@ -107,7 +107,7 @@ else:
 
 # Attack
 LDM_EOT = LDM_EOT_ATTACK(wrap, sess=sess)
-LDM_EOT_params = {'y_target': target_a, 'learning_rate': 1, 'max_iterations': 1, 'initial_const': 50000,
+LDM_EOT_params = {'y_target': target_a, 'learning_rate': 1, 'max_iterations': 500, 'initial_const': 50000,
                 'perturb_window': perturb_window, 'dis_metric': dis_metric, 'ensemble_size': ensemble_size,
                 'ground_truth': ground_truth_a}
 adv_x = LDM_EOT.generate(x, **LDM_EOT_params)

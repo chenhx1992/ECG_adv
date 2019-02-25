@@ -119,7 +119,7 @@ for i, id_float in enumerate(target_id):
     print("Victim sample: "+record_1)
 
     # Generate test data
-    for p in range(2):
+    for p in range(100):
         # randomly select shifting position
         pos = randrange(0, maxpos)
         if p == 0:
