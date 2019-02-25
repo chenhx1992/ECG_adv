@@ -9,7 +9,7 @@ import csv
 import scipy.io
 import numpy as np
 import sys
-from EOT_tile import EOT_ATTACK
+from LDM_EOT import LDM_EOT_ATTACK
 import math
 
 
@@ -106,7 +106,7 @@ else:
     ensemble_size = 9000 / 50
 
 # Attack
-LDM_EOT = EOT_ATTACK(wrap, sess=sess)
+LDM_EOT = LDM_EOT_ATTACK(wrap, sess=sess)
 LDM_EOT_params = {'y_target': target_a, 'learning_rate': 1, 'max_iterations': 1, 'initial_const': 50000,
                 'perturb_window': perturb_window, 'dis_metric': dis_metric, 'ensemble_size': ensemble_size,
                 'ground_truth': ground_truth_a}
