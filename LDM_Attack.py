@@ -11,7 +11,7 @@ import numpy as np
 import sys
 from EOT_tile import EOT_ATTACK
 import math
-import random
+
 
 # parameters
 dataDir = './training_raw/'
@@ -69,11 +69,14 @@ def op_concate(x, w, i):
 # select data
 select_data_id = int(sys.argv[1])
 # attack target
-target = int(sys.argv[2])
+target = np.zeros((1, 1))
+target[0, 0] = int(sys.argv[2])
 target_a = utils.to_categorical(target, num_classes=4)
 # perturb window size
 perturb_window = int(sys.argv[3])
 
+# l2 distance
+dis_metric = 1
 
 # load groundTruth
 count = select_data_id - 1
@@ -102,22 +105,22 @@ if perturb_window != 9000:
 else:
     ensemble_size = 9000 / 50
 
-
+# Attack
 LDM_EOT = EOT_ATTACK(wrap, sess=sess)
-LDM_EOT_params = {'y_target': target_a, 'learning_rate': 1, 'max_iterations': 10, 'initial_const': 50000,
-                'perturb_window': perturb_window, 'ensemble_size': ensemble_size,
+LDM_EOT_params = {'y_target': target_a, 'learning_rate': 1, 'max_iterations': 1, 'initial_const': 50000,
+                'perturb_window': perturb_window, 'dis_metric': dis_metric, 'ensemble_size': ensemble_size,
                 'ground_truth': ground_truth_a}
 adv_x = LDM_EOT.generate(x, **LDM_EOT_params)
 adv_x = tf.stop_gradient(adv_x)  # Consider the attack to be constant
 feed_dict = {x: X_test}
 adv_sample = adv_x.eval(feed_dict=feed_dict, session=sess)
 
+# perturbation
 perturb = adv_sample - X_test
-
 perturb = perturb[:, 0:perturb_window, :]
-
 perturb_squeeze = np.squeeze(perturb, axis=2)
-outputstr = './output/' + str(ground_truth) + '/LDM_attack_w' + str(perturb_window) + '_l2_G' + str(
-                int(id)) + 'T' + str(int(target[0, 0])) + '.out'
+
+# save perturbation
+outputstr = './output/' + str(ground_truth) + '/LDM_Attack_w' + str(perturb_window) + '_l2_A' + record + 'T' + str(int(target[0, 0])) + '.out'
 np.savetxt(outputstr, perturb_squeeze, delimiter=",")
 
