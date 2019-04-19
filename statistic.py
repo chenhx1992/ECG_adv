@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 success_matrix = np.zeros((4, 4), dtype=int)
 type_num = np.zeros((4,1),dtype=int)
 
-folder = "./cw_l2_eval/"
+folder = "./cw_smooth_eval/"
 for file in sorted(os.listdir(folder)):
     para_list = file.rstrip('.csv')
     para_list = para_list.lstrip('R')
@@ -32,6 +32,30 @@ for file in sorted(os.listdir(folder)):
         print(para_list)
     
 print(np.divide(success_matrix, type_num/3))
+
+prob = np.round(np.divide(success_matrix, type_num/3)*100,2)
+tmp = prob.astype(str)
+tmp = np.core.defchararray.add(tmp, "%")
+print(tmp)
+names = ('A', 'N', 'O', '~')
+names_row = (' A ', ' N ', ' O ', ' ~ ')
+
+fig = plt.figure(1)
+#fig.subplots_adjust(left=0.2,top=0.8, wspace=1)
+
+#Table - Main table
+#ax = plt.subplot2grid((4,3), (0,0), colspan=2, rowspan=2)
+table = plt.table(cellText=tmp,cellLoc='center',
+          colWidths = [.2]*4,
+          rowLabels=names_row, rowLoc='center', colLoc='center',
+          colLabels=names, loc="center")
+table.set_fontsize(32)
+table.scale(1, 4)
+plt.axis('off')
+plt.grid('off')
+
+fig.tight_layout()
+
 
 ## version 1
 prob = np.round(np.divide(success_matrix, type_num/3),3)

@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Jan 12 00:59:46 2019
+
+@author: chenhx1992
+"""
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
+
+x = np.array([9000,6000,4500,3000,1500])
+x1 = np.array([[99.87,98.99,61.86,0.29,0.00],[99.96,97.59,96.83,93.87,70.00],[99.97,95.46,35.95,0.93,0.00]])/100.0
+
+x2 = np.array([[100.00,96.60,71.58,13.40,0.29],[100.00,99.06,99.37,99.67,99.48],[99.97,76.04,44.38,11.43,1.87]])/100.0
+
+x3 = np.array([[100.00,96.74,94.30,51.32,1.40],[99.46,92.26,63.96,12.20,	0.93],[100.00,	95.01,70.43,	18.51,2.83]])/100.0
+
+x4 = np.array([[98.66,95.12,90.52,62.73,12.53],[98.23,97.86,	82.48,44.97,0.00],[98.48,97.32,96.03,87.85,53.15]])/100.0
+
+# plt.plot(x.T, x1[0,:], 'k*-')
+# plt.xlim(9000, 1500)
+
+fig, axs = plt.subplots(2,2)
+plt.subplots_adjust(left=None, bottom=None, right=None, top=None,wspace=0.5, hspace=0.5)
+axs[0,0].plot(x.T, x1[0,:], 'r*-')
+axs[0,0].plot(x.T, x1[1,:], 'g*-')
+axs[0,0].plot(x.T, x1[2,:], 'k*-')
+axs[0,0].set_xlim(9000, 1500)
+axs[0,0].yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+axs[0,0].legend(['A-N', 'A-O', 'A-~'])
+# axs[0,0].set_xticks(x)
+axs[0,1].plot(x.T, x2[0,:], 'r*-')
+axs[0,1].plot(x.T, x2[1,:], 'g*-')
+axs[0,1].plot(x.T, x2[2,:], 'k*-')
+axs[0,1].set_xlim(9000, 1500)
+axs[0,1].yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+axs[0,1].legend(['N-A', 'N-O', 'N-~'])
+
+axs[1,0].plot(x.T, x3[0,:], 'r*-')
+axs[1,0].plot(x.T, x3[1,:], 'g*-')
+axs[1,0].plot(x.T, x3[2,:], 'k*-')
+axs[1,0].set_xlim(9000, 1500)
+axs[1,0].yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+axs[1,0].legend(['O-A', 'O-N', 'O-~'])
+
+axs[1,1].plot(x.T, x4[0,:], 'r*-')
+axs[1,1].plot(x.T, x4[1,:], 'g*-')
+axs[1,1].plot(x.T, x4[2,:], 'k*-')
+axs[1,1].set_xlim(9000, 1500)
+axs[1,1].yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+axs[1,1].legend(['~-A', '~-N', '~-O'])
+fig.tight_layout()
+
+
+
+#     length = 9000
+#     axs[0].plot(sample[0:length,:], color='black', label='Original signal')
+# #    axs[0].plot(adv_sample[:,:]-sample[:,:], color='green', label='perturbation')
+#     axs[0].set_title('Original signal {}, Index {}'.format(g_label, str(idx)))
+#     axs[0].set_ylim([ymin, ymax])
+#     axs[0].set_ylabel('signal value')
+    
+#     axs[1].plot(adv_sample_1[0:length,:], color='forestgreen', label='Adv signal_diff')
+#     axs[1].set_title('Adv signal {}, Target {}'.format(r_label_1, t_label))
+#     axs[1].set_ylim([ymin, ymax])
+#     axs[1].set_ylabel('signal value')
+    
+#     axs[2].plot(adv_sample_2[0:length,:], color='forestgreen', label='Adv signal_l2')
+#     axs[2].set_title('Adv signal {}, Target {}'.format(r_label_2, t_label))
+#     axs[2].set_ylim([ymin, ymax])
+#     axs[2].set_ylabel('signal value')
+    
+#     axs[3].plot(adv_sample_3[0:length,:], color='forestgreen', label='Adv signal_l2_diff')
+#     axs[3].set_title('Adv signal {}, Target {}'.format(r_label_3, t_label))
+#     axs[3].set_ylim([ymin, ymax])
+#     axs[3].set_xlabel('index')
+#     axs[3].set_ylabel('signal value')
+#     fig.tight_layout()
