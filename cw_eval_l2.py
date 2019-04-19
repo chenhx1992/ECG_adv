@@ -148,8 +148,8 @@ while (num < fid_to):
         eval_result[4*idx+i, 3] = ann
         
         #--- Save adv_sample to file
-        file_sample = './cw_l2_eval/R' + str(fid)+ '_' + str(ground_truth) + '_' + str(i) + '_' + str(ann) + '.csv'
-        np.savetxt(file_sample, adv_sample[0,:], delimiter=",")
+        #file_sample = './cw_l2_eval/R' + str(fid)+ '_' + str(ground_truth) + '_' + str(i) + '_' + str(ann) + '.csv'
+        #np.savetxt(file_sample, adv_sample[0,:], delimiter=",")
         
     num = num+1
         
