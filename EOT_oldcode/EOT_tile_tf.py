@@ -145,8 +145,22 @@ class EOT_tf_ATTACK(object):
         #        self.newimg = (tf.tanh(modifier + self.timg) + 1) / 2
         #        self.newimg = self.newimg * (clip_max - clip_min) + clip_min
         #self.modifier_tile = tf.tile(modifier, )
+        rand_times = tf.expand_dims(tf.random_uniform((), 15, tile_times, dtype=tf.int32),axis=0)
+        rand_times = tf.concat([tf.constant([1]),rand_times],axis=0)
+        rand_times = tf.concat([rand_times,tf.constant([1])],axis=0)
+        modifier_tile = tf.tile(modifier, rand_times)
 
-        modifier_tile = tf.tile(modifier, tf.constant([1, tile_times, 1]))
+        b= tf.expand_dims(tf.shape(modifier_tile)[1],axis=0)
+        c = tf.concat([tf.constant([0]),data_len-b], axis=0)
+        c = tf.expand_dims(c, axis=0)
+        d = tf.expand_dims(tf.constant([0,0]),axis=0)
+
+
+        c = tf.concat([d,c],axis=0)
+        c = tf.concat([c,d], axis=0)
+
+
+        modifier_tile = tf.reshape(tf.pad(modifier_tile, c, "CONSTANT"),[1,data_len,1])
 
         self.newimg = tf.slice(modifier_tile, (0, 0, 0), shape) + self.timg
 
@@ -335,7 +349,7 @@ class EOT_tf_ATTACK(object):
                         bestl2[e] = xe
                         bestscore[e] = np.argmax(sc)
                         bestdist[e] = dist
-                    if xe < o_bestl2[e] and compare(sc, lab) and (dist > 4500 and dist < 9000):
+                    if xe < o_bestl2[e] and compare(sc, lab) and (dist > 4500 and dist < 10000):
                         o_bestl2[e] = xe
                         o_bestscore[e] = np.argmax(sc)
                         o_bestattack[e] = ii

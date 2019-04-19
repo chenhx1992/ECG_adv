@@ -1,7 +1,9 @@
-import tensorflow as tf
-sess = tf.InteractiveSession()
+import csv
+import glob
 
-a = tf.expand_dims(tf.constant([[0,1,2,3,4],[0,1,2,3,4]]),axis=2)
-b = tf.expand_dims(tf.constant([[1,1,1,1,1]]),axis=2)
-print(a.shape)
-print(sess.run(a+b))
+dataDir = './training_raw/'
+# load groundTruth
+print("Loading ground truth file")
+csvfile = list(csv.reader(open('REFERENCE-v3.csv')))
+files = sorted(glob.glob(dataDir + "*.mat"))
+print(files)

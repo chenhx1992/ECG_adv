@@ -24,15 +24,14 @@ def ZERO():
 
 
 def EOT_time(x, start, ensemble_size):
-    def randomizing_EOT(x, i):
-        #rand_i = tf.expand_dims(tf.constant(i, dtype=tf.int32), axis=0)
-        rand_i = tf.expand_dims(tf.random_uniform((), 0, data_len, dtype=tf.int32), axis=0)
+    def randomizing_EOT(x, start):
+        rand_i = tf.expand_dims(tf.random_uniform((), start+1, data_len+1, dtype=tf.int32), axis=0)
         p = tf.concat([rand_i, data_len - rand_i], axis=0)
         x1, x2 = tf.split(x, p, axis=1)
         res = tf.reshape(tf.concat([x2, x1], axis=1), [1, data_len, 1])
         return res
 
-    return tf.concat([randomizing_EOT(x, i) for i in range(start, ensemble_size)], axis=0)
+    return tf.concat([randomizing_EOT(x, start) for _ in range(ensemble_size)], axis=0)
 
 def Seq1():
    tmp = np.zeros((1, 9001, 1), dtype=np_dtype)
@@ -121,7 +120,8 @@ class EOT_tf_ATTACK(object):
 
         # the variable we're going to optimize over
         modifier = tf.Variable(np.zeros(shape_perturb, dtype=np_dtype))
-        tile_times = math.ceil(data_len / perturb_window)
+
+
 
 
         # these are variables to be more efficient in sending data to tf
@@ -140,18 +140,17 @@ class EOT_tf_ATTACK(object):
         self.assign_const = tf.placeholder(tf_dtype, [batch_size],
                                            name='assign_const')
 
-        # the resulting instance, tanh'd to keep bounded from clip_min
-        # to clip_max
-        #        self.newimg = (tf.tanh(modifier + self.timg) + 1) / 2
-        #        self.newimg = self.newimg * (clip_max - clip_min) + clip_min
-        #self.modifier_tile = tf.tile(modifier, )
 
-        modifier_tile = tf.tile(modifier, tf.constant([1, tile_times, 1]))
+        pad_zero = tf.constant([[0,0], [0, data_len - perturb_window], [0,0]])
+        modifier_tile = tf.reshape(tf.pad(modifier, pad_zero, "CONSTANT"), [1, data_len, 1])
+
+        if perturb_window == data_len:
+            start_p = tf.constant(0)
+        else:
+            start_p = perturb_window
 
         self.newimg = tf.slice(modifier_tile, (0, 0, 0), shape) + self.timg
-
-
-        batch_newdata = EOT_time(modifier_tile, 0, self.ensemble_size) + self.timg
+        batch_newdata = EOT_time(modifier_tile, start_p, self.ensemble_size) + self.timg
 
         self.batch_newimg = zero_mean(batch_newdata)
 
@@ -204,7 +203,7 @@ class EOT_tf_ATTACK(object):
         self.loss2 = tf.reduce_sum(self.dist)
         # self.loss2 = tf.reduce_sum(self.sdtw)
         #self.loss1 = tf.reduce_sum(self.const * (self.xent+self.xent_rest))
-        self.loss1 = tf.reduce_sum(self.const * self.xent)
+        self.loss1 = tf.reduce_sum(self.const *self.xent)
         self.loss = self.loss1 + self.loss2
 
         # Setup the adam optimizer and keep track of variables we're creating
@@ -277,18 +276,18 @@ class EOT_tf_ATTACK(object):
         upper_bound = np.ones(batch_size) * 1e10
 
         # placeholders for the best l2, score, and instance attack found so far
-        o_bestl2 = [1e10] * batch_size
+        o_bestl2 = [1e6] * batch_size
         o_bestscore = [-1] * batch_size
         #        o_bestattack = np.copy(oimgs)
         o_bestattack = np.copy(imgs)
         o_bestConst = [-1] * batch_size
-        o_bestdist = [2000] * batch_size
+        o_bestdist = [-1] * batch_size
         for outer_step in range(self.BINARY_SEARCH_STEPS):
             # completely reset adam's internal state.
             self.sess.run(self.init)
             batch = imgs[:batch_size]
             batchlab = labs[:batch_size]
-            bestl2 = [1e10] * batch_size
+            bestl2 = [1e6] * batch_size
             bestdist = [-1] * batch_size
             bestscore = [-1] * batch_size
             _logger.debug("  Binary search step {} of {}".
@@ -327,15 +326,15 @@ class EOT_tf_ATTACK(object):
                         _logger.debug(msg)
                         break
                     prev = l
-
                 # adjust the best result found so far
                 for e, (l2, sc, ii, dist, xe) in enumerate(zip(itertools.repeat(l, len(scores)), scores, nimg, l2s, xent)):
+                    dist = dist/self.perturb_window
                     lab = np.argmax(batchlab[e])
                     if xe < bestl2[e] and compare(sc, lab):
                         bestl2[e] = xe
                         bestscore[e] = np.argmax(sc)
                         bestdist[e] = dist
-                    if xe < o_bestl2[e] and compare(sc, lab) and (dist > 4500 and dist < 9000):
+                    if xe < o_bestl2[e] and compare(sc, lab) and (dist > 0.5 and dist < 1.5):
                         o_bestl2[e] = xe
                         o_bestscore[e] = np.argmax(sc)
                         o_bestattack[e] = ii
@@ -344,7 +343,7 @@ class EOT_tf_ATTACK(object):
             # adjust the constant as needed
             for e in range(batch_size):
                 if compare(bestscore[e], np.argmax(batchlab[e])) and \
-                        bestscore[e] != -1 and bestdist[e] > 6000:
+                        bestscore[e] != -1 and bestdist[e] > 1:
                     # success, divide const by two
                     upper_bound[e] = min(upper_bound[e], CONST[e])
                     if upper_bound[e] < 1e9:

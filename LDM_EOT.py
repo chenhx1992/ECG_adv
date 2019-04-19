@@ -4,9 +4,9 @@ import cleverhans.utils as utils
 from cleverhans.model import Model, CallableModelWrapper
 from cleverhans.attacks import Attack
 
-_logger = utils.create_logger("EOT_attacks")
+_logger = utils.create_logger("LDM_EOT_attacks")
 
-class EOT_ATTACK(Attack):
+class LDM_EOT_ATTACK(Attack):
     """
     This attack was originally proposed by Carlini and Wagner. It is an
     iterative attack that finds adversarial examples on many defenses that
@@ -26,7 +26,7 @@ class EOT_ATTACK(Attack):
         if not isinstance(model, Model):
             model = CallableModelWrapper(model, 'logits')
 
-        super(EOT_ATTACK, self).__init__(model, back, sess, dtypestr)
+        super(LDM_EOT_ATTACK, self).__init__(model, back, sess, dtypestr)
 
         self.feedable_kwargs = {'y': self.tf_dtype,
                                 'y_target': self.tf_dtype}
@@ -77,12 +77,12 @@ class EOT_ATTACK(Attack):
         :param clip_max: (optional float) Maximum input component value
         """
         import tensorflow as tf
-        from EOT_parttile_tf import EOT_tf_ATTACK
+        from LDM_EOT_tf import LDM_EOT_tf_ATTACK
         self.parse_params(**kwargs)
 
         labels, nb_classes = self.get_or_guess_labels(x, kwargs)
 
-        attack = EOT_tf_ATTACK(self.sess, self.model, self.batch_size,
+        attack = LDM_EOT_tf_ATTACK(self.sess, self.model, self.batch_size,
                       self.confidence, 'y_target' in kwargs,
                       self.learning_rate, self.perturb_window, self.binary_search_steps,
                       self.max_iterations, self.dis_metric, self.ensemble_size, self.ground_truth,

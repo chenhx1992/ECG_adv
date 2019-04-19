@@ -48,7 +48,7 @@ ground_truth_label = csvfile[count][1]
 ground_truth = classes.index(ground_truth_label)
 print('Ground truth:{}'.format(ground_truth))
 
-inputstr = '../output/EOT_t30_f1_dtw_A'+str(id)+'T'+str(target)+'.out'
+inputstr = '../output/EOTtile_w200_f1_l2'+str(id)+'T'+str(target)+'.out'
 print("input file: ", inputstr)
 perturb = genfromtxt(inputstr, delimiter=',')
 dist = np.sum(perturb**2)/len(perturb) * 9000
@@ -88,10 +88,10 @@ plt.plot(perturb[0,:,0])
 plt.show()
 
 adv_sample = perturb+X_test
-plt.figure()
-plt.plot(adv_sample[0,1000:2000,0])
-plt.show()
+#plt.figure()
+#plt.plot(adv_sample[0,1000:2000,0])
+#plt.show()
 
-plt.figure()
-plt.plot(X_test[0,0:1000,0])
-plt.show()
+#plt.figure()
+#plt.plot(X_test[0,0:1000,0])
+#plt.show()

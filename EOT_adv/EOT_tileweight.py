@@ -35,7 +35,7 @@ class EOT_ATTACK(Attack):
                                   'targeted', 'learning_rate', 'perturb_window',
                                   'binary_search_steps', 'max_iterations', 'dis_metric','ensemble_size',
                                   'ground_truth', 'abort_early', 'initial_const',
-                                  'clip_min', 'clip_max', 'dist_tolerance']
+                                  'clip_min', 'clip_max']
 
     def generate(self, x, **kwargs):
         """
@@ -77,7 +77,7 @@ class EOT_ATTACK(Attack):
         :param clip_max: (optional float) Maximum input component value
         """
         import tensorflow as tf
-        from EOT_parttile_tf import EOT_tf_ATTACK
+        from EOT_adv.EOT_tileweight_tf import EOT_tf_ATTACK
         self.parse_params(**kwargs)
 
         labels, nb_classes = self.get_or_guess_labels(x, kwargs)
@@ -86,7 +86,7 @@ class EOT_ATTACK(Attack):
                       self.confidence, 'y_target' in kwargs,
                       self.learning_rate, self.perturb_window, self.binary_search_steps,
                       self.max_iterations, self.dis_metric, self.ensemble_size, self.ground_truth,
-                      self.abort_early, self.initial_const, self.clip_min, self.clip_max, self.dist_tolerance,
+                      self.abort_early, self.initial_const, self.clip_min, self.clip_max,
                       nb_classes, x.get_shape().as_list()[1:])
 
         def cw_wrap(x_val, y_val):
@@ -100,7 +100,7 @@ class EOT_ATTACK(Attack):
                      learning_rate=5e-3, perturb_window=9000,
                      binary_search_steps=5, max_iterations=1000, dis_metric=1, ensemble_size=30,
                      ground_truth = None, abort_early=True, initial_const=1e-2,
-                     clip_min=0, clip_max=1, dist_tolerance=4500):
+                     clip_min=0, clip_max=1):
 
         # ignore the y and y_target argument
         if nb_classes is not None:
@@ -119,4 +119,3 @@ class EOT_ATTACK(Attack):
         self.initial_const = initial_const
         self.clip_min = clip_min
         self.clip_max = clip_max
-        self.dist_tolerance = dist_tolerance

@@ -24,15 +24,14 @@ def ZERO():
 
 
 def EOT_time(x, start, ensemble_size):
-    def randomizing_EOT(x, i):
-        #rand_i = tf.expand_dims(tf.constant(i, dtype=tf.int32), axis=0)
-        rand_i = tf.expand_dims(tf.random_uniform((), 0, data_len, dtype=tf.int32), axis=0)
+    def randomizing_EOT(x, start):
+        rand_i = tf.expand_dims(tf.random_uniform((), start+1, data_len+1, dtype=tf.int32), axis=0)
         p = tf.concat([rand_i, data_len - rand_i], axis=0)
         x1, x2 = tf.split(x, p, axis=1)
         res = tf.reshape(tf.concat([x2, x1], axis=1), [1, data_len, 1])
         return res
 
-    return tf.concat([randomizing_EOT(x, i) for i in range(start, ensemble_size)], axis=0)
+    return tf.concat([randomizing_EOT(x, start) for _ in range(ensemble_size)], axis=0)
 
 def Seq1():
    tmp = np.zeros((1, 9001, 1), dtype=np_dtype)
@@ -122,6 +121,7 @@ class EOT_tf_ATTACK(object):
         # the variable we're going to optimize over
         modifier = tf.Variable(np.zeros(shape_perturb, dtype=np_dtype))
         tile_times = math.ceil(data_len / perturb_window)
+        tile_times_lb = max(math.floor(tile_times/3),1)
 
 
         # these are variables to be more efficient in sending data to tf
@@ -145,13 +145,34 @@ class EOT_tf_ATTACK(object):
         #        self.newimg = (tf.tanh(modifier + self.timg) + 1) / 2
         #        self.newimg = self.newimg * (clip_max - clip_min) + clip_min
         #self.modifier_tile = tf.tile(modifier, )
+        d = tf.expand_dims(tf.constant([0, 0]), axis=0)
+        rand_tile_times = tf.random_shuffle(tf.range(tile_times_lb, tile_times + 1))
+        tile_range = math.floor(tile_times / 2) + 1
 
-        modifier_tile = tf.tile(modifier, tf.constant([1, tile_times, 1]))
+        ensemblesize = math.ceil(200/tile_range)
+        for l in range(tile_range):
+            rand_times = tf.expand_dims(rand_tile_times[l],axis=0)
+            rand_times = tf.concat([tf.constant([1]),rand_times],axis=0)
+            rand_times = tf.concat([rand_times,tf.constant([1])],axis=0)
+            modifier_tile = tf.tile(modifier, rand_times)
+            modifier_shape = tf.shape(modifier_tile)[1]
+            b= tf.expand_dims(modifier_shape,axis=0)
+            c = tf.concat([tf.constant([0]),data_len-b], axis=0)
+            c = tf.expand_dims(c, axis=0)
 
-        self.newimg = tf.slice(modifier_tile, (0, 0, 0), shape) + self.timg
+            c = tf.concat([d,c],axis=0)
+            c = tf.concat([c,d], axis=0)
 
+            start_p = tf.cond(tf.equal(modifier_shape, tf.constant(data_len)), lambda: tf.constant(0), lambda: modifier_shape)
 
-        batch_newdata = EOT_time(modifier_tile, 0, self.ensemble_size) + self.timg
+            modifier_tile = tf.reshape(tf.pad(modifier_tile, c, "CONSTANT"),[1,data_len,1])
+
+            self.newimg = tf.slice(modifier_tile, (0, 0, 0), shape) + self.timg
+            if l == 0:
+                batch_newdata = EOT_time(modifier_tile, start_p, ensemblesize) + self.timg
+            else:
+                batch_newdata = tf.concat([batch_newdata, EOT_time(modifier_tile, start_p, ensemblesize) + self.timg], axis=0)
+
 
         self.batch_newimg = zero_mean(batch_newdata)
 
@@ -204,7 +225,7 @@ class EOT_tf_ATTACK(object):
         self.loss2 = tf.reduce_sum(self.dist)
         # self.loss2 = tf.reduce_sum(self.sdtw)
         #self.loss1 = tf.reduce_sum(self.const * (self.xent+self.xent_rest))
-        self.loss1 = tf.reduce_sum(self.const * self.xent)
+        self.loss1 = tf.reduce_sum(self.const *self.xent)
         self.loss = self.loss1 + self.loss2
 
         # Setup the adam optimizer and keep track of variables we're creating
@@ -277,18 +298,18 @@ class EOT_tf_ATTACK(object):
         upper_bound = np.ones(batch_size) * 1e10
 
         # placeholders for the best l2, score, and instance attack found so far
-        o_bestl2 = [1e10] * batch_size
+        o_bestl2 = [1e6] * batch_size
         o_bestscore = [-1] * batch_size
         #        o_bestattack = np.copy(oimgs)
         o_bestattack = np.copy(imgs)
         o_bestConst = [-1] * batch_size
-        o_bestdist = [2000] * batch_size
+        o_bestdist = [-1] * batch_size
         for outer_step in range(self.BINARY_SEARCH_STEPS):
             # completely reset adam's internal state.
             self.sess.run(self.init)
             batch = imgs[:batch_size]
             batchlab = labs[:batch_size]
-            bestl2 = [1e10] * batch_size
+            bestl2 = [1e6] * batch_size
             bestdist = [-1] * batch_size
             bestscore = [-1] * batch_size
             _logger.debug("  Binary search step {} of {}".
@@ -327,15 +348,15 @@ class EOT_tf_ATTACK(object):
                         _logger.debug(msg)
                         break
                     prev = l
-
                 # adjust the best result found so far
                 for e, (l2, sc, ii, dist, xe) in enumerate(zip(itertools.repeat(l, len(scores)), scores, nimg, l2s, xent)):
+                    dist = dist/self.perturb_window
                     lab = np.argmax(batchlab[e])
-                    if xe < bestl2[e] and compare(sc, lab):
+                    if xe < bestl2[e] and compare(sc, lab) and iteration>20:
                         bestl2[e] = xe
                         bestscore[e] = np.argmax(sc)
                         bestdist[e] = dist
-                    if xe < o_bestl2[e] and compare(sc, lab) and (dist > 4500 and dist < 9000):
+                    if xe < o_bestl2[e] and compare(sc, lab) and (dist > 0.5 and dist < 1.5)and iteration>20:
                         o_bestl2[e] = xe
                         o_bestscore[e] = np.argmax(sc)
                         o_bestattack[e] = ii
@@ -344,7 +365,7 @@ class EOT_tf_ATTACK(object):
             # adjust the constant as needed
             for e in range(batch_size):
                 if compare(bestscore[e], np.argmax(batchlab[e])) and \
-                        bestscore[e] != -1 and bestdist[e] > 6000:
+                        bestscore[e] != -1 and bestdist[e] > 1:
                     # success, divide const by two
                     upper_bound[e] = min(upper_bound[e], CONST[e])
                     if upper_bound[e] < 1e9:

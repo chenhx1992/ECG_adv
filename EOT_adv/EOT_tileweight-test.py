@@ -13,8 +13,8 @@ import scipy.io
 import glob
 import numpy as np
 import sys
-
-
+from EOT_adv.EOT_tileweight import EOT_ATTACK
+import math
 
 # parameters
 dataDir = './training_raw/'
@@ -24,6 +24,10 @@ classes = ['A', 'N', 'O','~']
 
 keras.layers.core.K.set_learning_phase(0)
 # loading model
+#set session config
+#session_conf = tf.ConfigProto(
+#      intra_op_parallelism_threads=2,
+#     inter_op_parallelism_threads=2)
 sess = tf.Session()
 K.set_session(sess)
 
@@ -43,28 +47,30 @@ files = sorted(glob.glob(dataDir+"*.mat"))
 
 def preprocess(x, maxlen):
     x =  np.nan_to_num(x)
-#    x =  x[0, 0:min(maxlen,len(x))]
     x =  x[0, 0:maxlen]
     x = x - np.mean(x)
     x = x / np.std(x)
-    
     tmp = np.zeros((1, maxlen))
-#    print(x.shape)
     tmp[0, :len(x)] = x.T  # padding sequence
     x = tmp
-#    print(x.shape)
     x = np.expand_dims(x, axis=2)  # required by Keras
-#    print(x.shape)
     del tmp
-    
     return x
-def op_concate(x):
-    data_len = 9000
-    p = np.random.randint(data_len)
-    x1 = [x[0, 0:p]]
-    x2 = [x[0, p:]]
-    return np.append(x2, x1, axis=1)
 
+def zero_mean(x):
+    x = x - np.mean(x)
+    x = x / np.std(x)
+    return x
+
+def op_concate(x, w, i):
+    data_len = 9000
+    tile_times = math.ceil(data_len/w)
+    x_tile = np.tile(x, (1, tile_times, 1))
+    p = i
+    x1 = x_tile[:, 0:p, :]
+    x2 = x_tile[:, p:data_len, :]
+
+    return np.append(x2, x1, axis=1)
 
 preds = model(x)
 
@@ -87,91 +93,75 @@ print('Ground truth:{}'.format(ground_truth))
 X_test=np.float32(data)
 new_X_test = np.repeat(data, 5, axis=0)
 
-
-Y_test = np.zeros((1, 1))
-Y_test[0,0] = ground_truth
-new_Y_test = np.zeros((5, 1))
-new_Y_test = np.repeat(ground_truth, 5, axis=0)
-Y_test = utils.to_categorical(Y_test, num_classes=4)
-
-
 target_a = np.zeros((1, 1))
 target_a = np.array([int(sys.argv[2])])
 target_a = utils.to_categorical(target_a, num_classes=4)
+ground_truth_a = utils.to_categorical(ground_truth, num_classes=4)
 dis_metric = int(sys.argv[3])
 
 start_time = time.time()
-from EOT_adv.EOT_g import EOT_L2
-eotl2 = EOT_L2(wrap, sess=sess)
-eotl2_params = {'y_target': target_a, 'learning_rate': 1, 'max_iterations': 200, 'initial_const':10, 'dis_metric': dis_metric}
+perturb_window = int(sys.argv[4])
+ensemble_size = int(sys.argv[5])
+eotl2 = EOT_ATTACK(wrap, sess=sess)
+eotl2_params = {'y_target': target_a, 'learning_rate': 0.5, 'max_iterations': 200, 'initial_const': 10, 'perturb_window': perturb_window, 'dis_metric': dis_metric, 'ensemble_size': ensemble_size, 'ground_truth': ground_truth_a}
 
 adv_x = eotl2.generate(x, **eotl2_params)
 adv_x = tf.stop_gradient(adv_x) # Consider the attack to be constant
 #preds_adv = model(adv_x)
 feed_dict = {x: X_test}
-#adv_sample = sess.run(adv_x, feed_dict=feed_dict)
+
+
 adv_sample = adv_x.eval(feed_dict=feed_dict, session = sess)
 
 print("time used:", time.time()-start_time)
-perturb = adv_sample-X_test
 
-correct = 0
-attack_success = 0
+perturb = adv_sample - X_test
 
-for _ in range(100):
-    #new_X_test = op_concate(X_test)
-    #prob_ori = model.predict(new_X_test)
-    prob_att = model.predict(op_concate(perturb)+X_test)
-    #if np.argmax(prob_ori) == ground_truth:
-        #correct = correct + 1
-    if np.argmax(prob_att) != ground_truth:
-        attack_success = attack_success + 1
-#print("correct:", correct)
-print("attack success times:", attack_success)
-
+perturb = perturb[:, 0:perturb_window, :]
 perturb_squeeze = np.squeeze(perturb, axis=2)
 if dis_metric == 1:
-    outputstr = './output/EOT_t30_f1_l2_A'+sys.argv[1]+'T'+sys.argv[2]+'.out'
+    outputstr = './output/EOTtile_w'+sys.argv[4]+'_e'+sys.argv[5]+'_l2_A'+sys.argv[1]+'T'+sys.argv[2]+'.out'
 else:
-    outputstr = './output/EOT_t30_f1_dtw_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
+    if dis_metric == 2:
+        outputstr = './output/EOTtile_w'+sys.argv[4]+'_e'+sys.argv[5]+'_dtw_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
+    else:
+        outputstr = './output/EOTtile_w' + sys.argv[4]+'_e'+sys.argv[5] + '_smooth_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
 np.savetxt(outputstr, perturb_squeeze,delimiter=",")
-prob = model.predict(adv_sample)
-ann = np.argmax(prob)
-ann_label = classes[ann]
-print(ann)
 
+correct = 0
+attack_success = np.zeros(4)
+not_success_in_ensemble_size = 0
+for i in range(perturb_window):
+    if i == 0:
+        test_all = zero_mean(op_concate(perturb, perturb_window, i)+X_test)
+    else:
+        test_all = np.append(test_all, zero_mean(op_concate(perturb, perturb_window, i)+X_test), axis=0)
+
+prob_att = model.predict(test_all)
+prob = model.predict(test_all)
+ind = np.argmax(prob, axis=1)
+for _, it in enumerate(ind):
+    attack_success[it] = attack_success[it] + 1
+    #if i < ensemble_size and ind != int(sys.argv[2]):
+    #    not_success_in_ensemble_size = not_success_in_ensemble_size + 1
+
+
+
+#print("not_success_in_ensemble_size:", not_success_in_ensemble_size)
+
+print("attack success times:", attack_success)
 '''
 import matplotlib.pyplot as plt
 plt.figure()
-plt.plot(X_test[0,:,0])
-plt.show()
+plt.plot(perturb[0,:,0])
+plt.show(block=False)
+
+adv_sample = op_concate(perturb,perturb_window,False) + X_test
+plt.figure()
+plt.plot(adv_sample[0,1000:2000,0])
+plt.show(block=False)
 
 plt.figure()
-plt.plot(perturb[0,:,0]+X_test[0,:,0])
-plt.show()
+plt.plot(X_test[0,1000:2000,0])
+plt.show(block=False)
 '''
-
-
-#
-#ymax = np.max(adv_sample)+0.5
-#ymin = np.min(adv_sample)-0.5
-#
-#fig, axs = plt.subplots(1, 3, figsize=(20,5))
-#
-#axs[0].plot(X_test[0,:])
-#axs[0].set_title('Original signal {}'.format(ground_truth_label))
-#axs[0].set_ylim([ymin, ymax])
-#axs[0].set_xlabel('index')
-#axs[0].set_ylabel('signal value')
-#
-#axs[1].plot(adv_sample[0,:])
-#axs[1].set_title('Adversarial signal {}'.format(ann_label))
-#axs[1].set_ylim([ymin, ymax])
-#axs[1].set_xlabel('index')
-#axs[1].set_ylabel('signal value')
-#
-#axs[2].plot(adv_sample[0,:]-X_test[0,:])
-#axs[2].set_title('perturbations')
-#axs[2].set_ylim([ymin, ymax])
-#axs[2].set_xlabel('index')
-#axs[2].set_ylabel('signal value')

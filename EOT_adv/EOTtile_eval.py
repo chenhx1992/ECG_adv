@@ -36,9 +36,10 @@ print("Loading ground truth file")
 csvfile = list(csv.reader(open('../REFERENCE-v3.csv')))
 files = sorted(glob.glob(dataDir+"*.mat"))
 
-id = 5
+id = 4575
 target = 1
 perturb_window = 200
+ensemble_size = 30
 count = id-1
 record = "A{:05d}".format(id)
 local_filename = dataDir+record
@@ -54,10 +55,10 @@ ground_truth_label = csvfile[count][1]
 ground_truth = classes.index(ground_truth_label)
 print('Ground truth:{}'.format(ground_truth))
 
-inputstr = '../output/EOTtile_w'+str(perturb_window)+'_f1_l2_A'+str(id)+'T'+str(target)+'.out'
+inputstr = '../output/EOTtile_w'+str(perturb_window)+'_e'+str(ensemble_size)+'_l2_A'+str(id)+'T'+str(target)+'.out'
 print("input file: ", inputstr)
 perturb = genfromtxt(inputstr, delimiter=',')
-dist = np.sum(perturb**2)/len(perturb) * 9000
+dist = np.linalg.norm(perturb)
 print("distance:", dist)
 perturb = np.expand_dims(perturb, axis=0)
 perturb = np.expand_dims(perturb, axis=2)
@@ -71,6 +72,7 @@ def op_concate(x, w, p):
     return np.append(x2, x1, axis=1)
 
 print("Loading model")
+'''
 model = load_model('../ResNet_30s_34lay_16conv.hdf5')
 
 
@@ -81,22 +83,26 @@ for i in range(perturb_window):
     prob_att = model.predict(zero_mean(op_concate(perturb, perturb_window, i)+X_test))
     ind = np.argmax(prob_att)
     attack_success[ind] = attack_success[ind] + 1
-    if ind == target:
+    print(prob_att)
+    if ind != target:
         print(prob_att, "not success:", i)
 
 #print("correct:", correct)
 print("attack success times:", attack_success)
-
+'''
+dist = np.linalg.norm(X_test[0,:,0])
+dist = dist * dist
+print(dist)
 import matplotlib.pyplot as plt
 plt.figure()
 plt.plot(perturb[0,:,0])
-plt.show(block=False)
+
 
 adv_sample = op_concate(perturb,perturb_window,False) + X_test
 plt.figure()
-plt.plot(adv_sample[0,1000:2000,0])
-plt.show(block=False)
+plt.plot(adv_sample[0,:,0])
+
 
 plt.figure()
-plt.plot(X_test[0,1000:2000,0])
-plt.show(block=False)
+plt.plot(X_test[0,:,0])
+plt.show()

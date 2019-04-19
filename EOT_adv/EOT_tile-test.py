@@ -102,10 +102,7 @@ dis_metric = int(sys.argv[3])
 
 start_time = time.time()
 perturb_window = int(sys.argv[4])
-if perturb_window != 9000:
-    ensemble_size = int(max(30, (9000 - perturb_window) / 50))
-else:
-    ensemble_size = int(9000/50)
+ensemble_size = int(sys.argv[5])
 
 eotl2 = EOT_ATTACK(wrap, sess=sess)
 eotl2_params = {'y_target': target_a, 'learning_rate': 2, 'max_iterations': 500, 'initial_const': 50000, 'perturb_window': perturb_window, 'dis_metric': dis_metric, 'ensemble_size': ensemble_size, 'ground_truth': ground_truth_a}
@@ -156,10 +153,10 @@ plt.show(block=False)
 '''
 perturb_squeeze = np.squeeze(perturb, axis=2)
 if dis_metric == 1:
-    outputstr = './output/EOTparttile_w'+sys.argv[4]+'_e'+sys.argv[5]+'_l2_A'+sys.argv[1]+'T'+sys.argv[2]+'.out'
+    outputstr = './output/EOTtile_w'+sys.argv[4]+'_e'+sys.argv[5]+'_l2_A'+sys.argv[1]+'T'+sys.argv[2]+'_times.out'
 else:
     if dis_metric == 2:
-        outputstr = './output/EOTrandtile_w'+sys.argv[4]+'_e'+sys.argv[5]+'_dtw_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
+        outputstr = './output/EOTtile_w'+sys.argv[4]+'_e'+sys.argv[5]+'_dtw_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
     else:
-        outputstr = './output/EOTrandtile_w' + sys.argv[4]+'_e'+sys.argv[5] + '_smooth_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
+        outputstr = './output/EOTtile_w' + sys.argv[4]+'_e'+sys.argv[5] + '_smooth_A' + sys.argv[1] + 'T' + sys.argv[2] + '.out'
 np.savetxt(outputstr, perturb_squeeze,delimiter=",")

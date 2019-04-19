@@ -34,3 +34,16 @@ cd /home/ubuntu/ECG_adv
 git pull https://github.com/chenhx1992/ECG_adv.git
 python EOT-test.py
 ```
+
+GPU
+```sh
+#!/bin/bash
+export PATH=/home/ubuntu/anaconda/bin:$PATH
+export PATH=${PATH}:/usr/local/cuda-9.0/bin
+export CUDA_HOME=${CUDA_HOME}:/usr/local/cuda:/usr/local/cuda-9.0
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/cuda-9.0/lib64
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/extras/CUPTI/lib64
+cd /home/ubuntu/ECG_adv
+git pull https://github.com/chenhx1992/ECG_adv.git
+python EOT_tile-largetest.py 0 1
+```
