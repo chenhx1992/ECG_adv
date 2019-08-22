@@ -92,7 +92,8 @@ num = fid_from
 while (num < fid_to):
     
     #--- Loading
-    fid = int(data_select[num, 3]) 
+    #fid = int(data_select[num, 3]) 
+    fid = num
     record = "A{:05d}".format(fid)
     local_filename = "./training_raw/"+record
     print('Loading record {}'.format(record))    
@@ -147,13 +148,13 @@ while (num < fid_to):
         eval_result[4*idx+i, 3] = ann
         
         #--- Save adv_sample to file
-        file_sample = './cw_smooth_eval/R' + str(fid)+ '_' + str(ground_truth) + '_' + str(i) + '_' + str(ann) + '.csv'
-        np.savetxt(file_sample, adv_sample[0,:], delimiter=",")
+        # file_sample = './cw_smooth_eval/R' + str(fid)+ '_' + str(ground_truth) + '_' + str(i) + '_' + str(ann) + '.csv'
+        # np.savetxt(file_sample, adv_sample[0,:], delimiter=",")
         
     num = num+1
         
-file_result = './cw_smooth_eval/res'+ '_' + str(fid_from) + '_' + str(fid_to) + '.csv'
-np.savetxt(file_result, eval_result, delimiter=",")  
+# file_result = './cw_smooth_eval/res'+ '_' + str(fid_from) + '_' + str(fid_to) + '.csv'
+# np.savetxt(file_result, eval_result, delimiter=",")  
         
     
     

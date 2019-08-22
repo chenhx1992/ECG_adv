@@ -82,7 +82,7 @@ files = sorted(glob.glob(dataDir+"*.mat"))
 #--- Attacker
 from myattacks_diffl2 import CarliniWagnerL2  
 cwl2 = CarliniWagnerL2(wrap, sess=sess)
-print('Attack diff is running...')
+print('Attack diffl2 is running...')
 
 #--- loop on file including data_select[:,3] from fid_from-th row to fid_to-th row
 
