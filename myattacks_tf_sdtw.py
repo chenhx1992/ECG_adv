@@ -288,7 +288,8 @@ class CarliniWagnerL2(object):
                     print('Iteration {} of {}: loss={:.3g} " + "l1={:.3g}" + "l2={:.3g} f={:.3g} shape={}'.format(iteration, 
                           self.MAX_ITERATIONS, l, l1, np.mean(l2s), np.mean(scores), self.shape))
                     print('logits', scores)
-    
+                # else:
+                #     print('iteration', iteration)
                 # check if we should abort search if we're getting nowhere.
                 if self.ABORT_EARLY and \
                    iteration % ((self.MAX_ITERATIONS // 10) or 1) == 0:
