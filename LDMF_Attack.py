@@ -9,7 +9,7 @@ import csv
 import scipy.io
 import numpy as np
 import sys
-from LDM_EOT import LDM_EOT_ATTACK
+from LDMF_EOT import LDMF_EOT_ATTACK
 import math
 
 
@@ -106,11 +106,11 @@ else:
     ensemble_size = int(9000 / 50)
 
 # Attack
-LDM_EOT = LDM_EOT_ATTACK(wrap, sess=sess)
-LDM_EOT_params = {'y_target': target_a, 'learning_rate': 1, 'max_iterations': 500, 'initial_const': 50000,
+LDMF_EOT = LDMF_EOT_ATTACK(wrap, sess=sess)
+LDMF_EOT_params = {'y_target': target_a, 'learning_rate': 1, 'max_iterations': 500, 'initial_const': 50000,
                 'perturb_window': perturb_window, 'dis_metric': dis_metric, 'ensemble_size': ensemble_size,
                 'ground_truth': ground_truth_a}
-adv_x = LDM_EOT.generate(x, **LDM_EOT_params)
+adv_x = LDMF_EOT.generate(x, **LDMF_EOT_params)
 adv_x = tf.stop_gradient(adv_x)  # Consider the attack to be constant
 feed_dict = {x: X_test}
 adv_sample = adv_x.eval(feed_dict=feed_dict, session=sess)
@@ -121,6 +121,6 @@ perturb = perturb[:, 0:perturb_window, :]
 perturb_squeeze = np.squeeze(perturb, axis=2)
 
 # save perturbation
-outputstr = './output/' + str(ground_truth) + '/LDM_Attack_w' + str(perturb_window) + '_l2_A' + record + 'T' + str(int(target[0, 0])) + '.out'
+outputstr = './output/' + str(ground_truth) + '/LDMF_Attack_w' + str(perturb_window) + '_l2_A' + record + 'T' + str(int(target[0, 0])) + '.out'
 np.savetxt(outputstr, perturb_squeeze, delimiter=",")
 

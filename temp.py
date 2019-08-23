@@ -1,9 +1,14 @@
-import csv
-import glob
+import tensorflow as tf
 
-dataDir = './training_raw/'
-# load groundTruth
-print("Loading ground truth file")
-csvfile = list(csv.reader(open('REFERENCE-v3.csv')))
-files = sorted(glob.glob(dataDir + "*.mat"))
-print(files)
+def bandPassFiltere(x, mask):
+    stfts = tf.contrib.signal.stft(tf.reshape(x,[9000]), data_len, 0)
+
+    stfts_masked = tf.multiply(tf.reshape(stfts,[1,8193]),mask)
+    inverse_stfts = tf.contrib.signal.inverse_stft(stfts_masked, data_len,0)
+    #print(inverse_stfts.get_shape())
+    #print(tf.reshape(inverse_stfts,[1,9000,1]).get_shape())
+    return tf.reshape(inverse_stfts,[9000])
+
+a = tf.range(1,9000)
+a_sine = tf.sin(a)
+sess = tf.Session()
