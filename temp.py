@@ -9,6 +9,6 @@ def bandPassFiltere(x, mask):
     #print(tf.reshape(inverse_stfts,[1,9000,1]).get_shape())
     return tf.reshape(inverse_stfts,[9000])
 
-
-
+a = tf.range(1,9000)
+a_sine = tf.sin(a)
 sess = tf.Session()
