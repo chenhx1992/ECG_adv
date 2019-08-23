@@ -31,7 +31,7 @@ def EOT_time(x, start, ensemble_size):
         res = tf.reshape(tf.concat([x2, x1], axis=1), [1, data_len, 1])
         return res
 
-    return tf.concat([randomizing_EOT(x, start) for _ in range(ensemble_size)], axis=0)
+    return tf.concat([randomizing_EOT(x, start) for _ in range(int(ensemble_size))], axis=0)
 
 def Seq1():
    tmp = np.zeros((1, 9001, 1), dtype=np_dtype)

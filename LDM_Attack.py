@@ -103,7 +103,7 @@ X_test = np.float32(data)
 if perturb_window != 9000:
     ensemble_size = int(max(30, (9000 - perturb_window) / 50))
 else:
-    ensemble_size = 9000 / 50
+    ensemble_size = int(9000 / 50)
 
 # Attack
 LDM_EOT = LDM_EOT_ATTACK(wrap, sess=sess)
