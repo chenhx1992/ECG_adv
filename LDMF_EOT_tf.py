@@ -18,6 +18,7 @@ np_dtype = np.dtype('float32')
 tf_dtype = tf.as_dtype('float32')
 data_len = 9000
 
+####
 def ZERO():
     return np.asarray(0., dtype=np_dtype)
 
