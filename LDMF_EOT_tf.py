@@ -25,7 +25,7 @@ def bandPassFiltere(x, mask):
     stfts = tf.contrib.signal.stft(tf.reshape(x,[9000]), data_len, 0)
 
     stfts_masked = tf.multiply(tf.reshape(stfts,[1,8193]),mask)
-    inverse_stfts = tf.contrib.signal.inverse_stft(stfts_masked, data_len,0)
+    inverse_stfts = tf.contrib.signal.inverse_stft(stfts_masked, data_len,0,window_fn=None)
     #print(inverse_stfts.get_shape())
     #print(tf.reshape(inverse_stfts,[1,9000,1]).get_shape())
     return tf.reshape(inverse_stfts,[9000])
@@ -163,7 +163,7 @@ class LDMF_EOT_tf_ATTACK(object):
             start_p = perturb_window
 
         self.newimg = tf.slice(modifier_tile, (0, 0, 0), shape) + self.timg
-        mask = tf.cast(tf.concat([tf.ones([1, 1]), tf.concat([tf.zeros([1, 3]), tf.zeros([1, 8189])], 1)], 1),
+        mask = tf.cast(tf.concat([tf.ones([1, 1]), tf.concat([tf.zeros([1, 3]), tf.ones([1, 8189])], 1)], 1),
                        dtype=tf.complex64)
         batch_newdata = EOT_time(modifier_tile, start_p, self.ensemble_size, mask) + self.timg
 
