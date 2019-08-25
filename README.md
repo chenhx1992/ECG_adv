@@ -14,7 +14,7 @@ source ~/.bashrc
 pip install https://github.com/mind/wheels/releases/download/tf1.8-gpu-nomkl/tensorflow-1.8.0-cp36-cp36m-linux_x86_64.whl
 pip install pydot
 pip install keras
-pip install cleverhans
+pip install cleverhans==2.1.0
 git clone https://github.com/chenhx1992/ECG_adv.git
 cd ECG_adv/
 wget https://www.dropbox.com/s/ywwh1hxdbcbm0nb/training_raw.zip
