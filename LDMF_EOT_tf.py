@@ -23,12 +23,10 @@ def ZERO():
     return np.asarray(0., dtype=np_dtype)
 
 def bandPassFiltere(x, mask):
-    stfts = tf.contrib.signal.stft(tf.reshape(x,[9000]), data_len, 0)
+    stfts = tf.contrib.signal.stft(tf.reshape(x,[9000]), data_len, 1,window_fn=None)
 
     stfts_masked = tf.multiply(tf.reshape(stfts,[1,8193]),mask)
-    inverse_stfts = tf.contrib.signal.inverse_stft(stfts_masked, data_len,0,window_fn=None)
-    #print(inverse_stfts.get_shape())
-    #print(tf.reshape(inverse_stfts,[1,9000,1]).get_shape())
+    inverse_stfts = tf.contrib.signal.inverse_stft(stfts_masked, data_len,1,window_fn=None)
     return tf.reshape(inverse_stfts,[9000])
 
 
@@ -128,7 +126,6 @@ class LDMF_EOT_tf_ATTACK(object):
         self.ground_truth = ground_truth
         self.shape = shape = tuple([batch_size] + list(shape))
         shape_perturb = tuple([batch_size, perturb_window, 1])
-
         #  self.transform_shape = transform_shape = tuple([transform_batch_size] + list(transform_shape))
         #        self.shape = shape = tuple(list(shape))
 

@@ -93,7 +93,7 @@ target_len = target_file[:,2]
 has_data = []
 
 
-perturb_windows_set = [6000, 4500, 3000, 1500]
+perturb_windows_set = [9000]
 while len(has_data)<5:
     ind = random.randint(0,len(target_id)-1)
     id = int(target_id[ind])
@@ -124,8 +124,8 @@ while len(has_data)<5:
         target_a = utils.to_categorical(target, num_classes=4)
         ground_truth_a = utils.to_categorical(ground_truth, num_classes=4)
 
-        dis_metric = int(sys.argv[2])
-        perturb_window = int(sys.argv[3])
+        dis_metric = 1
+        perturb_window = int(sys.argv[2])
         if perturb_window != 9000:
             ensemble_size = int(max(30,(9000-perturb_window)/50))
         else:

@@ -13,10 +13,12 @@ sess = tf.Session()
 
 a = tf.range(1,901,1,dtype=tf.float32)
 b = tf.range(1,1801,2,dtype=tf.float32)
+c = tf.zeros([900])
 b_sin = tf.sin(b)
+c_sin = tf.sin(c)
 b_stfts = tf.contrib.signal.stft(tf.reshape(b_sin,[900]), 900, 1,window_fn=None)
 b_power = tf.reshape(tf.abs(b_stfts*tf.conj(b_stfts)),[513])
-wave = tf.add(tf.sin(a), b_sin)
+wave = c_sin#tf.add(tf.sin(a), b_sin)
 
 
 stfts = tf.contrib.signal.stft(tf.reshape(wave,[900]), 900, 1,window_fn=None)
