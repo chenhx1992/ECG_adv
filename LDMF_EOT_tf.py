@@ -35,8 +35,7 @@ def EOT_time(x, start, ensemble_size, mask):
         rand_i = tf.expand_dims(tf.random_uniform((), start+1, data_len+1, dtype=tf.int32), axis=0)
         p = tf.concat([rand_i, data_len - rand_i], axis=0)
         x1, x2 = tf.split(x, p, axis=1)
-        res = tf.reshape(bandPassFiltere(tf.concat([x2, x1], axis=1),mask), [1, data_len, 1])0
-        #res = tf.reshape(tf.concat([x2, x1], axis=1), [1, data_len, 1])
+        res = tf.reshape(bandPassFiltere(tf.concat([x2, x1], axis=1),mask), [1, data_len, 1])
         return res
 
     return tf.concat([randomizing_EOT(x, start) for _ in range(int(ensemble_size))], axis=0)
@@ -162,10 +161,10 @@ class LDMF_EOT_tf_ATTACK(object):
             start_p = perturb_window
 
         self.newimg = tf.slice(modifier_tile, (0, 0, 0), shape) + self.timg
-        mask = tf.cast(tf.concat([tf.concat([tf.concat([tf.ones([1,1]),tf.zeros([1,3])],1),tf.concat([tf.ones([1,2727]),tf.zeros([1,1])],1)],1),
-                                 tf.concat([tf.concat([tf.ones([1,545]),tf.zeros([1,1])],1),tf.ones([1,4915])],1)],1), dtype = tf.complex64)
+        #mask = tf.cast(tf.concat([tf.concat([tf.concat([tf.ones([1,1]),tf.zeros([1,3])],1),tf.concat([tf.ones([1,2727]),tf.zeros([1,1])],1)],1),
+        #                         tf.concat([tf.concat([tf.ones([1,545]),tf.zeros([1,1])],1),tf.ones([1,4915])],1)],1), dtype = tf.complex64)
         #print(mask.get_shape())
-        #mask = tf.cast(tf.concat([tf.ones([1, 1]), tf.concat([tf.zeros([1, 3]), tf.ones([1, 8189])], 1)], 1), dtype=tf.complex64)
+        mask = tf.cast(tf.concat([tf.ones([1, 1]), tf.concat([tf.zeros([1, 3]), tf.ones([1, 8189])], 1)], 1), dtype=tf.complex64)
         batch_newdata = EOT_time(modifier_tile, start_p, self.ensemble_size, mask) + self.timg
 
         self.batch_newimg = zero_mean(batch_newdata)
@@ -330,7 +329,7 @@ class LDMF_EOT_tf_ATTACK(object):
                         bestl2[e] = xe
                         bestscore[e] = np.argmax(sc)
                         bestdist[e] = dist
-                    if xe < o_bestl2[e] and compare(sc, lab) and (dist > 0.5 and dist < 2):
+                    if xe < o_bestl2[e] and compare(sc, lab) and (dist > 0.5 and dist < 1.5):
                         o_bestl2[e] = xe
                         o_bestscore[e] = np.argmax(sc)
                         o_bestattack[e] = ii
