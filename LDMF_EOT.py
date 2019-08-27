@@ -98,7 +98,7 @@ class LDMF_EOT_ATTACK(Attack):
     def parse_params(self, y=None, y_target=None, nb_classes=None,
                      batch_size=1, confidence=0,
                      learning_rate=5e-3, perturb_window=9000,
-                     binary_search_steps=4, max_iterations=1000, dis_metric=1, ensemble_size=30,
+                     binary_search_steps=5, max_iterations=1000, dis_metric=1, ensemble_size=30,
                      ground_truth = None, abort_early=True, initial_const=1e-2,
                      clip_min=0, clip_max=1, dist_tolerance=4500):
 
