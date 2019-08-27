@@ -35,7 +35,8 @@ def EOT_time(x, start, ensemble_size, mask):
         rand_i = tf.expand_dims(tf.random_uniform((), start+1, data_len+1, dtype=tf.int32), axis=0)
         p = tf.concat([rand_i, data_len - rand_i], axis=0)
         x1, x2 = tf.split(x, p, axis=1)
-        res = tf.reshape(bandPassFiltere(tf.concat([x2, x1], axis=1),mask), [1, data_len, 1])
+        #res = tf.reshape(bandPassFiltere(tf.concat([x2, x1], axis=1),mask), [1, data_len, 1])0
+        res = tf.reshape(tf.concat([x2, x1], axis=1), [1, data_len, 1])
         return res
 
     return tf.concat([randomizing_EOT(x, start) for _ in range(int(ensemble_size))], axis=0)
