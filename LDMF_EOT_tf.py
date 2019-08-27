@@ -161,8 +161,10 @@ class LDMF_EOT_tf_ATTACK(object):
             start_p = perturb_window
 
         self.newimg = tf.slice(modifier_tile, (0, 0, 0), shape) + self.timg
-        mask = tf.cast(tf.concat([tf.ones([1, 1]), tf.concat([tf.zeros([1, 3]), tf.ones([1, 8189])], 1)], 1),
-                       dtype=tf.complex64)
+        mask = tf.cast(tf.concat([tf.concat([tf.concat([tf.ones([1,1]),tf.zeros([1,3])],1),tf.concat([tf.ones([1,2727]),tf.zeros([1,1])],1)],1),
+                                 tf.concat([tf.concat([tf.ones([1,545]),tf.zeros([1,1])],1),tf.ones([1,4915])],1)],1), dtype = tf.complex64)
+        #print(mask.get_shape())
+        #mask = tf.cast(tf.concat([tf.ones([1, 1]), tf.concat([tf.zeros([1, 3]), tf.ones([1, 8189])], 1)], 1), dtype=tf.complex64)
         batch_newdata = EOT_time(modifier_tile, start_p, self.ensemble_size, mask) + self.timg
 
         self.batch_newimg = zero_mean(batch_newdata)
