@@ -71,15 +71,15 @@ def op_concate(x, w, i):
 
 ground_truth = int(sys.argv[1])
 #select_data_A = [6713,2509,6911,3852,869]
-select_data_A = [6713,2509,6911]
-select_data_N = [3297,3344,3478]
-select_data_O = [2164,5276,1245]
-select_data_i = [4966,4020,7356]
+#select_data_A = [6713,2509,6911]
+#select_data_N = [3297,3344,3478]
+#select_data_O = [2164,5276,1245]
+#select_data_i = [4966,4020,7356]
 
-#select_data_N = [3297,3344,3478,7125,4487]
-#select_data_O = [2164,5276,1245,7659,428]
-#select_data_i = [4966,4020,7356,2479,4941]
-#select_data_A = [7092, 4431, 5140, 6736, 621]
+select_data_N = [3297,3344,3478,7125,4487]
+select_data_O = [2164,5276,1245,7659,428]
+select_data_i = [4966,4020,7356,2479,4941]
+select_data_A = [7092, 4431, 5140, 6736, 621]
 #select_data_N = [6946, 3748, 3353, 717, 1533]
 #select_data_O = [6630, 1518, 6629, 1690, 1983]
 #select_data_i = [34, 4948, 7794, 3738, 2693]
@@ -93,7 +93,7 @@ if ground_truth == 3:
     select_data = select_data_i
 
 
-perturb_windows_set = [1500]
+perturb_windows_set = [4500]
 
 for _, target_id in enumerate(select_data):
     for _, perturb_window in enumerate(perturb_windows_set):
