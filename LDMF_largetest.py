@@ -95,7 +95,7 @@ if ground_truth == 3:
     select_data = select_data_i
 
 
-perturb_windows_set = [7500,1500]
+perturb_windows_set = [9000,7500,1500]
 
 for _, target_id in enumerate(select_data):
     for _, perturb_window in enumerate(perturb_windows_set):
