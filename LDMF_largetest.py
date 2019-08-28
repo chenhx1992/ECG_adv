@@ -99,8 +99,8 @@ perturb_windows_set = [7500,1500]
 
 for _, target_id in enumerate(select_data):
     for _, perturb_window in enumerate(perturb_windows_set):
-        if target_id ==7382:
-            if perturb_window == 6000:
+        if perturb_window == 9000:
+            if target_id == 4966 or target_id == 4020 or target_id == 3344 or target_id == 2509 or target_id == 6713:
                 continue
         id = int(target_id)
 
