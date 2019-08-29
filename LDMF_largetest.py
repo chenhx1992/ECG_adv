@@ -95,7 +95,7 @@ if ground_truth == 3:
     select_data = select_data_i
 
 
-perturb_windows_set = [9000,7500,1500]
+perturb_windows_set = [1500]
 
 for _, target_id in enumerate(select_data):
     for _, perturb_window in enumerate(perturb_windows_set):
@@ -116,8 +116,10 @@ for _, target_id in enumerate(select_data):
         data = preprocess(data, WINDOW_SIZE)
         X_test = np.float32(data)
         for i in range(4):
-            if i == ground_truth:
+            if i != 3:
                 continue
+            #if i == ground_truth:
+            #    continue
 
             target = np.zeros((1, 1))
             target[0, 0] = int(i)
