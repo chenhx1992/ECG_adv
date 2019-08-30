@@ -323,18 +323,18 @@ class LDMF_EOT_tf_ATTACK(object):
                     prev = l
                 # adjust the best result found so far
                 for e, (l2, sc, ii, dist, xe) in enumerate(zip(itertools.repeat(l, len(scores)), scores, nimg, l2s, xent)):
-                    dist = dist/self.perturb_window
+                    temp_dist = dist/self.perturb_window
                     lab = np.argmax(batchlab[e])
                     if xe < bestl2[e] and compare(sc, lab):
                         bestl2[e] = xe
                         bestscore[e] = np.argmax(sc)
-                        bestdist[e] = dist
-                    if xe < o_bestl2[e] and compare(sc, lab) and (dist > 0.5 and dist < 1.5):
+                        bestdist[e] = temp_dist
+                    if xe < o_bestl2[e] and compare(sc, lab) and (temp_dist > 0.5 and dist < 1.5):
                         o_bestl2[e] = xe
                         o_bestscore[e] = np.argmax(sc)
                         o_bestattack[e] = ii
                         o_bestConst[e] = CONST[e]
-                        o_bestdist[e] = dist
+                        o_bestdist[e] = temp_dist
             # adjust the constant as needed
             for e in range(batch_size):
                 if compare(bestscore[e], np.argmax(batchlab[e])) and \
