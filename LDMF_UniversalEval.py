@@ -67,7 +67,7 @@ ground_truth_a = utils.to_categorical(ground_truth, num_classes=4)
 print("Record {} ground truth: {}".format(record, ground_truth_label))
 
 # loading perturbation
-filename = './output/LDMF_w' + str(perturb_window) + '_l2_' + record + 'T' + str(target) + '.out'
+filename = './output/LDMF_w' + str(perturb_window) + '_e30_l2_' + record + 'T' + str(target) + '.out'
 perturb = genfromtxt(filename, delimiter=',')
 perturb = np.expand_dims(perturb, axis=0)
 perturb = np.expand_dims(perturb, axis=2)
