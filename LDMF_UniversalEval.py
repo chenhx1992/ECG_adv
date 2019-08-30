@@ -126,7 +126,7 @@ for i, id_float in enumerate(target_id):
             if perturb_window == 9000:
                 test_all = zero_mean(op_concate(perturb, pos) + X_test_1)
             else:
-                test_all = zero_mean(op_concate2(perturb, perturb_window, pos) + X_test_1)
+                test_all = zero_mean(op_concate(perturb, perturb_window, pos) + X_test_1)
         else:
             if perturb_window == 9000:
                 test_all = np.append(test_all,zero_mean(op_concate(perturb, pos) + X_test_1), axis=0)
