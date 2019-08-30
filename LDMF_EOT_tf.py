@@ -329,7 +329,7 @@ class LDMF_EOT_tf_ATTACK(object):
                         bestl2[e] = xe
                         bestscore[e] = np.argmax(sc)
                         bestdist[e] = temp_dist
-                    if xe < o_bestl2[e] and compare(sc, lab) and (temp_dist > 0.5 and dist < 1.5):
+                    if xe < o_bestl2[e] and compare(sc, lab) and (temp_dist > 0.4 and dist < 1.5):
                         o_bestl2[e] = xe
                         o_bestscore[e] = np.argmax(sc)
                         o_bestattack[e] = ii
