@@ -9,6 +9,7 @@ import scipy.io
 from numpy import genfromtxt
 import math
 import sys
+from scipy import signal
 def preprocess(x, maxlen):
     x = np.nan_to_num(x)
     x = x[0, 0:maxlen]
@@ -20,6 +21,23 @@ def preprocess(x, maxlen):
     x = np.expand_dims(x, axis=2)  # required by Keras
     del tmp
     return x
+
+def filter(x):
+    fs = 300
+
+    #butterworth
+    nyq = 0.5 * fs
+    low = 0.05 / nyq
+    high = 150 / nyq
+    b, a = signal.butter(9, [low, high], btype='band')
+    bandpss_x = signal.lfilter(b, a, x)
+
+    #notch filter
+    f0 = 60
+    b, a = signal.iirnotch(f0, 30, fs)
+    y = signal.lfilter(b, a, bandpss_x)
+    return y
+
 def zero_mean(x):
     x = x - np.mean(x)
     x = x / np.std(x)
@@ -88,6 +106,7 @@ for (_, _, filenames) in walk(perturbDir):
             print("input file: ", perturbDir+inputstr)
             perturb = genfromtxt(perturbDir+inputstr, delimiter=',')
             dist = np.linalg.norm(perturb)
+            perturb = filter(perturb)
             perturb = np.expand_dims(perturb, axis=0)
             perturb = np.expand_dims(perturb, axis=2)
             k = 0
