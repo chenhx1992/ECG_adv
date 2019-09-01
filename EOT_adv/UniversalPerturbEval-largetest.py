@@ -26,10 +26,7 @@ def filter(x):
     fs = 300
 
     #butterworth
-    nyq = 0.5 * fs
-    low = 0.05 / nyq
-    high = 150 / nyq
-    b, a = signal.butter(9, [low, high], btype='bandpass')
+    b, a = signal.butter(9, 0.05, btype='hp')
     bandpss_x = signal.lfilter(b, a, x)
 
     #notch filter
