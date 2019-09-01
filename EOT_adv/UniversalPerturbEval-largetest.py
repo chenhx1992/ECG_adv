@@ -29,13 +29,16 @@ def filter(x):
     nyq = 0.5 * fs
     low = 0.05 / nyq
     high = 150 / nyq
-    b, a = signal.butter(9, [low, high], btype='band')
+    b, a = signal.butter(9, [low, high], btype='bandpass')
     bandpss_x = signal.lfilter(b, a, x)
 
     #notch filter
     f0 = 60
     b, a = signal.iirnotch(f0, 30, fs)
     y = signal.lfilter(b, a, bandpss_x)
+    f0 = 50
+    b, a = signal.iirnotch(f0, 30, fs)
+    y = signal.lfilter(b, a, y)
     return y
 
 def zero_mean(x):
