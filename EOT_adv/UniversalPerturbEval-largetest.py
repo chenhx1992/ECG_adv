@@ -42,20 +42,18 @@ def zero_mean(x):
     x = x - np.mean(x)
     x = x / np.std(x)
     return x
-def op_concate(x, w, p):
-    data_len = 9000
-    tile_times = math.floor(data_len/w)
-    x_tile = np.tile(x, (1, tile_times, 1))
-    x1 = x_tile[:, 0:p, :]
-    x2 = x_tile[:, p:data_len, :]
-    return np.append(x2, x1, axis=1)
 
-def op_concate2(x,w,p):
-    x_tile = np.tile(x, (1, 1, 1))
-    x1 = np.zeros((1,9000,1))
-    data_len = x_tile.shape[1]
-    x1[0,p:p+w,0] = x_tile[0,:,0]
-    return x1
+def op_concate(x,w,p):
+    if w != 9000:
+        x_tile = np.tile(x, (1, 1, 1))
+        new_x = np.zeros((1,9000,1))
+        new_x[0,p:p+w,0] = x_tile[0,:,0]
+    else:
+        x_tile = np.tile(x, (1, 1, 1))
+        x1 = x_tile[:, 0:p, :]
+        x2 = x_tile[:, p:9000, :]
+        new_x = np.append(x2, x1, axis=1)
+    return new_x
 
 # parameters
 dataDir = '../training_raw/'
