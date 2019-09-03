@@ -7,7 +7,6 @@ import csv
 import glob
 import scipy.io
 from numpy import genfromtxt
-import math
 import sys
 from scipy import signal
 def preprocess(x, maxlen):
@@ -21,6 +20,8 @@ def preprocess(x, maxlen):
     x = np.expand_dims(x, axis=2)  # required by Keras
     del tmp
     return x
+
+
 
 def filter(x):
     fs = 300
