@@ -46,26 +46,4 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/extras/CUPTI/lib64
 cd /home/ubuntu/ECG_adv
 git pull https://github.com/chenhx1992/ECG_adv.git
 python EOT_tile-largetest.py 0 1
-
-#!/bin/bash
-export PATH=/home/ubuntu/anaconda/bin:$PATH
-export PATH=${PATH}:/usr/local/cuda-9.0/bin
-export CUDA_HOME=${CUDA_HOME}:/usr/local/cuda:/usr/local/cuda-9.0
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/cuda-9.0/lib64
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/extras/CUPTI/lib64
-cd /home/ubuntu/ECG_adv
-git pull https://github.com/chenhx1992/ECG_adv.git
-cd EOT_adv
-python UniversalPerturbEval-largetest.py 0 1 3000
-python UniversalPerturbEval-largetest.py 0 2 3000
-python UniversalPerturbEval-largetest.py 0 3 3000
-python UniversalPerturbEval-largetest.py 1 0 3000
-python UniversalPerturbEval-largetest.py 1 2 3000
-python UniversalPerturbEval-largetest.py 1 3 3000
-python UniversalPerturbEval-largetest.py 2 0 3000
-python UniversalPerturbEval-largetest.py 2 1 3000
-python UniversalPerturbEval-largetest.py 2 3 3000
-python UniversalPerturbEval-largetest.py 3 0 3000
-python UniversalPerturbEval-largetest.py 3 1 3000
-python UniversalPerturbEval-largetest.py 3 2 3000
 ```
