@@ -105,7 +105,7 @@ for (_, _, filenames) in walk(perturbDir):
             print("input file: ", perturbDir+inputstr)
             perturb = genfromtxt(perturbDir+inputstr, delimiter=',')
             dist = np.linalg.norm(perturb)
-            perturb = filter(perturb)
+            #perturb = filter(perturb)
             perturb = np.expand_dims(perturb, axis=0)
             perturb = np.expand_dims(perturb, axis=2)
             k = 0
