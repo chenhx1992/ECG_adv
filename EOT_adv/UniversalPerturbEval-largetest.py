@@ -7,7 +7,7 @@ import csv
 import glob
 import scipy.io
 from numpy import genfromtxt
-import math
+import tensorflow as tf
 import sys
 from scipy import signal
 def preprocess(x, maxlen):
@@ -21,6 +21,15 @@ def preprocess(x, maxlen):
     x = np.expand_dims(x, axis=2)  # required by Keras
     del tmp
     return x
+
+def rectFilter(x, w):
+    new_x = tf.reshape(tf.pad(tf.reshape(x,[1,w]), tf.constant([[0,0],[0,9000-w]]), "CONSTANT"), [9000])
+    mask = tf.cast(tf.concat([tf.concat([tf.concat([tf.ones([1, 1]), tf.zeros([1, 3])], 1), tf.concat([tf.ones([1, 2727]), tf.zeros([1, 1])], 1)], 1),
+                              tf.concat([tf.concat([tf.ones([1, 545]), tf.zeros([1, 1])], 1), tf.ones([1, 4915])], 1)],1), dtype=tf.complex64)
+    stfts = tf.contrib.signal.stft(new_x, 9000, 1,window_fn=None)
+    stfts_masked = tf.multiply(tf.reshape(stfts,[1,8193]),mask)
+    inverse_stfts = tf.contrib.signal.inverse_stft(stfts_masked, 9000,1,window_fn=None)
+    return tf.reshape(inverse_stfts,[9000])
 
 def filter(x):
     fs = 300
@@ -96,7 +105,7 @@ target_len = target_file[:,2]
 perturbDir = '../output/'+str(ground_truth)+'/'
 pattern = r'LDMF_w'+str(perturb_window)+'_e30_l2_A[0-9]+T'+str(target)+'.out'
 attack_success_all = np.zeros((4),dtype=int)
-
+sess = tf.InteractiveSession()
 for (_, _, filenames) in walk(perturbDir):
     for inputstr in filenames:
         if re.match(pattern,inputstr) != None:
@@ -104,7 +113,10 @@ for (_, _, filenames) in walk(perturbDir):
             print("input file: ", perturbDir+inputstr)
             perturb = genfromtxt(perturbDir+inputstr, delimiter=',')
             dist = np.linalg.norm(perturb)
-            perturb = filter(perturb)
+            filtered_perturb = rectFilter(tf.convert_to_tensor(perturb, dtype=tf.float32), perturb_window)
+            new_perturb = sess.run(filtered_perturb)
+            perturb = new_perturb[0:perturb_window]
+            #perturb = filter(perturb)
             perturb = np.expand_dims(perturb, axis=0)
             perturb = np.expand_dims(perturb, axis=2)
             k = 0
