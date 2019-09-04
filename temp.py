@@ -27,7 +27,7 @@ def filter(x):
     fs = 300
 
     #butterworth
-    b, a = signal.butter(3, 0.05, btype='hp')
+    b, a = signal.butter(3, 0.05, btype='hp', fs = 300)
     bandpss_x = signal.lfilter(b, a, x)
 
     #notch filter
@@ -37,7 +37,7 @@ def filter(x):
     f0 = 50
     b, a = signal.iirnotch(f0, 30, fs)
     y = signal.lfilter(b, a, y)
-    return bandpss_x
+    return y
 
 def zero_mean(x):
     x = x - np.mean(x)

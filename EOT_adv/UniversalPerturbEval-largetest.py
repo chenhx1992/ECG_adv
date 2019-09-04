@@ -27,7 +27,7 @@ def filter(x):
     fs = 300
 
     #butterworth
-    b, a = signal.butter(3, 0.05, btype='hp')
+    b, a = signal.butter(3, 0.05, btype='hp', fs = 300)
     bandpss_x = signal.lfilter(b, a, x)
 
     #notch filter
