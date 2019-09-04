@@ -46,7 +46,7 @@ def zero_mean(x):
 
 def op_concate(x,w,p):
     if w != 9000:
-        x_tile = np.tile(filter(x), (1, 1, 1))
+        x_tile = np.tile(x, (1, 1, 1))
         new_x = np.zeros((1,9000,1))
         new_x[0,p:p+w,0] = x_tile[0,:,0]
     else:
