@@ -27,7 +27,7 @@ def filter(x):
     fs = 300
 
     #butterworth
-    b, a = signal.butter(9, 0.05, btype='hp')
+    b, a = signal.butter(3, 0.05, btype='hp')
     bandpss_x = signal.lfilter(b, a, x)
 
     #notch filter
@@ -50,9 +50,6 @@ def op_concate(x,w,p):
         new_x = np.zeros((1,9000,1))
         new_x[0,p:p+w,0] = x_tile[0,:,0]
     else:
-        x = filter(x)
-        x = np.expand_dims(x, axis=0)
-        x = np.expand_dims(x, axis=2)
         x_tile = np.tile(x, (1, 1, 1))
         x1 = x_tile[:, 0:p, :]
         x2 = x_tile[:, p:9000, :]
@@ -108,9 +105,9 @@ for (_, _, filenames) in walk(perturbDir):
             print("input file: ", perturbDir+inputstr)
             perturb = genfromtxt(perturbDir+inputstr, delimiter=',')
             dist = np.linalg.norm(perturb)
-            #perturb = filter(perturb)
-            #perturb = np.expand_dims(perturb, axis=0)
-            #perturb = np.expand_dims(perturb, axis=2)
+            perturb = filter(perturb)
+            perturb = np.expand_dims(perturb, axis=0)
+            perturb = np.expand_dims(perturb, axis=2)
             k = 0
             for i, id_float in enumerate(target_id):
                 if int(target_len[i]) < 30:
