@@ -101,7 +101,7 @@ X_test = np.float32(data)
 
 #adjust the ensemble_size for a suitable learning time.
 if perturb_window != 9000:
-    ensemble_size = int(max(30, (9000 - perturb_window) / 50))
+    ensemble_size = (9000 - perturb_window) / 50
 else:
     ensemble_size = int(9000 / 50)
 
@@ -121,6 +121,6 @@ perturb = perturb[:, 0:perturb_window, :]
 perturb_squeeze = np.squeeze(perturb, axis=2)
 
 # save perturbation
-outputstr = './output/' + str(ground_truth) + '/LDM_Attack_w' + str(perturb_window) + '_l2_A' + record + 'T' + str(int(target[0, 0])) + '.out'
+outputstr = './output/' + str(ground_truth) + '/LDM_Attack_w' + str(perturb_window) + '_l2_' + record + 'T' + str(int(target[0, 0])) + '.out'
 np.savetxt(outputstr, perturb_squeeze, delimiter=",")
 
