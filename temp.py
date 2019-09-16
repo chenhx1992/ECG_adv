@@ -72,9 +72,9 @@ files = sorted(glob.glob(dataDir+"*.mat"))
 #loading perturbation
 perturb_window = 9000
 ensemble_size = 30
-ground_truth = 3
-target = 1
-id = 7382
+ground_truth = 0
+target = 2
+id = 6713
 if perturb_window == 9000:
     maxpos = 9000
 else:
@@ -104,12 +104,14 @@ for (_, _, filenames) in walk(perturbDir):
             print("input file: ", perturbDir+inputstr)
             perturb = genfromtxt(perturbDir+inputstr, delimiter=',')
             dist = np.linalg.norm(perturb)
+            p_fft = scipy.fft(perturb, 1025)
             plt.figure()
             plt.plot(perturb)
             plt.show()
             perturb = filter(perturb)
+            p_fft = scipy.fft(perturb, 1025)
             plt.figure()
-            plt.plot(perturb)
+            plt.plot(np.abs(p_fft[0:513]))
             plt.show()
 
 
